@@ -9,7 +9,7 @@
     "watch": "rollup -c --watch"
   },
   "author": "Hendrik Erz <hendrik@zettlr.com>",
-  "license": "GPL-3.0-only",
+  "license": "AGPL-3.0-only",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-node-resolve": "^16.0.1",
