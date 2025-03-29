@@ -1,0 +1,222 @@
+/* BEGIN: CONFERIA VARIABLES */
+:root {
+  --schedule-board-background: #f0f0f0;
+  --schedule-board-grid: #dfdfdf;
+  --element-background: white;
+  --font-color: #333;
+  --element-shadow-color: rgba(0, 0, 0, .1);
+
+  --border-color: #c4c4c4;
+
+  --accent-color: #f705dc61;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --schedule-board-background: #515151;
+    --schedule-board-grid: #3c3c3c;
+    --element-background: #333;
+    --font-color: #eee;
+    --element-shadow-color: rgba(0, 0, 0, .3);
+  
+    --border-color: #5e5e5e;
+  }
+}
+/* END: CONFERIA VARIABLES */
+
+details {
+  margin-left: 20px;
+
+  & > summary {
+    cursor: pointer;
+    outline: none;
+    list-style-type: ' + ';
+    list-style-position: outside;
+
+    &::marker {
+      font-size: 1.5rem;
+    }
+  }
+
+  &[open] > summary {
+    list-style-type: ' - '
+  }
+}
+
+hr {
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  margin: 20px 10px;
+}
+
+#conferia-toolbar {
+  display: flex;
+  padding: 10px;
+}
+
+#conferia-schedule-wrapper {
+  cursor: default;
+  color: var(--font-color);
+  border: 1px solid var(--border-color);
+  background-color: var(--schedule-board-background);
+  display: grid;
+  grid-template-areas: "empty day-gutter" "time-gutter schedule";
+  grid-template-columns: 60px auto;
+  grid-template-rows: auto auto;
+  overflow: auto;
+}
+
+#conferia-time-gutter {
+  width: 60px;
+  text-align: center;
+  font-size: 0.8rem;
+  background-color: var(--element-background);
+  grid-area: time-gutter;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  box-shadow: 5px 0px 5px 0px var(--element-shadow-color);
+
+  .tick.time {
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--border-color);
+    }
+  }
+}
+
+#conferia-day-gutter {
+  height: 60px;
+  background-color: var(--element-background);
+  font-size: 0.8rem;
+  grid-area: day-gutter;
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0px 5px 5px 0px var(--element-shadow-color);
+
+  .tick.day {
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+
+    &:not(:last-child) {
+      border-right: 1px solid var(--border-color);
+    }
+  }
+}
+
+#conferia-schedule-board {
+  grid-area: schedule;
+  position: relative;
+
+  .event {
+    background-color: var(--element-background);
+    box-shadow: 5px 5px 5px 0px var(--element-shadow-color);
+    padding: 6px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    display: grid;
+    grid-template-areas:
+      "title title location"
+      "content content content"
+      "footer-left footer-center footer-right";
+    overflow: hidden;
+
+    &.bookmarked {
+      border-color: var(--accent-color);
+    }
+
+    h3.title {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 100%;
+      grid-area: title;
+    }
+
+    p.location {
+      grid-area: location;
+      margin: 0;
+      text-align: right;
+    }
+
+    p.event-id {
+      grid-area: footer-left;
+      margin: 0;
+      font-size: 0.6rem;
+      line-height: 0.6rem;
+      font-family: monospace;
+    }
+
+    div.bookmark {
+      grid-area: footer-right;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-align: right;
+    }
+
+    div.content {
+      grid-area: content;
+      overflow: auto;
+    }
+  }
+}
+
+dialog.conferia-event-details {
+  width: min(100%, 600px);
+  border: none;
+  border-radius: 10px;
+  background-color: var(--element-background);
+  color: var(--font-color);
+  box-shadow: 10px 10px 10px 0px var(--element-shadow-color);
+  padding: 20px;
+  display: grid;
+  align-items: center;
+  grid-template-areas:
+    "title title location"
+    "cnt cnt cnt"
+    "footer-left close-button .";
+  grid-template-columns: 1fr 3fr 1fr; /* TODO */
+
+  .dialog-content-wrapper {
+    grid-area: cnt;
+  }
+
+  details.presentation summary p.author {
+    margin: 0;
+    font-style: italic;
+  }
+  
+  p.location {
+    grid-area: location;
+    margin: 0;
+    text-align: right;
+  }
+
+  p.event-id {
+    grid-area: footer-left;
+    font-size: 0.8rem;
+    font-family: monospace;
+  }
+
+  h3.title {
+    grid-area: title;
+    margin: 0;
+  }
+
+  button.close-button {
+    margin: 20px auto;
+    padding: 10px 30px;
+    grid-area: close-button;
+  }
+
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+}

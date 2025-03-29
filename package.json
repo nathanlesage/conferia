@@ -1,0 +1,30 @@
+{
+  "name": "conferia",
+  "version": "0.1.0",
+  "description": "A small library to display a conference schedule",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "watch": "rollup -c --watch"
+  },
+  "author": "Hendrik Erz <hendrik@zettlr.com>",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/hash-sum": "^1.0.2",
+    "@types/luxon": "^3.4.2",
+    "@types/papaparse": "^5.3.15",
+    "rollup": "^4.37.0",
+    "rollup-plugin-dev": "^2.0.3",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "hash-sum": "^2.0.0",
+    "luxon": "^3.6.0",
+    "papaparse": "^5.5.2"
+  }
+}
