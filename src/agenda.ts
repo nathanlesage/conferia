@@ -1,4 +1,4 @@
-import { promptUser } from "./dom/prompt"
+import { askUser } from "./dom/ask-user"
 
 interface StorageAPI {
   itemIDs: string[]
@@ -17,7 +17,7 @@ tab. However, the events are only stored on your device, meaning if you open
 this agenda on a different device, it won't remember them. You can export and
 import your agenda to transfer it between devices.`
 
-  promptUser('Your Personalized Agenda', introText)
+  askUser('Your Personalized Agenda', introText, ['Ok'])
 }
 
 export class Agenda {
