@@ -8539,7 +8539,7 @@
      */
     function showEventDetailsModal(event) {
         const dialog = document.createElement('dialog');
-        dialog.classList.add('conferia-event-details');
+        dialog.classList.add('conferia-dialog', 'conferia-event-details');
         const title = document.createElement('h3');
         title.classList.add('title');
         switch (event.type) {
@@ -8651,6 +8651,7 @@
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
                 const dialog = document.createElement('dialog');
+                dialog.classList.add('conferia-dialog');
                 const titleElem = document.createElement('h3');
                 titleElem.textContent = title;
                 titleElem.classList.add('title');
