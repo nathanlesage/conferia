@@ -52,6 +52,7 @@ hr {
 #conferia-toolbar {
   display: flex;
   padding: 10px;
+  gap: 10px;
 }
 
 #conferia-schedule-wrapper {
