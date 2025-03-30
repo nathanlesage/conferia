@@ -4,6 +4,7 @@ export interface ToolbarDOMStructure {
   toolbar: HTMLDivElement
   filter: HTMLInputElement
   personalAgendaToggle: HTMLInputElement
+  toIcalButton: HTMLButtonElement
 }
 
 export function generateToolbarStructure (): ToolbarDOMStructure {
@@ -19,9 +20,13 @@ export function generateToolbarStructure (): ToolbarDOMStructure {
   const personalAgendaToggle = document.createElement('input')
   personalAgendaToggle.setAttribute('type', 'checkbox')
   agendaLabel.appendChild(personalAgendaToggle)
-  agendaLabel.appendChild(new Text('Your events only'))
+  agendaLabel.appendChild(new Text('Only Personal Agenda'))
 
   toolbar.appendChild(agendaLabel)
 
-  return { toolbar, filter, personalAgendaToggle }
+  const toIcalButton = document.createElement('button')
+  toIcalButton.textContent = 'Add to calendar'
+  toolbar.appendChild(toIcalButton)
+
+  return { toolbar, filter, personalAgendaToggle, toIcalButton }
 }

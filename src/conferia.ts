@@ -7,6 +7,7 @@ import { generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
 import { DateTime } from "luxon"
 import { showEventDetailsModal } from "./dom/event-details-modal"
 import { Agenda } from "./agenda"
+import { initiateIcalDownload } from "./util/ical"
 
 /**
  * Returns true if the provided query occurs anywhere in this event
@@ -120,6 +121,10 @@ export class Conferia {
       this.updateUI()
     })
 
+    this.dom.toIcalButton.addEventListener('click', () => {
+      initiateIcalDownload(this)
+    })
+
     // Begin loading
     this.loadPromise = this.load()
 
@@ -127,6 +132,34 @@ export class Conferia {
     this.loadPromise.then(() => {
       this.updateUI()
     })
+  }
+
+  /**
+   * Returns all records in the schedule
+   *
+   * @return  {CSVRecord[]}  All records
+   */
+  public getRecords (): CSVRecord[] {
+    return this.records
+  }
+
+  /**
+   * Returns all records in the schedule conditional on any filters currently
+   * applied (that is, only the currently visible records)
+   *
+   * @return  {CSVRecord[]} The filtered records
+   */
+  public getVisibleRecords (): CSVRecord[] {
+    return this.filterRecords()
+  }
+
+  /**
+   * Returns all records that are part of the user agenda.
+   *
+   * @return  {CSVRecord[]}  The user agenda records
+   */
+  public getUserAgendaRecords (): CSVRecord[] {
+    return this.records.filter(r => this.agenda.hasItem(r.id))
   }
 
   /**

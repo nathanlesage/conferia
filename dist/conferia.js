@@ -8400,9 +8400,12 @@
         const personalAgendaToggle = document.createElement('input');
         personalAgendaToggle.setAttribute('type', 'checkbox');
         agendaLabel.appendChild(personalAgendaToggle);
-        agendaLabel.appendChild(new Text('Your events only'));
+        agendaLabel.appendChild(new Text('Only Personal Agenda'));
         toolbar.appendChild(agendaLabel);
-        return { toolbar, filter, personalAgendaToggle };
+        const toIcalButton = document.createElement('button');
+        toIcalButton.textContent = 'Add to calendar';
+        toolbar.appendChild(toIcalButton);
+        return { toolbar, filter, personalAgendaToggle, toIcalButton };
     }
 
     function generateDOMStructure(title) {
@@ -8411,14 +8414,15 @@
         const timeGutter = generateTimeGutter();
         const scheduleWrapper = generateScheduleWrapper();
         const scheduleBoard = generateScheduleBoard();
-        const { toolbar, filter, personalAgendaToggle } = generateToolbarStructure();
+        const { toolbar, filter, personalAgendaToggle, toIcalButton } = generateToolbarStructure();
         wrapper.appendChild(toolbar);
         scheduleWrapper.appendChild(dayGutter);
         scheduleWrapper.appendChild(timeGutter);
         scheduleWrapper.appendChild(scheduleBoard);
         wrapper.appendChild(scheduleWrapper);
         return {
-            wrapper, timeGutter, dayGutter, scheduleBoard, filter, personalAgendaToggle
+            wrapper, timeGutter, dayGutter, scheduleBoard,
+            filter, personalAgendaToggle, toIcalButton
         };
     }
     function generateScheduleWrapper() {
@@ -8631,26 +8635,46 @@
         return div;
     }
 
-    // Utility function to prompt the user
-    function promptUser(title, message, buttonText = 'Ok') {
-        const dialog = document.createElement('dialog');
-        const titleElem = document.createElement('h3');
-        titleElem.textContent = title;
-        titleElem.classList.add('title');
-        dialog.appendChild(titleElem);
-        const content = document.createElement('div');
-        content.textContent = message;
-        dialog.appendChild(content);
-        const closeButton = document.createElement('button');
-        closeButton.classList.add('close-button');
-        closeButton.textContent = buttonText;
-        closeButton.addEventListener('click', () => dialog.close());
-        dialog.appendChild(closeButton);
-        document.body.appendChild(dialog);
-        dialog.addEventListener('close', () => {
-            document.body.removeChild(dialog);
+    // Utility to ask the user using a dialog
+    /**
+     * Shows a dialog to the user asking to click one of the buttons. The promise
+     * resolves with either the clicked button ID, or undefined if the dialog was
+     * closed without clicking a button.
+     *
+     * @param   {string}                     title    The dialog title
+     * @param   {string}                     message  The dialog message
+     * @param   {string[]}                   buttons  The button labels
+     *
+     * @return  {Promise<number|undefined>}           The button ID, or undefined
+     */
+    function askUser(title, message, buttons) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                const dialog = document.createElement('dialog');
+                const titleElem = document.createElement('h3');
+                titleElem.textContent = title;
+                titleElem.classList.add('title');
+                dialog.appendChild(titleElem);
+                const content = document.createElement('div');
+                content.textContent = message;
+                dialog.appendChild(content);
+                for (let i = 0; i < buttons.length; i++) {
+                    const buttonElement = document.createElement('button');
+                    buttonElement.textContent = buttons[i];
+                    buttonElement.addEventListener('click', () => {
+                        resolve(i);
+                        dialog.close();
+                    });
+                    dialog.appendChild(buttonElement);
+                }
+                document.body.appendChild(dialog);
+                dialog.addEventListener('close', () => {
+                    resolve(undefined);
+                    document.body.removeChild(dialog);
+                });
+                dialog.showModal();
+            });
         });
-        dialog.showModal();
     }
 
     const AGENDA_ITEM_KEY = 'conferia-agenda';
@@ -8663,7 +8687,7 @@ means that your bookmarked events will be remembered even when you close this
 tab. However, the events are only stored on your device, meaning if you open
 this agenda on a different device, it won't remember them. You can export and
 import your agenda to transfer it between devices.`;
-        promptUser('Your Personalized Agenda', introText);
+        askUser('Your Personalized Agenda', introText, ['Ok']);
     }
     class Agenda {
         constructor() {
@@ -8711,6 +8735,119 @@ import your agenda to transfer it between devices.`;
             };
             window.localStorage.setItem(AGENDA_ITEM_KEY, JSON.stringify(toStore));
         }
+    }
+
+    const EOL = "\r\n"; // iCal requires CRLF
+    function initiateIcalDownload(conferia) {
+        askUser('Add events to your calendar', `Click one of the buttons below to download a set of this program's events
+in the iCal format. This will download an iCal file which you can add to your
+calendar. This allows you to, e.g., quickly transfer your personal agenda to
+your own calendar so that it synchronizes with all your devices.
+
+"All events" will include every event part of the conference (not recommended).
+"Visible events" will include only the currently visible events (i.e.,
+respecting your filters).
+"Personal agenda" will download all events that you have added to your personal
+agenda.`, [
+            'Download all events',
+            'Download visible events',
+            'Download your personal agenda',
+            'Cancel'
+        ]).then(buttonID => {
+            if (buttonID === undefined || buttonID === 3) {
+                return; // No button or cancel clicked
+            }
+            if (buttonID === 0) {
+                const ical = recordsToIcal(conferia.getRecords());
+                downloadIcal(ical);
+            }
+            else if (buttonID === 1) {
+                const ical = recordsToIcal(conferia.getVisibleRecords());
+                downloadIcal(ical);
+            }
+            else if (buttonID === 2) {
+                const ical = recordsToIcal(conferia.getUserAgendaRecords());
+                downloadIcal(ical);
+            }
+        });
+    }
+    /**
+     * Downloads iCal data to the user's computer.
+     *
+     * @param   {string}  ical  The iCal string data
+     */
+    function downloadIcal(ical) {
+        const file = new File([ical], 'calendar.ics', { type: 'text/calendar' });
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = URL.createObjectURL(file);
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.addEventListener('mouseup', () => {
+            var _a;
+            URL.revokeObjectURL(a.href);
+            (_a = a.parentElement) === null || _a === void 0 ? void 0 : _a.removeChild(a);
+        });
+        a.click();
+    }
+    /**
+     * Do violence to ISO 8601 datetimes
+     *
+     * @param   {DateTime}  date  The datetime
+     *
+     * @return  {string}          The iCal ISO 8601 format variant
+     */
+    function dt2rfc2445(date) {
+        return date.setZone('utc').toFormat("yyyyLLdd'T'HHmmss'Z'");
+    }
+    /**
+     * Turns a list of CSV records into an iCal calendar conformant to RFC 2445
+     * (see https://www.ietf.org/rfc/rfc2445.txt, p. 52ff).
+     * See https://datatracker.ietf.org/doc/html/rfc5545 for a newer edition.
+     *
+     * @param   {CSVRecord[]}  records  The records
+     *
+     * @return  {string}             The iCal string.
+     */
+    function recordsToIcal(records) {
+        const icalLines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Hendrik Erz//NONSGML Conferia.js//EN', // cf. RFC 2445, p. 74
+            'CALSCALE:GREGORIAN'
+        ];
+        for (const rec of records) {
+            icalLines.push(...recordToIcal(rec));
+        }
+        icalLines.push('END:VCALENDAR', EOL); // End with a CRLF
+        return icalLines.join(EOL);
+    }
+    /**
+     * Turns a CSV record into an iCal entry conformant to RFC 2445
+     * (see https://www.ietf.org/rfc/rfc2445.txt, p. 52ff). NOTE that you need to
+     * wrap this into a calendar
+     *
+     * @param   {CSVRecord}  record  The record
+     *
+     * @return  {string}             The iCal strings (need to be joined with EOL).
+     */
+    function recordToIcal(record) {
+        // NOTE: DateTimes MUST be in UTC (also spares us from having to define weird
+        // VTIMEZONE components).
+        const dtNow = dt2rfc2445(DateTime.now());
+        return [
+            'BEGIN:VEVENT',
+            // Start and end
+            `DTSTART:${dt2rfc2445(record.dateStart)}`,
+            `DTEND:${dt2rfc2445(record.dateEnd)}`,
+            `LOCATION:${record.location}`,
+            // iCal requires DTSTAMP
+            `DTSTAMP:${dtNow}`,
+            `SUMMARY:${record.title}`, // Summary = title
+            `DESCRIPTION:${'abstract' in record ? record.abstract : ''}`,
+            `UID:${record.id}`,
+            'END:VEVENT'
+        ];
     }
 
     /**
@@ -8764,12 +8901,40 @@ import your agenda to transfer it between devices.`;
                 this.showOnlyPersonalAgenda = this.dom.personalAgendaToggle.checked;
                 this.updateUI();
             });
+            this.dom.toIcalButton.addEventListener('click', () => {
+                initiateIcalDownload(this);
+            });
             // Begin loading
             this.loadPromise = this.load();
             // Perform initial update
             this.loadPromise.then(() => {
                 this.updateUI();
             });
+        }
+        /**
+         * Returns all records in the schedule
+         *
+         * @return  {CSVRecord[]}  All records
+         */
+        getRecords() {
+            return this.records;
+        }
+        /**
+         * Returns all records in the schedule conditional on any filters currently
+         * applied (that is, only the currently visible records)
+         *
+         * @return  {CSVRecord[]} The filtered records
+         */
+        getVisibleRecords() {
+            return this.filterRecords();
+        }
+        /**
+         * Returns all records that are part of the user agenda.
+         *
+         * @return  {CSVRecord[]}  The user agenda records
+         */
+        getUserAgendaRecords() {
+            return this.records.filter(r => this.agenda.hasItem(r.id));
         }
         /**
          * Filters all available records based on various conditions.
