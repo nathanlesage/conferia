@@ -169,7 +169,7 @@ hr {
   }
 }
 
-dialog.conferia-event-details {
+dialog.conferia-dialog {
   width: min(100%, 600px);
   border: none;
   border-radius: 10px;
@@ -177,6 +177,13 @@ dialog.conferia-event-details {
   color: var(--font-color);
   box-shadow: 10px 10px 10px 0px var(--element-shadow-color);
   padding: 20px;
+
+  &::backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+dialog.conferia-event-details {
   display: grid;
   align-items: center;
   grid-template-areas:
@@ -215,9 +222,5 @@ dialog.conferia-event-details {
     margin: 20px auto;
     padding: 10px 30px;
     grid-area: close-button;
-  }
-
-  &::backdrop {
-    background-color: rgba(0, 0, 0, 0.4);
   }
 }

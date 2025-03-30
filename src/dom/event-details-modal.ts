@@ -7,7 +7,7 @@ import { CSVRecord } from "../csv"
  */
 export function showEventDetailsModal (event: CSVRecord): void {
   const dialog = document.createElement('dialog')
-  dialog.classList.add('conferia-event-details')
+  dialog.classList.add('conferia-dialog', 'conferia-event-details')
 
   const title = document.createElement('h3')
   title.classList.add('title')

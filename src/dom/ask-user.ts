@@ -14,6 +14,7 @@
 export async function askUser (title: string, message: string, buttons: string[]): Promise<number|undefined> {
   return new Promise((resolve, reject) => {
     const dialog = document.createElement('dialog')
+    dialog.classList.add('conferia-dialog')
 
     const titleElem = document.createElement('h3')
     titleElem.textContent = title
