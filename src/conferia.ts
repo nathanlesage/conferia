@@ -81,6 +81,21 @@ export interface ConferiaOptions {
    * (default: 10).
    */
   eventCardPadding?: number
+  /**
+   * An optional function that you can use to correct the dates in your CSV
+   * file. Use this to fix datetimes, if whichever application you peruse to
+   * generate the CSV file cannot properly output ISO 8601 strings (such as
+   * Microsoft Excel).
+   *
+   * @param   {string}    dateString  The raw date string as it comes from your
+   *                                  CSV file.
+   * @param   {DateTime}  luxon       The Luxon DateTime constructor. Can be
+   *                                  used according to Luxon's documentation.
+   *
+   * @return  {string}                Must return an ISO 8601-compatible
+   *                                  datetime string.
+   */
+  dateParser?: (dateString: string, luxon: typeof DateTime) => string
 }
 
 export class Conferia {
@@ -301,7 +316,7 @@ export class Conferia {
   private async load (): Promise<void> {
     const response = await fetch(this.opt.src)
     const data = await response.text()
-    const csv = parseCsv(data, this.opt.timeZone)
+    const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser)
 
     if (this.opt.debug) {
       console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`)

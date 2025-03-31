@@ -43,14 +43,18 @@ export type CSVRecord = SingleRecord|MetaRecord|SessionRecord
 /**
  * Takes a CSV string and parses it into our internal record format.
  *
- * @param   {string}       csv       The CSV string
- * @param   {string}       timeZone  An optional time zone (IANA string)
+ * @param   {string}       csvData     The CSV string
+ * @param   {string}       timeZone    An optional time zone (IANA string)
+ * @param   {Function}     dateParser  An optional parser function
  *
- * @return  {CSVRecord[]}            The parsed CSV records
+ * @return  {CSVRecord[]}              The parsed CSV records
  */
-export function parseCsv (csvData: string, timeZone?: string): CSVRecord[] {
+export function parseCsv (csvData: string, timeZone?: string, dateParser?: (dateString: string, luxon: typeof DateTime) => string): CSVRecord[] {
   // Small utility function to harmonize datetime parsing
   const parseISODate = (isoDate: string) => {
+    if (dateParser !== undefined) {
+      isoDate = dateParser(isoDate, DateTime)
+    }
     return DateTime.fromISO(isoDate, { zone: timeZone })
   }
 

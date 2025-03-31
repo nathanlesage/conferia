@@ -81,7 +81,7 @@ download the file from there.
 > [!NOTE]
 > Depending on where you upload the file, you may encounter [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)-errors. If the
 > library is unable to download the data, try hosting the data file on the same
-> domain as your website. Example: If the agenda lives at
+> domain as your website. For example, if the agenda lives at
 > `https://agenda.example.com`, host the data file at, say,
 > `https://agenda.example.com/data.csv`.
 
@@ -93,18 +93,19 @@ Jekyll, you can just add the code to the designated program page. If you use a
 CMS such as WordPress, there are plugins available that allow you to inject some
 HTML code into pages which you can use.
 
-You need to first include the library itself by adding a `script` tag anywhere
-on your page:
+You need to first include the library itself by adding a `script` tag as well as
+its stylesheet link in the `<head>` of your page:
 
 ```html
-<script defer src="/path/to/conferia.js"></script>
+<script defer src="https://cdn.jsdelivr.net/gh/nathanlesage/conferia@main/dist/conferia.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nathanlesage/conferia@main/dist/conferia.css">
 ```
 
 > [!TIP]
 > The `defer` keyword ensures that the library only loads after the rest of the
 > page has loaded. This can make the experience look snappier.
 
-Next, you need to initiate Conferia.js, providing your data:
+Next, you need to instantiate Conferia.js, providing your data:
 
 ```html
 <script>
@@ -170,7 +171,7 @@ for all types of events. The CSV file needs to include these columns:
 
 When instantiating the Conferia.js-library, you can pass configuration options
 that determine the way the library behaves. Below you can find all of them with
-a short explanation:
+a short explanation. For more information, please see the documentation.
 
 ```typescript
 export interface ConferiaOptions {
@@ -206,64 +207,15 @@ export interface ConferiaOptions {
    * https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
    */
   timeZone?: string
+  /**
+   * An optional function that you can use to correct the dates in your CSV
+   * file. Use this to fix datetimes, if whichever application you peruse to
+   * generate the CSV file cannot properly output ISO 8601 strings (such as
+   * Microsoft Excel).
+   */
+  dateParser?: (dateString: string, luxon: typeof DateTime) => string
 }
 ```
-
-## A Note on Times and Timezones
-
-Conferia.js requires you to provide time and date using the ISO 8601 format. The
-reason is that this is a very comprehensive format that allows to specify where
-and when something is extremely precisely, or very loosely. In the context of
-conferences, most times are already precise enough if they only indicate day,
-hour, and the minute. In ISO 8601, say, March 3rd, 2025 at 12:30pm corresponds
-to `2025-03-03T12:30`. This would be a valid timestamp in ISO 8601.
-
-When it comes to displaying these times in Conferia.js itself, it's straight
-forward: Regardless of which timezone the user's device is set to, it will
-always look the same. 12:30pm is always displayed as 12:30pm, and this is the
-only thing the user cares about. If they look at the timetable from Europe and
-then fly to the U.S. West Coast, the times will remain static, and only behind
-the scenes will the timezone quietly change from CET to PST as their phone or
-laptop recognizes they have landed on the other side of the world. Conferia.js
-essentially ignores the timezone information.
-
-*However*, this behavior breaks as soon as you move outside of Conferia.js. If
-users export their (personalized) agenda as iCal files, for example, timezone
-suddenly becomes important. The reason is that, when users import times into,
-say, Apple or Google calendar, these apps will quietly assume the local
-timezone, too, if no timezone information is specified. However, since calendars
-always display the times in the current local timezone, this means that they
-will now move the times around in accordance to the offset.
-
-Think about the example with moving from CET to PST again. If a user is in
-Europe, prepares which sessions they want to see, and exports that information
-into their calendar, 12:30pm will show up as 12:30pm just fine. However, as they
-leave the plane in San Francisco, their phone will recognize the new timezone,
-and adjust the display of all events. And the 12:30pm event will suddenly show
-up at 4:30am (8 hour time difference).
-
-This is why providing the correct timezone is critical. Not for simply viewing
-the schedule, but for letting users export these events as iCal files.
-
-You can provide the timezone in two ways:
-
-1. You can add the timezone information to your spreadsheet. Software that lets
-   you export a set of events to a spreadsheet often already comes with
-   functionality to output "full" ISO 8601 timestamps. Then you won't have to
-   worry, because the timezone information is present, and it will work out of
-   the box both inside Conferia.js, and inside the users' calendars.
-2. You can manually specify the timezone in the configuration of Conferia.js.
-   Doing so will move every timestamp within the data file into the correct
-   timezone.
-
-> [!WARNING]
-> If you use option 2 and specify the timezone in the configuration, this will
-> direct the library to set the timezone of each date accordingly. If the
-> datetimes in your data file have no timezone information present, this will
-> just add the timezone information without further changes. However, if some
-> datetimes have timezone information present, this will adjust the times
-> according to the time difference between the existing timezone and the new
-> one.
 
 ## Acknowledgements
 

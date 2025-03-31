@@ -8129,14 +8129,18 @@
     /**
      * Takes a CSV string and parses it into our internal record format.
      *
-     * @param   {string}       csv       The CSV string
-     * @param   {string}       timeZone  An optional time zone (IANA string)
+     * @param   {string}       csvData     The CSV string
+     * @param   {string}       timeZone    An optional time zone (IANA string)
+     * @param   {Function}     dateParser  An optional parser function
      *
-     * @return  {CSVRecord[]}            The parsed CSV records
+     * @return  {CSVRecord[]}              The parsed CSV records
      */
-    function parseCsv(csvData, timeZone) {
+    function parseCsv(csvData, timeZone, dateParser) {
         // Small utility function to harmonize datetime parsing
         const parseISODate = (isoDate) => {
+            if (dateParser !== undefined) {
+                isoDate = dateParser(isoDate, DateTime);
+            }
             return DateTime.fromISO(isoDate, { zone: timeZone });
         };
         const rows = csvData
@@ -9134,7 +9138,7 @@ agenda.`, [
             return __awaiter(this, void 0, void 0, function* () {
                 const response = yield fetch(this.opt.src);
                 const data = yield response.text();
-                const csv = parseCsv(data, this.opt.timeZone);
+                const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser);
                 if (this.opt.debug) {
                     console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`);
                     console.log({ csv });
