@@ -2,6 +2,7 @@
 
 > Turn your conference schedule into an interactive agenda. A simple and
 > straight-forward plug-and-play solution in only three steps.
+> [View an interactive demo](https://nathanlesage.github.io/conferia/demo/index.htm)
 
 Towards the end of the planning stage, organizers of academic conferences
 usually run against one very fundamental problem: We now have this large Excel
