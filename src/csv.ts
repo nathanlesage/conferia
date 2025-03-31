@@ -48,29 +48,21 @@ export type CSVRecord = SingleRecord|MetaRecord|SessionRecord
  *
  * @return  {CSVRecord[]}            The parsed CSV records
  */
-export function parseCsv (csv: string, timeZone?: string): CSVRecord[] {
+export function parseCsv (csvData: string, timeZone?: string): CSVRecord[] {
   // Small utility function to harmonize datetime parsing
   const parseISODate = (isoDate: string) => {
-    const dt = DateTime.fromISO(isoDate)
-    if (timeZone !== undefined) {
-      return dt.setZone(timeZone)
-    } else {
-      return dt
-    }
+    return DateTime.fromISO(isoDate, { zone: timeZone })
   }
 
-  const rows = csv
+  const rows = csvData
     .split(/[\n\r]+/)
     .filter(row => row.trim() !== '')
-    .map(row => {
-      return row.split(',')
-    })
 
   if (rows.length < 2) {
     throw new Error('Invalid CSV: Less than 2 rows!')
   }
 
-  const header = rows.shift()!.map(c => c.toLowerCase())
+  const header = rows.shift()!.split(',').map(c => c.toLowerCase())
 
   const EXPECTED_COLS = header.length
 
@@ -83,7 +75,7 @@ export function parseCsv (csv: string, timeZone?: string): CSVRecord[] {
   const LOCATION_IDX = header.findIndex(c => c === 'location')
   const SESSION_IDX = header.findIndex(c => c === 'session')
   const SESSION_ORDER_IDX = header.findIndex(c => c === 'session_order')
-  const CHAIR_IDX = header.findIndex(c => c === 'chair') // TODO
+  const CHAIR_IDX = header.findIndex(c => c === 'chair')
 
   if (DATE_START_IDX < 0) {
     throw new Error('The CSV did not contain a `date_start` column.')
@@ -118,7 +110,7 @@ export function parseCsv (csv: string, timeZone?: string): CSVRecord[] {
 
   const returnValue: CSVRecord[] = []
   const onlySessionPresentations: SessionPresentationRecord[] = []
-  for (const row of rows) {
+  for (const row of rows.map(row => parseCSVLine(row))) {
     if (row.length !== EXPECTED_COLS) {
       throw new Error(`Wrong number of columns in row (${row.length}; expected ${EXPECTED_COLS}) in row: ${row.join(',')}`)
     }
@@ -203,4 +195,65 @@ export function parseCsv (csv: string, timeZone?: string): CSVRecord[] {
   }
 
   return returnValue
+}
+
+/**
+ * Takes a CSV line and parses it into a series of cells.
+ *
+ * @param   {string}    line  The line to parse
+ *
+ * @return  {string[]}        The cells
+ */
+function parseCSVLine (line: string, sep: string = ','): string[] {
+  const cells: string[] = []
+
+  let currentCell = ''
+  let isQuoted = false
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+
+    // We have to deal with two special character cases
+    if (char === sep) {
+      // Cell Separator
+      if (isQuoted) {
+        currentCell += char
+      } else {
+        cells.push(currentCell)
+        currentCell = ''
+        isQuoted = false
+      }
+    } else if (char === '"') {
+      // Quote
+      if (currentCell === '') {
+        // Current Cell is empty -> Marks beginning of a quoted cell
+        isQuoted = true
+      } else if (isQuoted) {
+        // Double quote within a quoted cell either marks the end or an escaped
+        // double quote. Is determined by the next character. If it's a quote,
+        // we shall add a quote to the cell contents, otherwise the cell is
+        // done.
+        const nextChar = line[i + 1]
+        if (nextChar === '"') {
+          currentCell += char // It's an escaped quote.
+          i++ // Jump over the next quote
+        } else if (nextChar === sep) {
+          // Not an escaped quote -> end of cell
+          isQuoted = false
+        } else {
+          // Malformed cell
+          throw new Error('Could not parse CSV line: Malformed cell: ' + line)
+        }
+      } else {
+        // Malformed cell
+        throw new Error('Could not parse CSV line: Malformed cell: ' + line)
+      }
+    } else {
+      // Everything else
+      currentCell += char
+    }
+  }
+
+  cells.push(currentCell) // Final cell is not delimited with `sep`
+
+  return cells
 }

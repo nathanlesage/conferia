@@ -1,4 +1,5 @@
 import { DateTime } from "luxon"
+import { getTimeOffset } from "../util/time-helpers"
 
 const MINIMUM_TICK_HEIGHT = 30
 
@@ -9,7 +10,7 @@ export function generateTimeGutter (): HTMLDivElement {
 }
 
 export function updateGutterTicks (timeGutter: HTMLElement, startTime: DateTime, endTime: DateTime, timeScaleFactor: number): void {
-  const secondsPerDay = endTime.diff(startTime).as('seconds')
+  const secondsPerDay = getTimeOffset(endTime, startTime)
   const pxPerSecond = 1 / timeScaleFactor
   // NOTE: Ticks should increase or decrease by intervals of 300 seconds (5 minutes)
   let tickSize = 300

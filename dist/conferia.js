@@ -8134,27 +8134,18 @@
      *
      * @return  {CSVRecord[]}            The parsed CSV records
      */
-    function parseCsv(csv, timeZone) {
+    function parseCsv(csvData, timeZone) {
         // Small utility function to harmonize datetime parsing
         const parseISODate = (isoDate) => {
-            const dt = DateTime.fromISO(isoDate);
-            if (timeZone !== undefined) {
-                return dt.setZone(timeZone);
-            }
-            else {
-                return dt;
-            }
+            return DateTime.fromISO(isoDate, { zone: timeZone });
         };
-        const rows = csv
+        const rows = csvData
             .split(/[\n\r]+/)
-            .filter(row => row.trim() !== '')
-            .map(row => {
-            return row.split(',');
-        });
+            .filter(row => row.trim() !== '');
         if (rows.length < 2) {
             throw new Error('Invalid CSV: Less than 2 rows!');
         }
-        const header = rows.shift().map(c => c.toLowerCase());
+        const header = rows.shift().split(',').map(c => c.toLowerCase());
         const EXPECTED_COLS = header.length;
         const DATE_START_IDX = header.findIndex(c => c === 'date_start');
         const DATE_END_IDX = header.findIndex(c => c === 'date_end');
@@ -8165,7 +8156,7 @@
         const LOCATION_IDX = header.findIndex(c => c === 'location');
         const SESSION_IDX = header.findIndex(c => c === 'session');
         const SESSION_ORDER_IDX = header.findIndex(c => c === 'session_order');
-        const CHAIR_IDX = header.findIndex(c => c === 'chair'); // TODO
+        const CHAIR_IDX = header.findIndex(c => c === 'chair');
         if (DATE_START_IDX < 0) {
             throw new Error('The CSV did not contain a `date_start` column.');
         }
@@ -8198,7 +8189,7 @@
         }
         const returnValue = [];
         const onlySessionPresentations = [];
-        for (const row of rows) {
+        for (const row of rows.map(row => parseCSVLine(row))) {
             if (row.length !== EXPECTED_COLS) {
                 throw new Error(`Wrong number of columns in row (${row.length}; expected ${EXPECTED_COLS}) in row: ${row.join(',')}`);
             }
@@ -8276,6 +8267,183 @@
         }
         return returnValue;
     }
+    /**
+     * Takes a CSV line and parses it into a series of cells.
+     *
+     * @param   {string}    line  The line to parse
+     *
+     * @return  {string[]}        The cells
+     */
+    function parseCSVLine(line, sep = ',') {
+        const cells = [];
+        let currentCell = '';
+        let isQuoted = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            // We have to deal with two special character cases
+            if (char === sep) {
+                // Cell Separator
+                if (isQuoted) {
+                    currentCell += char;
+                }
+                else {
+                    cells.push(currentCell);
+                    currentCell = '';
+                    isQuoted = false;
+                }
+            }
+            else if (char === '"') {
+                // Quote
+                if (currentCell === '') {
+                    // Current Cell is empty -> Marks beginning of a quoted cell
+                    isQuoted = true;
+                }
+                else if (isQuoted) {
+                    // Double quote within a quoted cell either marks the end or an escaped
+                    // double quote. Is determined by the next character. If it's a quote,
+                    // we shall add a quote to the cell contents, otherwise the cell is
+                    // done.
+                    const nextChar = line[i + 1];
+                    if (nextChar === '"') {
+                        currentCell += char; // It's an escaped quote.
+                        i++; // Jump over the next quote
+                    }
+                    else if (nextChar === sep) {
+                        // Not an escaped quote -> end of cell
+                        isQuoted = false;
+                    }
+                    else {
+                        // Malformed cell
+                        throw new Error('Could not parse CSV line: Malformed cell: ' + line);
+                    }
+                }
+                else {
+                    // Malformed cell
+                    throw new Error('Could not parse CSV line: Malformed cell: ' + line);
+                }
+            }
+            else {
+                // Everything else
+                currentCell += char;
+            }
+        }
+        cells.push(currentCell); // Final cell is not delimited with `sep`
+        return cells;
+    }
+
+    /**
+     * Given an array of dates, returns the date that has the earliest time of day.
+     *
+     * @param   {DateTime[]}  dates  A list of dates
+     *
+     * @return  {DateTime}           The date with the earliest time of day
+     */
+    function getEarliestTime(dates) {
+        return dates.sort((a, b) => {
+            if (a.hour !== b.hour) {
+                return a.hour - b.hour;
+            }
+            else if (a.minute !== b.minute) {
+                return a.minute - b.minute;
+            }
+            else if (a.second !== b.second) {
+                return a.second - b.second;
+            }
+            else {
+                return 0;
+            }
+        })[0];
+    }
+    /**
+     * Given an array of dates, returns the date that has the latest time of day.
+     *
+     * @param   {DateTime[]}  dates  A list of dates
+     *
+     * @return  {DateTime}           The date with the latest time of day
+     */
+    function getLatestTime(dates) {
+        return dates.sort((a, b) => {
+            if (a.hour !== b.hour) {
+                return a.hour - b.hour;
+            }
+            else if (a.minute !== b.minute) {
+                return a.minute - b.minute;
+            }
+            else if (a.second !== b.second) {
+                return a.second - b.second;
+            }
+            else {
+                return 0;
+            }
+        }).reverse()[0];
+    }
+    /**
+     * Given a list of dates, returns the DateTime that is the earliest one.
+     *
+     * @param   {DateTime[]}  dates  A list of dates
+     *
+     * @return  {DateTime}           The earliest date
+     */
+    function getEarliestDay(dates) {
+        return DateTime.min(...dates);
+    }
+    /**
+     * Given a list of dates, returns the DateTime that is the latest one.
+     *
+     * @param   {DateTime[]}  dates  A list of dates
+     *
+     * @return  {DateTime}           The latest date
+     */
+    function getLatestDay(dates) {
+        return DateTime.max(...dates);
+    }
+    /**
+     * Given a list of startDate/endDate tuples, returns the shortest interval
+     * between those two in seconds.
+     *
+     * @param   {Array<[DateTime, DateTime]>}  events  A list of tuples of start and end Dates
+     *
+     * @return  {number}                       The shortest interval in the array, in seconds.
+     */
+    function getShortestInterval(events) {
+        const durations = events
+            .map(([start, end]) => end.diff(start))
+            .map(d => d.as('seconds'));
+        durations.sort((a, b) => a - b);
+        return durations[0];
+    }
+    /**
+     * Returns the time offset between time and referenceTime in seconds. This
+     * function only looks at the actual times within the dates, ignoring both
+     * timezones and dates.
+     *
+     * @param   {DateTime}  time           The time in question
+     * @param   {DateTime}  referenceTime  The reference (earliest) time
+     *
+     * @return  {number}                   The difference in seconds.
+     */
+    function getTimeOffset(time, referenceTime) {
+        // Normalize times. Since Luxon isn't able to do just operations on the time
+        // alone (at least not that I've found it), we need to strip every piece of
+        // information from the dates, and instead make Luxon recreate a DateTime, but
+        // only with diffs in hh:mm:ss.
+        time = DateTime.fromObject({ hour: time.hour, minute: time.minute, second: time.second });
+        referenceTime = DateTime.fromObject({ hour: referenceTime.hour, minute: referenceTime.minute, second: referenceTime.second });
+        return time.diff(referenceTime).as('seconds');
+    }
+    /**
+     * Returns the duration between referenceDate and date in number of days.
+     *
+     * @param   {DateTime}  date           The date in question
+     * @param   {DateTime}  referenceDate  The reference (earliest) date
+     *
+     * @return  {number}                   The number of days between the dates.
+     */
+    function getDayOffset(date, referenceDate) {
+        date = date.startOf('day');
+        referenceDate = referenceDate.startOf('day');
+        return date.diff(referenceDate).as('days');
+    }
 
     const MINIMUM_TICK_HEIGHT = 30;
     function generateTimeGutter() {
@@ -8284,7 +8452,7 @@
         return div;
     }
     function updateGutterTicks$1(timeGutter, startTime, endTime, timeScaleFactor) {
-        const secondsPerDay = endTime.diff(startTime).as('seconds');
+        const secondsPerDay = getTimeOffset(endTime, startTime);
         const pxPerSecond = 1 / timeScaleFactor;
         // NOTE: Ticks should increase or decrease by intervals of 300 seconds (5 minutes)
         let tickSize = 300;
@@ -8323,6 +8491,8 @@
             dayGutter.appendChild(dayTick);
         }
     }
+
+    var bookmarkIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-bookmark\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path></svg>";
 
     function generateScheduleBoard() {
         const div = document.createElement('div');
@@ -8369,18 +8539,16 @@
         card.appendChild(idElem);
         const bookmarkItem = document.createElement('div');
         bookmarkItem.classList.add('bookmark');
-        bookmarkItem.textContent = agenda.hasItem(event.id) ? 'Remove' : 'Add';
+        bookmarkItem.innerHTML = bookmarkIcon;
         card.classList.toggle('bookmarked', agenda.hasItem(event.id));
         bookmarkItem.addEventListener('click', evt => {
             evt.preventDefault();
             evt.stopPropagation();
             if (agenda.hasItem(event.id)) {
                 agenda.removeItem(event.id);
-                bookmarkItem.textContent = 'Add';
             }
             else {
                 agenda.addItem(event.id);
-                bookmarkItem.textContent = 'Remove';
             }
             card.classList.toggle('bookmarked', agenda.hasItem(event.id));
         });
@@ -8439,97 +8607,6 @@
             div.appendChild(h1);
         }
         return div;
-    }
-
-    /**
-     * Given an array of dates, returns the date that has the earliest time of day.
-     *
-     * @param   {DateTime[]}    dates  A list of dates
-     *
-     * @return  {DateTime}         The earliest time of day
-     */
-    function getEarliestTime(dates) {
-        const dt = dates
-            .map(d => d.toISOTime())
-            .filter(d => d !== null)
-            .map(d => DateTime.fromISO(d));
-        return DateTime.min(...dt);
-    }
-    /**
-     * Given an array of dates, returns the date that has the latest time of day.
-     *
-     * @param   {DateTime[]}    dates  A list of dates
-     *
-     * @return  {DateTime}         The latest time of day
-     */
-    function getLatestTime(dates) {
-        const dt = dates
-            .map(d => d.toISOTime())
-            .filter(d => d !== null)
-            .map(d => DateTime.fromISO(d));
-        return DateTime.max(...dt);
-    }
-    /**
-     * Given a list of dates, returns the DateTime that is the earliest one.
-     *
-     * @param   {DateTime[]}    dates  A list of dates
-     *
-     * @return  {DateTime}         The earliest date
-     */
-    function getEarliestDay(dates) {
-        return DateTime.min(...dates);
-    }
-    /**
-     * Given a list of dates, returns the DateTime that is the latest one.
-     *
-     * @param   {DateTime[]}    dates  A list of dates
-     *
-     * @return  {DateTime}         The latest date
-     */
-    function getLatestDay(dates) {
-        return DateTime.max(...dates);
-    }
-    /**
-     * Given a list of startDate/endDate tuples, returns the shortest interval
-     * between those two in seconds.
-     *
-     * @param   {Array<[DateTime, DateTime]>}  events  A list of tuples of start and end Dates
-     *
-     * @return  {number}                       The shortest interval in the array, in seconds.
-     */
-    function getShortestInterval(events) {
-        const durations = events
-            .map(([start, end]) => end.diff(start))
-            .map(d => d.as('seconds'));
-        durations.sort((a, b) => a - b);
-        return durations[0];
-    }
-    /**
-     * Returns the time offset between time and referenceTime in seconds.
-     *
-     * @param   {DateTime}  time           The time in question
-     * @param   {DateTime}  referenceTime  The reference (earliest) time
-     *
-     * @return  {number}                   The difference in seconds.
-     */
-    function getTimeOffset(time, referenceTime) {
-        // Normalize times
-        time = DateTime.fromISO(time.toISOTime());
-        referenceTime = DateTime.fromISO(referenceTime.toISOTime());
-        return time.diff(referenceTime).as('seconds');
-    }
-    /**
-     * Returns the duration between referenceDate and date in number of days.
-     *
-     * @param   {DateTime}  date           The date in question
-     * @param   {DateTime}  referenceDate  The reference (earliest) date
-     *
-     * @return  {number}                   The number of days between the dates.
-     */
-    function getDayOffset(date, referenceDate) {
-        date = date.startOf('day');
-        referenceDate = referenceDate.startOf('day');
-        return date.diff(referenceDate).as('days');
     }
 
     /**
@@ -8953,6 +9030,10 @@ agenda.`, [
             }
             return records.filter(record => matchEvent(record, q));
         }
+        /**
+         * This is the major function of this class. It completely (re)builds the
+         * entire UI, based on any filters, etc.
+         */
         updateUI() {
             var _a;
             const records = this.filterRecords();
