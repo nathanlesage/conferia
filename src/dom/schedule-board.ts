@@ -1,5 +1,6 @@
 import { Agenda } from "../agenda"
 import { CSVRecord } from "../csv"
+import bookmarkIcon from '../icons/bookmark.svg'
 
 export function generateScheduleBoard (): HTMLDivElement {
   const div = document.createElement('div')
@@ -54,17 +55,15 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
 
   const bookmarkItem = document.createElement('div')
   bookmarkItem.classList.add('bookmark')
-  bookmarkItem.textContent = agenda.hasItem(event.id) ? 'Remove' : 'Add'
+  bookmarkItem.innerHTML = bookmarkIcon
   card.classList.toggle('bookmarked', agenda.hasItem(event.id))
   bookmarkItem.addEventListener('click', evt => {
     evt.preventDefault()
     evt.stopPropagation()
     if (agenda.hasItem(event.id)) {
       agenda.removeItem(event.id)
-      bookmarkItem.textContent = 'Add'
     } else {
       agenda.addItem(event.id)
-      bookmarkItem.textContent = 'Remove'
     }
     card.classList.toggle('bookmarked', agenda.hasItem(event.id))
   })

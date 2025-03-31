@@ -183,6 +183,10 @@ export class Conferia {
     return records.filter(record => matchEvent(record, q))
   }
 
+  /**
+   * This is the major function of this class. It completely (re)builds the
+   * entire UI, based on any filters, etc.
+   */
   private updateUI () {
     const records = this.filterRecords()
     const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
