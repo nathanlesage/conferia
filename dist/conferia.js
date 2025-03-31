@@ -9047,8 +9047,9 @@ agenda.`, [
             const latestTime = getLatestTime(dates.flat());
             const earliestDay = getEarliestDay(dates.flat());
             const latestDay = getLatestDay(dates.flat());
-            // Second, the shortest event duration (which determines the vertical resolution)
-            const shortestInterval = getShortestInterval(dates);
+            // Second, the shortest event duration (which determines the vertical
+            // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
+            const shortestInterval = Math.max(300, getShortestInterval(dates));
             // A single "time-slice" is this high
             const TIME_SLICE_WIDTH = shortestInterval / this.timeScaleFactor;
             // A column/day is this wide

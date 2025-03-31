@@ -134,7 +134,7 @@ hr {
       "title title location"
       "content content content"
       "footer-left footer-center footer-right";
-    grid-template-rows: 1rem auto 1rem; /* Make header and footer single-line high */
+    grid-template-rows: auto auto 1rem; /* Make footer single-line high */
     align-items: center;
     overflow: hidden;
 
