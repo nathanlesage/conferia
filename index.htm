@@ -1,0 +1,37 @@
+<!--
+THIS FILE IS INTENDED FOR DEVELOPING PURPOSES. IT IS ALMOST THE SAME FILE AS THE
+DEMO, BUT IT REFERENCES THE UP-TO-DATE DISTRIBUTION FILES INSTEAD OF THE CACHED
+CDN FILES.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conferia Demo</title>
+  <!-- Import Conferia.js -->
+  <script defer src="dist/conferia.js"></script>
+  <link rel="stylesheet" href="dist/conferia.css">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="docs/demo/app.css">
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const conf = new Conferia({
+        parent: document.body,
+        src: 'docs/demo/test_data.csv',
+        groupByLocation: true,
+        eventCardPadding: 10,
+        timeZone: 'Europe/Stockholm'
+      })
+
+      conf.awaitBoot().then(() => {
+        console.log('Conferia booted successfully. Access the instantiated Conferia.js object with `conf`.')
+        window.conf = conf
+      })
+    })
+  </script>
+</head>
+<body>
+</body>
+</html>

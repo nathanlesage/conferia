@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conferia Demo</title>
+  <!-- Import Conferia.js -->
+  <script defer src="https://cdn.jsdelivr.net/gh/nathanlesage/conferia@main/dist/conferia.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nathanlesage/conferia@main/dist/conferia.css">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="app.css">
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const conf = new Conferia({
+        parent: document.getElementById('conferia'),
+        src: 'test_data.csv',
+        groupByLocation: true,
+        eventCardPadding: 10,
+        timeZone: 'Europe/Stockholm'
+      })
+
+      conf.awaitBoot().then(() => {
+        console.log('Conferia booted successfully. Access the instantiated Conferia.js object with `conf`.')
+        window.conf = conf
+      })
+    })
+  </script>
+</head>
+<body>
+  <main>
+    <h1>Conferia.js Demo</h1>
+    <p>
+      Below you can find a demo of Conferia.js, a drop-in solution to create
+      interactive conference agendas based on a simple CSV file. Learn more
+      about Conferia.js <a href="https://nathanlesage.github.io/conferia">in the documentation</a>.
+    </p>
+    <p>
+      This demo utilizes some random generated fake data to showcase the
+      library. Any similarities with real existing people or research projects
+      are mere coincidence.
+    </p>
+    <div id="conferia"></div>
+  </main>
+</body>
+</html>
