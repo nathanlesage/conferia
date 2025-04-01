@@ -8452,29 +8452,36 @@
         return date.diff(referenceDate).as('days');
     }
 
-    const MINIMUM_TICK_HEIGHT = 30;
+    const MINIMUM_TICK_HEIGHT = 25;
     function generateTimeGutter() {
         const div = document.createElement('div');
         div.setAttribute('id', 'conferia-time-gutter');
         return div;
     }
-    function updateGutterTicks$1(timeGutter, startTime, endTime, timeScaleFactor) {
+    /**
+     * Updates the time gutter to reflect the full range of times
+     *
+     * @param   {HTMLElement}  timeGutter  The time gutter DOM element
+     * @param   {DateTime}     startTime   The earliest time available
+     * @param   {DateTime}     endTime     The latest time available
+     * @param   {number}       pps         Pixels per second (of height)
+     */
+    function updateGutterTicks$1(timeGutter, startTime, endTime, pps) {
         const secondsPerDay = getTimeOffset(endTime, startTime);
-        const pxPerSecond = 1 / timeScaleFactor;
         // NOTE: Ticks should increase or decrease by intervals of 300 seconds (5 minutes)
         let tickSize = 300;
-        while (tickSize * pxPerSecond < MINIMUM_TICK_HEIGHT) {
+        while (tickSize * pps < MINIMUM_TICK_HEIGHT) {
             tickSize += 300;
         }
         const tickCount = Math.ceil(secondsPerDay / tickSize);
         // Update the time Gutter accordingly. First, the height. Then, the ticks.
         timeGutter.innerHTML = '';
         // One tick per shortest interval
-        timeGutter.style = `height: ${(tickCount + 1) * tickSize / timeScaleFactor}px;`;
+        timeGutter.style = `height: ${(tickCount + 1) * tickSize * pps}px;`;
         for (let i = 0; i <= tickCount; i++) {
             const tick = document.createElement('div');
             tick.classList.add('tick', 'time');
-            tick.style = `height: ${tickSize / timeScaleFactor}px;`;
+            tick.style = `height: ${tickSize * pps}px;`;
             const tickTime = startTime.plus({ seconds: i * tickSize });
             tick.textContent = tickTime.toLocaleString({ timeStyle: 'short', hourCycle: 'h24' });
             timeGutter.appendChild(tick);
@@ -9062,8 +9069,10 @@ agenda.`, [
          * entire UI, based on any filters, etc.
          */
         updateUI() {
-            var _a;
+            var _a, _b;
+            // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
+            // Then, figure out the axis limits and other information regarding the times.
             const dates = records.map(r => [r.dateStart, r.dateEnd]);
             // First, the vertical (time) and horizontal (day) scale limits
             const earliestTime = getEarliestTime(dates.flat());
@@ -9073,16 +9082,19 @@ agenda.`, [
             // Second, the shortest event duration (which determines the vertical
             // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
             const shortestInterval = Math.max(300, getShortestInterval(dates));
-            // A single "time-slice" is this high
-            const TIME_SLICE_WIDTH = shortestInterval / this.timeScaleFactor;
-            // A column/day is this wide
-            const COLUMN_WIDTH = 250 / this.columnScaleFactor;
             // How many days do we have in total?
             const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
+            // Calculate the "pixels per second," a measure to ensure the events have a
+            // proper "minimum height."
+            const MIN_HEIGHT = 25; // How small should the events be at minimum?
+            const pps = MIN_HEIGHT / shortestInterval;
+            // Now, determine the "raster" size (minimum size for a time interval in
+            // width and height based on the shortest interval)
+            const COLUMN_WIDTH = 250 * this.columnScaleFactor;
             // Determine the room-columns for each individual day. We need to pass this
             // info to the dayGutter updater so that it can add a second "heading row"
             // with the room designations at the corresponding places, AND we need to
-            // offset the events based on that information, too.
+            // offset the events based on that information.
             const roomsPerDay = [];
             for (let i = 0; i < days; i++) {
                 const today = earliestDay.plus({ days: i }).startOf('day');
@@ -9093,9 +9105,8 @@ agenda.`, [
                 allRooms.sort();
                 roomsPerDay[i] = allRooms;
             }
-            // Now, first update the time gutter
-            updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, this.timeScaleFactor);
-            // Second, update the day gutter
+            // Now, update the time and day gutters
+            updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps);
             if (this.opt.groupByLocation) {
                 updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, roomsPerDay);
             }
@@ -9103,22 +9114,23 @@ agenda.`, [
                 updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH);
             }
             // Draw a grid in the scheduleBoard
-            updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, TIME_SLICE_WIDTH);
+            const timeGridInterval = (_a = this.opt.timeGridSeconds) !== null && _a !== void 0 ? _a : shortestInterval;
+            updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
             // Finally, draw the events on the scheduleboard
             this.dom.scheduleBoard.innerHTML = '';
             for (const event of records) {
                 const card = generateEventCard(event, this.agenda);
                 card.addEventListener('click', () => showEventDetailsModal(event));
                 // Place the event on the schedule board
-                const timeOffset = getTimeOffset(event.dateStart, earliestTime) / shortestInterval; // The offset needs to be adjusted
+                const timeOffset = getTimeOffset(event.dateStart, earliestTime);
                 const dayOffset = getDayOffset(event.dateEnd, earliestDay);
                 const withinDayOffset = event.location ? roomsPerDay[dayOffset].indexOf(event.location) : 0;
                 const prevColumnsOffset = roomsPerDay.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0);
-                const eventDuration = getTimeOffset(event.dateEnd, event.dateStart) / shortestInterval;
-                const PADDING = (_a = this.opt.eventCardPadding) !== null && _a !== void 0 ? _a : 10;
-                // Prevent negative heights
-                const height = Math.max(TIME_SLICE_WIDTH, eventDuration * TIME_SLICE_WIDTH - PADDING * 2);
-                card.style.top = `${timeOffset * TIME_SLICE_WIDTH + PADDING}px`;
+                const eventDuration = getTimeOffset(event.dateEnd, event.dateStart);
+                const PADDING = (_b = this.opt.eventCardPadding) !== null && _b !== void 0 ? _b : 10;
+                // Ensure each event is *at least* shortestInterval high.
+                const height = Math.max(pps * shortestInterval, eventDuration * pps - PADDING * 2);
+                card.style.top = `${timeOffset * pps + PADDING}px`;
                 card.style.height = `${height}px`;
                 // left & width are more complex
                 if (this.opt.groupByLocation) {
@@ -9144,8 +9156,14 @@ agenda.`, [
             }
             this.updateUI();
         }
+        /**
+         * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1
+         * for default zoom, 1.1 for 110% zoom factor, or 0.9 for 90% zoom factor.)
+         *
+         * @param   {number}  factor  The new factor
+         */
         colZoom(factor) {
-            this.columnScaleFactor += factor;
+            this.columnScaleFactor = factor;
             if (this.columnScaleFactor < 1) {
                 this.columnScaleFactor = 1;
             }

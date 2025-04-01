@@ -82,6 +82,17 @@ export interface ConferiaOptions {
    */
   eventCardPadding?: number
   /**
+   * Specifies a specific grid line interval. By default, the grid lines will
+   * mark the smallest interval available. With this setting, you can "fix" the
+   * grid size to a specified number. Some values would be:
+   *
+   * * `300`: 5 minutes
+   * * `900`: 15 minutes
+   * * `1800`: 30 minutes
+   * * `3600`: 1 hour
+   */
+  timeGridSeconds?: number
+  /**
    * An optional function that you can use to correct the dates in your CSV
    * file. Use this to fix datetimes, if whichever application you peruse to
    * generate the CSV file cannot properly output ISO 8601 strings (such as
@@ -203,8 +214,12 @@ export class Conferia {
    * entire UI, based on any filters, etc.
    */
   private updateUI () {
+    // Before doing anything, retrieve the records we are supposed to show.
     const records = this.filterRecords()
+
+    // Then, figure out the axis limits and other information regarding the times.
     const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
+
     // First, the vertical (time) and horizontal (day) scale limits
     const earliestTime = getEarliestTime(dates.flat())
     const latestTime = getLatestTime(dates.flat())
@@ -214,19 +229,22 @@ export class Conferia {
     // Second, the shortest event duration (which determines the vertical
     // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
     const shortestInterval = Math.max(300, getShortestInterval(dates))
-
-    // A single "time-slice" is this high
-    const TIME_SLICE_WIDTH = shortestInterval / this.timeScaleFactor
-    // A column/day is this wide
-    const COLUMN_WIDTH = 250 / this.columnScaleFactor
-
     // How many days do we have in total?
     const days = Math.ceil(latestDay.diff(earliestDay).as('days'))
+
+    // Calculate the "pixels per second," a measure to ensure the events have a
+    // proper "minimum height."
+    const MIN_HEIGHT = 25 // How small should the events be at minimum?
+    const pps = MIN_HEIGHT / shortestInterval
+
+    // Now, determine the "raster" size (minimum size for a time interval in
+    // width and height based on the shortest interval)
+    const COLUMN_WIDTH = 250 * this.columnScaleFactor
 
     // Determine the room-columns for each individual day. We need to pass this
     // info to the dayGutter updater so that it can add a second "heading row"
     // with the room designations at the corresponding places, AND we need to
-    // offset the events based on that information, too.
+    // offset the events based on that information.
     const roomsPerDay: Array<string[]> = []
     for (let i = 0; i < days; i++) {
       const today = earliestDay.plus({ days: i }).startOf('day')
@@ -238,10 +256,9 @@ export class Conferia {
       roomsPerDay[i] = allRooms
     }
 
-    // Now, first update the time gutter
-    updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, this.timeScaleFactor)
+    // Now, update the time and day gutters
+    updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, pps)
 
-    // Second, update the day gutter
     if (this.opt.groupByLocation) {
       updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, roomsPerDay)
     } else {
@@ -249,7 +266,8 @@ export class Conferia {
     }
 
     // Draw a grid in the scheduleBoard
-    updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, TIME_SLICE_WIDTH)
+    const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
+    updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps)
 
     // Finally, draw the events on the scheduleboard
     this.dom.scheduleBoard.innerHTML = ''
@@ -258,20 +276,20 @@ export class Conferia {
       card.addEventListener('click', () => showEventDetailsModal(event))
 
       // Place the event on the schedule board
-      const timeOffset = getTimeOffset(event.dateStart, earliestTime) / shortestInterval // The offset needs to be adjusted
+      const timeOffset = getTimeOffset(event.dateStart, earliestTime)
       const dayOffset = getDayOffset(event.dateEnd, earliestDay)
 
       const withinDayOffset = event.location ? roomsPerDay[dayOffset].indexOf(event.location) : 0
       const prevColumnsOffset = roomsPerDay.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0)
       
-      const eventDuration = getTimeOffset(event.dateEnd, event.dateStart) / shortestInterval
+      const eventDuration = getTimeOffset(event.dateEnd, event.dateStart)
 
       const PADDING = this.opt.eventCardPadding ?? 10
 
-      // Prevent negative heights
-      const height = Math.max(TIME_SLICE_WIDTH, eventDuration * TIME_SLICE_WIDTH - PADDING * 2)
+      // Ensure each event is *at least* shortestInterval high.
+      const height = Math.max(pps * shortestInterval, eventDuration * pps - PADDING * 2)
 
-      card.style.top = `${timeOffset * TIME_SLICE_WIDTH + PADDING}px`
+      card.style.top = `${timeOffset * pps + PADDING}px`
       card.style.height = `${height}px`
 
       // left & width are more complex
@@ -299,8 +317,14 @@ export class Conferia {
     this.updateUI()
   }
 
+  /**
+   * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1
+   * for default zoom, 1.1 for 110% zoom factor, or 0.9 for 90% zoom factor.)
+   *
+   * @param   {number}  factor  The new factor
+   */
   public colZoom (factor: number) {
-    this.columnScaleFactor += factor
+    this.columnScaleFactor = factor
     if (this.columnScaleFactor < 1) {
       this.columnScaleFactor = 1
     }
