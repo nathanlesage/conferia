@@ -61,6 +61,13 @@ export function showEventDetailsModal (event: CSVRecord): void {
 function generateEventDOMStructure (event: CSVRecord): HTMLElement {
   const wrapper = generateDialogWrapper()
 
+  const time = document.createElement('p')
+  time.classList.add('time')
+  wrapper.appendChild(time)
+  const fromString = event.dateStart.toLocaleString({ timeStyle: 'short' })
+  const toString = event.dateEnd.toLocaleString({ timeStyle: 'short' })
+  time.textContent = `${fromString} – ${toString}`
+
   if (event.chair !== undefined && event.chair !== '') {
     const chair = document.createElement('p')
     chair.classList.add('chair')
