@@ -138,6 +138,16 @@ hr {
     align-items: center;
     overflow: hidden;
 
+    &:not(.meta) {
+      /* Meta events are usually without location and thus span the entire
+       * column width. Pushing all other events to the front ensures that they
+       * overlay the meta events (such as coffee breaks), so that longer events
+       * that continue after such a coffee or lunch break can be displayed
+       * appropriately.
+       */
+      z-index: 1;
+    }
+
     &.bookmarked {
       border-color: var(--accent-color);
 
