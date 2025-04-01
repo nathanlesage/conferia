@@ -9006,7 +9006,6 @@ agenda.`, [
             this.query = '';
             this.opt = opt;
             this.records = [];
-            this.timeScaleFactor = 20; // TODO: Dynamically calculate
             this.columnScaleFactor = 1;
             this.showOnlyPersonalAgenda = false;
             this.agenda = new Agenda();
@@ -9157,13 +9156,6 @@ agenda.`, [
                 }
                 this.dom.scheduleBoard.appendChild(card);
             }
-        }
-        timeZoom(factor) {
-            this.timeScaleFactor -= factor;
-            if (this.timeScaleFactor < 1) {
-                this.timeScaleFactor = 1;
-            }
-            this.updateUI();
         }
         /**
          * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1
