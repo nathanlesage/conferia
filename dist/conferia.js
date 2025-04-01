@@ -8665,7 +8665,7 @@
         dialog.appendChild(content);
         const idElem = document.createElement('p');
         idElem.classList.add('event-id');
-        idElem.textContent = 'Event ID: ' + event.id;
+        idElem.textContent = event.id;
         dialog.appendChild(idElem);
         const closeButton = document.createElement('button');
         closeButton.classList.add('close-button');
