@@ -8145,7 +8145,10 @@
         };
         const rows = csvData
             .split(/[\n\r]+/)
-            .filter(row => row.trim() !== '');
+            .filter(row => row.trim() !== '')
+            // Remove empty rows (this happens if users space out the events in their
+            // spreadsheet to group them logically.)
+            .filter(row => !/^[\s,]+$/.test(row));
         if (rows.length < 2) {
             throw new Error('Invalid CSV: Less than 2 rows!');
         }
