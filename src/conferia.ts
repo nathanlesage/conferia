@@ -113,8 +113,6 @@ export class Conferia {
   private readonly opt: ConferiaOptions
   private loadPromise: Promise<void>
   private records: CSVRecord[]
-  // Factor by which to scale the vertical time gutter (1 means: 1px per second)
-  private timeScaleFactor: number
   private columnScaleFactor: number
   private readonly dom: DOMStructure
   private query: string
@@ -126,7 +124,6 @@ export class Conferia {
     this.query = ''
     this.opt = opt
     this.records = []
-    this.timeScaleFactor = 20 // TODO: Dynamically calculate
     this.columnScaleFactor = 1
     this.showOnlyPersonalAgenda = false
 
@@ -307,14 +304,6 @@ export class Conferia {
 
       this.dom.scheduleBoard.appendChild(card)
     }
-  }
-
-  public timeZoom (factor: number) {
-    this.timeScaleFactor -= factor
-    if (this.timeScaleFactor < 1) {
-      this.timeScaleFactor = 1
-    }
-    this.updateUI()
   }
 
   /**
