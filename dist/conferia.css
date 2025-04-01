@@ -119,6 +119,9 @@ hr {
   }
 }
 
+/* GENERIC STYLES -- TODO: Move to their own section */
+p.author { font-style: italic; }
+
 #conferia-schedule-board {
   grid-area: schedule;
   position: relative;
@@ -137,10 +140,43 @@ hr {
     .event-header {
       display: flex;
       justify-content: space-between;
+
+      h3.title {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 100%;
+        grid-area: title;
+      }
+  
+      p.location {
+        margin: 0;
+        text-align: right;
+      }
     }
+
+    .event-content {
+      overflow: auto;
+      flex-grow: 1; /* Ensure that the content takes most space */
+      font-size: 0.8rem;
+    }
+
     .event-footer {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+
+      p.event-id {
+        margin: 0;
+        font-size: 0.6rem;
+        line-height: 0.6rem;
+        font-family: monospace;
+      }
+  
+      div.bookmark {
+        cursor: pointer;
+        font-size: 0.8rem;
+        text-align: right;
+      }
     }
 
     &:not(.meta) {
@@ -159,35 +195,6 @@ hr {
       .bookmark svg {
         color: var(--accent-color);
       }
-    }
-
-    h3.title {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 100%;
-      grid-area: title;
-    }
-
-    p.location {
-      margin: 0;
-      text-align: right;
-    }
-
-    p.event-id {
-      margin: 0;
-      font-size: 0.6rem;
-      line-height: 0.6rem;
-      font-family: monospace;
-    }
-
-    div.bookmark {
-      cursor: pointer;
-      font-size: 0.8rem;
-      text-align: right;
-    }
-
-    div.content {
-      overflow: auto;
     }
   }
 }

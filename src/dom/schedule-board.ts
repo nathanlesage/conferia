@@ -41,7 +41,7 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
   // Card content
   // ==========================================
   const content = document.createElement('div')
-  content.classList.add('content')
+  content.classList.add('event-content')
   card.appendChild(content)
 
   if (event.type === 'session') {
@@ -53,6 +53,11 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
       ol.appendChild(li)
     }
     content.appendChild(ol)
+  } else if (event.type === 'keynote' || event.type === 'single') {
+    const author = document.createElement('p')
+    author.classList.add('author')
+    author.textContent = event.author
+    content.appendChild(author)
   }
 
   // Card footer
