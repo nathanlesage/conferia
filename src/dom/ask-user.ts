@@ -25,6 +25,10 @@ export async function askUser (title: string, message: string, buttons: string[]
     content.textContent = message
     dialog.appendChild(content)
 
+    const buttonGroup = document.createElement('div')
+    buttonGroup.classList.add('button-group')
+    dialog.appendChild(buttonGroup)
+
     for (let i = 0; i < buttons.length; i++) {
       const buttonElement = document.createElement('button')
       buttonElement.textContent = buttons[i]
@@ -32,7 +36,7 @@ export async function askUser (title: string, message: string, buttons: string[]
         resolve(i)
         dialog.close()
       })
-      dialog.appendChild(buttonElement)
+      buttonGroup.appendChild(buttonElement)
     }
 
     document.body.appendChild(dialog)

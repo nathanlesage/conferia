@@ -1,6 +1,8 @@
 /* BEGIN: CONFERIA VARIABLES */
 :root {
   --schedule-board-background: #f0f0f0;
+  --button-background: #f0f0f0;
+  --button-background-hover: #e0e0e0;
   --schedule-board-grid: #dfdfdf;
   --element-background: white;
   --font-color: #333;
@@ -24,30 +26,38 @@
 }
 /* END: CONFERIA VARIABLES */
 
-details {
-  margin-left: 20px;
+/* BEGIN: CONFERIA-SCOPED GENERICS */
+dialog.conferia-dialog, #conferia-wrapper {
+  hr {
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    margin: 20px 10px;
+  }
 
-  & > summary {
-    cursor: pointer;
-    outline: none;
-    list-style-type: ' + ';
-    list-style-position: outside;
+  button {
+    background-color: var(--button-background);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 18px;
 
-    &::marker {
-      font-size: 1.5rem;
+    &:hover {
+      background-color: var(--button-background-hover);
     }
   }
 
-  &[open] > summary {
-    list-style-type: ' - '
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
   }
+
+  p.author { font-style: italic; }
 }
 
-hr {
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  margin: 20px 10px;
-}
+/* END: CONFERIA-SCOPED GENERICS */
 
 #conferia-toolbar {
   display: flex;
@@ -118,9 +128,6 @@ hr {
     }
   }
 }
-
-/* GENERIC STYLES -- TODO: Move to their own section */
-p.author { font-style: italic; }
 
 #conferia-schedule-board {
   grid-area: schedule;
@@ -211,11 +218,30 @@ dialog.conferia-dialog {
   &::backdrop {
     background-color: rgba(0, 0, 0, 0.4);
   }
+
+  details {
+    margin-left: 20px;
+  
+    & > summary {
+      cursor: pointer;
+      outline: none;
+      list-style-type: ' + ';
+      list-style-position: outside;
+  
+      &::marker {
+        font-size: 1.5rem;
+      }
+    }
+  
+    &[open] > summary {
+      list-style-type: ' - '
+    }
+  }
 }
 
 dialog.conferia-event-details {
   display: grid;
-  align-items: center;
+  align-items: stretch;
   grid-template-areas:
     "title title location"
     "cnt cnt cnt"
@@ -228,7 +254,6 @@ dialog.conferia-event-details {
 
   details.presentation summary p.author {
     margin: 0;
-    font-style: italic;
   }
   
   p.location {
@@ -241,6 +266,8 @@ dialog.conferia-event-details {
     grid-area: footer-left;
     font-size: 0.8rem;
     font-family: monospace;
+    display: flex;
+    align-items: center;
   }
 
   h3.title {

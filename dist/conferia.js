@@ -8776,6 +8776,9 @@
                 const content = document.createElement('div');
                 content.textContent = message;
                 dialog.appendChild(content);
+                const buttonGroup = document.createElement('div');
+                buttonGroup.classList.add('button-group');
+                dialog.appendChild(buttonGroup);
                 for (let i = 0; i < buttons.length; i++) {
                     const buttonElement = document.createElement('button');
                     buttonElement.textContent = buttons[i];
@@ -8783,7 +8786,7 @@
                         resolve(i);
                         dialog.close();
                     });
-                    dialog.appendChild(buttonElement);
+                    buttonGroup.appendChild(buttonElement);
                 }
                 document.body.appendChild(dialog);
                 dialog.addEventListener('close', () => {
