@@ -8516,16 +8516,23 @@
         const card = document.createElement('div');
         card.classList.add('event', event.type);
         card.style.position = 'absolute';
+        // Card header
+        // ==========================================
+        const header = document.createElement('div');
+        header.classList.add('event-header');
+        card.appendChild(header);
         const title = document.createElement('h3');
         title.classList.add('title');
         title.textContent = event.title;
-        card.appendChild(title);
+        header.appendChild(title);
         if (event.location !== undefined) {
             const loc = document.createElement('p');
             loc.classList.add('location');
             loc.textContent = event.location;
-            card.appendChild(loc);
+            header.appendChild(loc);
         }
+        // Card content
+        // ==========================================
         const content = document.createElement('div');
         content.classList.add('content');
         card.appendChild(content);
@@ -8539,11 +8546,16 @@
             }
             content.appendChild(ol);
         }
+        // Card footer
+        // ==========================================
+        const footer = document.createElement('div');
+        footer.classList.add('event-footer');
+        card.appendChild(footer);
         // Footer information
         const idElem = document.createElement('p');
         idElem.classList.add('event-id');
         idElem.textContent = event.id;
-        card.appendChild(idElem);
+        footer.appendChild(idElem);
         const bookmarkItem = document.createElement('div');
         bookmarkItem.classList.add('bookmark');
         bookmarkItem.innerHTML = bookmarkIcon;
@@ -8559,7 +8571,7 @@
             }
             card.classList.toggle('bookmarked', agenda.hasItem(event.id));
         });
-        card.appendChild(bookmarkItem);
+        footer.appendChild(bookmarkItem);
         return card;
     }
 
