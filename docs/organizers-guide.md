@@ -226,6 +226,22 @@ new Conferfia({
 // ... other code ...
 ```
 
+**Example: Converting Google Docs Dates**
+
+This is a real-life example: When preparing a first set of events for use with
+Conferia.js, I inserted the dates to Google Sheets in the format
+`YYYY-MM-DDTHH:MM:SS`. Google (correctly) assumed this was a date, but
+unfortunately re-formatted the dates and removed the `T` in the middle, making
+the library unable to parse the dates. We ended up using the following parser
+function to fix this:
+
+```javascript
+dateParser (dateString, luxon) {
+  // Input: YYYY-MM-DD HH:MM:SS
+  return dateString.split(' ').join('T')
+}
+```
+
 ## A Note on Times and Timezones
 
 Conferia.js requires you to provide time and date using the ISO 8601 format. The
