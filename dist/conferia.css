@@ -63,6 +63,13 @@ dialog.conferia-dialog, #conferia-wrapper {
   display: flex;
   padding: 10px;
   gap: 10px;
+  align-items: stretch;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 }
 
 #conferia-schedule-wrapper {
