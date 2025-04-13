@@ -77,6 +77,11 @@ export interface ConferiaOptions {
    */
   timeZone?: string
   /**
+   * Specifies the maximum height of the entire wrapper. Defaults to 100% of the
+   * visible window height. Provide a number of pixels.
+   */
+  maxHeight?: number
+  /**
    * Allows you to specify some padding for the event cards on the calendar
    * (default: 10).
    */
@@ -130,7 +135,7 @@ export class Conferia {
     this.agenda = new Agenda()
 
     // Mount everything
-    this.dom = generateDOMStructure(opt.title)
+    this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined)
     this.opt.parent.appendChild(this.dom.wrapper)
 
     // Attach event listeners
