@@ -7,10 +7,15 @@
   --element-background: white;
   --font-color: #333;
   --element-shadow-color: rgba(0, 0, 0, .1);
+  --input-background: white;
+  --placeholder-color: #666;
 
   --border-color: #c4c4c4;
 
-  --accent-color: #f705dc61;
+  --accent-color: #27538c;
+
+  /* Non-color variables */
+  --cf-border-radius: 8px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,28 +25,52 @@
     --element-background: #333;
     --font-color: #eee;
     --element-shadow-color: rgba(0, 0, 0, .3);
+    --input-background: #333;
+    --placeholder-color: #aaa;
   
     --border-color: #5e5e5e;
+
+    --accent-color: #9ec8ff;
   }
 }
 /* END: CONFERIA VARIABLES */
 
 /* BEGIN: CONFERIA-SCOPED GENERICS */
 dialog.conferia-dialog, #conferia-wrapper {
+  * {
+    outline-color: var(--accent-color);
+  }
+
   hr {
     border: none;
     border-bottom: 1px solid var(--border-color);
     margin: 20px 10px;
   }
 
+  a {
+    color: var(--accent-color);
+  }
+
   button {
     background-color: var(--button-background);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: var(--cf-border-radius);
     padding: 6px 18px;
 
     &:hover {
       background-color: var(--button-background-hover);
+    }
+  }
+
+  input, select, textarea {
+    padding: 6px;
+    border-radius: var(--cf-border-radius);
+    border: 1px solid var(--border-color);
+    background-color: var(--input-background);
+    color: inherit;
+
+    &::placeholder {
+      color: var(--placeholder-color);
     }
   }
 
@@ -59,11 +88,32 @@ dialog.conferia-dialog, #conferia-wrapper {
 
 /* END: CONFERIA-SCOPED GENERICS */
 
+#conferia-wrapper {
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#conferia-footer {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-bottom-left-radius: var(--cf-border-radius);
+  border-bottom-right-radius: var(--cf-border-radius);
+}
+
 #conferia-toolbar {
   display: flex;
   padding: 10px;
   gap: 10px;
   align-items: stretch;
+
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-top-left-radius: var(--cf-border-radius);
+  border-top-right-radius: var(--cf-border-radius);
 
   label {
     display: flex;
@@ -145,7 +195,7 @@ dialog.conferia-dialog, #conferia-wrapper {
     box-shadow: 5px 5px 5px 0px var(--element-shadow-color);
     padding: 6px;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: var(--cf-border-radius);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -216,7 +266,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 dialog.conferia-dialog {
   width: min(100%, 600px);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--cf-border-radius);
   background-color: var(--element-background);
   color: var(--font-color);
   box-shadow: 10px 10px 10px 0px var(--element-shadow-color);

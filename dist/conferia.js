@@ -8610,7 +8610,15 @@
         return { toolbar, filter, personalAgendaToggle, toIcalButton };
     }
 
-    function generateDOMStructure(title) {
+    /**
+     * Generates the primary Conferia.js DOM structure.
+     *
+     * @param   {string}        title      The optional title
+     * @param   {string}        maxHeight  An optional max height string (e.g., `100vh`)
+     *
+     * @return  {DOMStructure}             The DOM structure
+     */
+    function generateDOMStructure(title, maxHeight) {
         const wrapper = generateWrapper(title);
         const dayGutter = generateDayGutter();
         const timeGutter = generateTimeGutter();
@@ -8622,17 +8630,32 @@
         scheduleWrapper.appendChild(timeGutter);
         scheduleWrapper.appendChild(scheduleBoard);
         wrapper.appendChild(scheduleWrapper);
+        const footer = generateFooter();
+        wrapper.appendChild(footer);
         return {
             wrapper, timeGutter, dayGutter, scheduleBoard,
             filter, personalAgendaToggle, toIcalButton
         };
     }
+    /**
+     * Generates the schedule board wrapper
+     *
+     * @return  {HTMLDivElement}  The wrapper DIV
+     */
     function generateScheduleWrapper() {
         const div = document.createElement('div');
         div.setAttribute('id', 'conferia-schedule-wrapper');
         return div;
     }
-    function generateWrapper(title) {
+    /**
+     * Generates the outer wrapper
+     *
+     * @param   {string}          title      The optional title
+     * @param   {string}          maxHeight  The optional max Height property
+     *
+     * @return  {HTMLDivElement}             The wrapper DIV
+     */
+    function generateWrapper(title, maxHeight) {
         const div = document.createElement('div');
         div.setAttribute('id', 'conferia-wrapper');
         if (title !== undefined) {
@@ -8640,6 +8663,19 @@
             h1.textContent = title;
             div.appendChild(h1);
         }
+        return div;
+    }
+    /**
+     * Generates the Conferia.js footer
+     *
+     * @return  {HTMLDivElement}  The footer DIV
+     */
+    function generateFooter() {
+        const div = document.createElement('div');
+        div.setAttribute('id', 'conferia-footer');
+        const copy = document.createElement('span');
+        copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> &copy 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`;
+        div.appendChild(copy);
         return div;
     }
 
@@ -9010,7 +9046,7 @@ agenda.`, [
             this.showOnlyPersonalAgenda = false;
             this.agenda = new Agenda();
             // Mount everything
-            this.dom = generateDOMStructure(opt.title);
+            this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined);
             this.opt.parent.appendChild(this.dom.wrapper);
             // Attach event listeners
             this.dom.filter.addEventListener('keyup', () => {
@@ -9092,6 +9128,14 @@ agenda.`, [
             const shortestInterval = Math.max(300, getShortestInterval(dates));
             // How many days do we have in total?
             const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
+            // DEBUG START
+            const counter = records
+                .map(r => getTimeOffset(r.dateEnd, r.dateStart))
+                .reduce((prev, cur) => { cur in prev ? prev[cur] += 1 : prev[cur] = 1; return prev; }, {});
+            const vals = Object.entries(counter).map(([int, cnt]) => parseInt(int, 10) * cnt);
+            const mean = vals.reduce((prev, cur) => prev + cur, 0) / records.length;
+            console.log({ counter, mean });
+            // DEBUG END
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
             const MIN_HEIGHT = 25; // How small should the events be at minimum?
