@@ -8141,7 +8141,12 @@
             if (dateParser !== undefined) {
                 isoDate = dateParser(isoDate, DateTime);
             }
-            return DateTime.fromISO(isoDate, { zone: timeZone });
+            try {
+                return DateTime.fromISO(isoDate, { zone: timeZone });
+            }
+            catch (err) {
+                throw new Error(`Could not parse date string to ISO: ${isoDate}`);
+            }
         };
         const rows = csvData
             .split(/[\n\r]+/)
@@ -8200,8 +8205,8 @@
             if (row.length !== EXPECTED_COLS) {
                 throw new Error(`Wrong number of columns in row (${row.length}; expected ${EXPECTED_COLS}) in row: ${row.join(',')}`);
             }
-            const start = row[DATE_START_IDX];
-            const end = row[DATE_END_IDX];
+            const start = parseISODate(row[DATE_START_IDX]);
+            const end = parseISODate(row[DATE_END_IDX]);
             const type = row[TYPE_IDX];
             const title = row[TITLE_IDX];
             const abstract = row[ABSTRACT_IDX];
@@ -8210,15 +8215,15 @@
             const session = row[SESSION_IDX];
             const sessionOrder = row[SESSION_ORDER_IDX];
             const chair = row[CHAIR_IDX];
-            const id = hash(start + end + type + title);
+            const id = hash(String(start) + String(end) + type + title);
             switch (type) {
                 case 'session_presentation':
                     // NOTE that we place session presentations in a different array to
                     // simplify the interface the rest of the library has to work with.
                     onlySessionPresentations.push({
                         type: 'session_presentation',
-                        dateStart: parseISODate(start),
-                        dateEnd: parseISODate(end),
+                        dateStart: start,
+                        dateEnd: end,
                         title, abstract, author, location, session, chair, id,
                         sessionOrder: parseInt(sessionOrder, 10)
                     });
@@ -8226,32 +8231,32 @@
                 case 'keynote':
                     returnValue.push({
                         type: 'keynote',
-                        dateStart: parseISODate(start),
-                        dateEnd: parseISODate(end),
+                        dateStart: start,
+                        dateEnd: end,
                         title, abstract, author, location, chair, id
                     });
                     break;
                 case 'meta':
                     returnValue.push({
                         type: 'meta',
-                        dateStart: parseISODate(start),
-                        dateEnd: parseISODate(end),
+                        dateStart: start,
+                        dateEnd: end,
                         title, location, id
                     });
                     break;
                 case 'single':
                     returnValue.push({
                         type: 'single',
-                        dateStart: parseISODate(start),
-                        dateEnd: parseISODate(end),
+                        dateStart: start,
+                        dateEnd: end,
                         title, location, abstract, author, chair, id
                     });
                     break;
                 case 'special':
                     returnValue.push({
                         type: 'special',
-                        dateStart: parseISODate(start),
-                        dateEnd: parseISODate(end),
+                        dateStart: start,
+                        dateEnd: end,
                         title, location, abstract, author, chair, id
                     });
                     break;
@@ -9128,14 +9133,6 @@ agenda.`, [
             const shortestInterval = Math.max(300, getShortestInterval(dates));
             // How many days do we have in total?
             const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
-            // DEBUG START
-            const counter = records
-                .map(r => getTimeOffset(r.dateEnd, r.dateStart))
-                .reduce((prev, cur) => { cur in prev ? prev[cur] += 1 : prev[cur] = 1; return prev; }, {});
-            const vals = Object.entries(counter).map(([int, cnt]) => parseInt(int, 10) * cnt);
-            const mean = vals.reduce((prev, cur) => prev + cur, 0) / records.length;
-            console.log({ counter, mean });
-            // DEBUG END
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
             const MIN_HEIGHT = 25; // How small should the events be at minimum?
@@ -9223,14 +9220,20 @@ agenda.`, [
          */
         load() {
             return __awaiter(this, void 0, void 0, function* () {
-                const response = yield fetch(this.opt.src);
-                const data = yield response.text();
-                const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser);
-                if (this.opt.debug) {
-                    console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`);
-                    console.log({ csv });
+                try {
+                    const response = yield fetch(this.opt.src);
+                    const data = yield response.text();
+                    const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser);
+                    if (this.opt.debug) {
+                        console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`);
+                        console.log({ csv });
+                    }
+                    this.records = csv;
                 }
-                this.records = csv;
+                catch (err) {
+                    console.error(`Conferia could not load data: ${err.message}`);
+                    console.error(err.message);
+                }
             });
         }
         /**

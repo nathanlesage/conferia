@@ -55,7 +55,12 @@ export function parseCsv (csvData: string, timeZone?: string, dateParser?: (date
     if (dateParser !== undefined) {
       isoDate = dateParser(isoDate, DateTime)
     }
-    return DateTime.fromISO(isoDate, { zone: timeZone })
+
+    try {
+      return DateTime.fromISO(isoDate, { zone: timeZone })
+    } catch (err: any) {
+      throw new Error(`Could not parse date string to ISO: ${isoDate}`)
+    }
   }
 
   const rows = csvData
@@ -122,8 +127,8 @@ export function parseCsv (csvData: string, timeZone?: string, dateParser?: (date
       throw new Error(`Wrong number of columns in row (${row.length}; expected ${EXPECTED_COLS}) in row: ${row.join(',')}`)
     }
   
-    const start = row[DATE_START_IDX]
-    const end = row[DATE_END_IDX]
+    const start = parseISODate(row[DATE_START_IDX])
+    const end = parseISODate(row[DATE_END_IDX])
     const type = row[TYPE_IDX]
     const title = row[TITLE_IDX]
     const abstract = row[ABSTRACT_IDX]
@@ -133,7 +138,7 @@ export function parseCsv (csvData: string, timeZone?: string, dateParser?: (date
     const sessionOrder = row[SESSION_ORDER_IDX]
     const chair = row[CHAIR_IDX]
 
-    const id = hash(start + end + type + title)
+    const id = hash(String(start) + String(end) + type + title)
 
     switch (type as CSVRecord["type"] & 'session_presentation') {
       case 'session_presentation':
@@ -141,8 +146,8 @@ export function parseCsv (csvData: string, timeZone?: string, dateParser?: (date
         // simplify the interface the rest of the library has to work with.
         onlySessionPresentations.push({
           type: 'session_presentation',
-          dateStart: parseISODate(start),
-          dateEnd: parseISODate(end),
+          dateStart: start,
+          dateEnd: end,
           title, abstract, author, location, session, chair, id,
           sessionOrder: parseInt(sessionOrder, 10)
         })
@@ -150,32 +155,32 @@ export function parseCsv (csvData: string, timeZone?: string, dateParser?: (date
       case 'keynote':
         returnValue.push({
           type: 'keynote',
-          dateStart: parseISODate(start),
-          dateEnd: parseISODate(end),
+          dateStart: start,
+          dateEnd: end,
           title, abstract, author, location, chair, id
         })
         break
       case 'meta':
         returnValue.push({
           type: 'meta',
-          dateStart: parseISODate(start),
-          dateEnd: parseISODate(end),
+          dateStart: start,
+          dateEnd: end,
           title, location, id
         })
         break
       case 'single':
         returnValue.push({
           type: 'single',
-          dateStart: parseISODate(start),
-          dateEnd: parseISODate(end),
+          dateStart: start,
+          dateEnd: end,
           title, location, abstract, author, chair, id
         })
         break
       case 'special':
         returnValue.push({
           type: 'special',
-          dateStart: parseISODate(start),
-          dateEnd: parseISODate(end),
+          dateStart: start,
+          dateEnd: end,
           title, location, abstract, author, chair, id
         })
         break

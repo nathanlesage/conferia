@@ -333,16 +333,21 @@ export class Conferia {
    * @return  {Promise<Conferia>}       The object
    */
   private async load (): Promise<void> {
-    const response = await fetch(this.opt.src)
-    const data = await response.text()
-    const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser)
-
-    if (this.opt.debug) {
-      console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`)
-      console.log({ csv })
+    try {
+      const response = await fetch(this.opt.src)
+      const data = await response.text()
+      const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser)
+  
+      if (this.opt.debug) {
+        console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`)
+        console.log({ csv })
+      }
+  
+      this.records = csv
+    } catch (err: any) {
+      console.error(`Conferia could not load data: ${err.message}`)
+      console.error(err.message)
     }
-
-    this.records = csv
   }
 
   /**
