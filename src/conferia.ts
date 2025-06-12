@@ -223,11 +223,13 @@ export class Conferia {
     const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
 
     // First, the vertical (time) and horizontal (day) scale limits. Default to
-    // now in case the records have been filtered to zero length.
-    const earliestTime = getEarliestTime(dates.flat()) ?? DateTime.now()
-    const latestTime = getLatestTime(dates.flat()) ?? DateTime.now()
-    const earliestDay = getEarliestDay(dates.flat()) ?? DateTime.now()
-    const latestDay = getLatestDay(dates.flat()) ?? DateTime.now()
+    // an hour around right now to display at least something. Later on we can
+    // add an "error" card.
+    const now = DateTime.now()
+    const earliestTime = getEarliestTime(dates.flat()) ?? now
+    const latestTime = getLatestTime(dates.flat()) ?? now.plus({ hour: 1 })
+    const earliestDay = getEarliestDay(dates.flat()) ?? now
+    const latestDay = getLatestDay(dates.flat()) ?? now.plus({ day: 1 })
 
     // Second, the shortest event duration (which determines the vertical
     // resolution). Minimum: 5 minutes (in case there are "zero-length" events)

@@ -9143,11 +9143,13 @@ agenda.`, [
             // Then, figure out the axis limits and other information regarding the times.
             const dates = records.map(r => [r.dateStart, r.dateEnd]);
             // First, the vertical (time) and horizontal (day) scale limits. Default to
-            // now in case the records have been filtered to zero length.
-            const earliestTime = (_a = getEarliestTime(dates.flat())) !== null && _a !== void 0 ? _a : DateTime.now();
-            const latestTime = (_b = getLatestTime(dates.flat())) !== null && _b !== void 0 ? _b : DateTime.now();
-            const earliestDay = (_c = getEarliestDay(dates.flat())) !== null && _c !== void 0 ? _c : DateTime.now();
-            const latestDay = (_d = getLatestDay(dates.flat())) !== null && _d !== void 0 ? _d : DateTime.now();
+            // an hour around right now to display at least something. Later on we can
+            // add an "error" card.
+            const now = DateTime.now();
+            const earliestTime = (_a = getEarliestTime(dates.flat())) !== null && _a !== void 0 ? _a : now;
+            const latestTime = (_b = getLatestTime(dates.flat())) !== null && _b !== void 0 ? _b : now.plus({ hour: 1 });
+            const earliestDay = (_c = getEarliestDay(dates.flat())) !== null && _c !== void 0 ? _c : now;
+            const latestDay = (_d = getLatestDay(dates.flat())) !== null && _d !== void 0 ? _d : now.plus({ day: 1 });
             // Second, the shortest event duration (which determines the vertical
             // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
             const shortestInterval = Math.max(300, getShortestInterval(dates));
