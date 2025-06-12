@@ -39,6 +39,7 @@
 dialog.conferia-dialog, #conferia-wrapper {
   * {
     outline-color: var(--accent-color);
+    box-sizing: border-box;
   }
 
   hr {
