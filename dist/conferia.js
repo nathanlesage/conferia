@@ -8621,7 +8621,7 @@
         return { toolbar, filter, personalAgendaToggle, toIcalButton };
     }
 
-    var version = "0.2.0";
+    var version = "0.3.0";
     var pkg = {
     	version: version};
 
@@ -9032,6 +9032,23 @@ agenda.`, [
     }
 
     /**
+     * Removes diacritics from a string (such as é -> e). This can make fuzzy
+     * matching of strings (in the context of filtering events) easier.
+     *
+     * @param   {string}  text  The input text
+     *
+     * @return  {string}        The normalized output text.
+     */
+    function removeCombiningDiacritics(text) {
+        return text
+            // This decomposes potentially combined individual characters into their
+            // constituent character + diacritic mark ...
+            .normalize('NFD')
+            // ... whose diacritics are then removed here. The Unicode range is
+            // described in this PDF: https://www.unicode.org/charts//PDF/Unicode-4.0/U40-0300.pdf
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+    /**
      * Returns true if the provided query occurs anywhere in this event
      *
      * @param   {CSVRecord}  event  The event
@@ -9040,18 +9057,16 @@ agenda.`, [
      * @return  {boolean}           Whether query matches event
      */
     function matchEvent(event, query) {
-        var _a, _b;
-        if (event.title.toLowerCase().includes(query) || event.id.includes(query)) {
+        query = removeCombiningDiacritics(query);
+        if (removeCombiningDiacritics(event.title.toLowerCase()).includes(query) || event.id.includes(query)) {
             return true;
         }
-        if (((_a = event.chair) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(query)) || ((_b = event.location) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(query))) {
-            return true;
-        }
-        if ('author' in event && event.author.toLowerCase().includes(query)) {
-            return true;
-        }
-        if ('abstract' in event && event.abstract.toLowerCase().includes(query)) {
-            return true;
+        for (const prop of ['chair', 'location', 'author', 'abstract']) {
+            // @ts-expect-error This is a bit ugly, but efficient. We check if any of
+            // the properties exist in the event, that its a string, and only then match.
+            if (prop in event && typeof (event[prop]) === 'string' && removeCombiningDiacritics(event[prop].toLowerCase()).includes(query)) {
+                return true;
+            }
         }
         if (event.type === 'session') {
             const anyMatch = event.presentations.map(p => matchEvent(p, query));
@@ -9061,6 +9076,7 @@ agenda.`, [
         }
         return false;
     }
+
     class Conferia {
         constructor(opt) {
             this.query = '';

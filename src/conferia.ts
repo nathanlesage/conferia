@@ -8,41 +8,7 @@ import { DateTime } from "luxon"
 import { showEventDetailsModal } from "./dom/event-details-modal"
 import { Agenda } from "./agenda"
 import { initiateIcalDownload } from "./util/ical"
-
-/**
- * Returns true if the provided query occurs anywhere in this event
- *
- * @param   {CSVRecord}  event  The event
- * @param   {string}     query  The query
- *
- * @return  {boolean}           Whether query matches event
- */
-function matchEvent (event: CSVRecord|SessionPresentationRecord, query: string): boolean {
-  if (event.title.toLowerCase().includes(query) || event.id.includes(query)) {
-    return true
-  }
-
-  if (event.chair?.toLowerCase().includes(query) || event.location?.toLowerCase().includes(query)) {
-    return true
-  }
-
-  if ('author' in event && event.author.toLowerCase().includes(query)) {
-    return true
-  }
-
-  if ('abstract' in event && event.abstract.toLowerCase().includes(query)) {
-    return true
-  }
-
-  if (event.type === 'session') {
-    const anyMatch = event.presentations.map(p => matchEvent(p, query))
-    if (anyMatch.some(v => v === true)) {
-      return true
-    }
-  }
-
-  return false
-}
+import { matchEvent } from "./util/fuzzy-match"
 
 export interface ConferiaOptions {
   /**
