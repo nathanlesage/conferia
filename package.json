@@ -18,6 +18,7 @@
     "@types/hash-sum": "^1.0.2",
     "@types/luxon": "^3.4.2",
     "@types/papaparse": "^5.3.15",
+    "open": "^10.1.2",
     "rollup": "^4.37.0",
     "rollup-plugin-dev": "^2.0.3",
     "rollup-plugin-svg": "^2.0.0",
