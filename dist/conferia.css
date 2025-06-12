@@ -93,6 +93,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   max-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--schedule-board-background);
 }
 
 #conferia-footer {
