@@ -41,6 +41,17 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   const footer = generateFooter()
   wrapper.appendChild(footer)
 
+  // Hook shortcuts
+  document.addEventListener('keydown', event => {
+    const cmdOrCtrl = event.metaKey || event.ctrlKey
+
+    if (cmdOrCtrl && event.key === 'f') {
+      event.preventDefault()
+      event.stopPropagation()
+      filter.focus()
+    }
+  })
+
   return {
     wrapper, timeGutter, dayGutter, scheduleBoard,
     filter, personalAgendaToggle, toIcalButton
