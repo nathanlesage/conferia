@@ -329,6 +329,10 @@ dialog.conferia-event-details {
     align-items: center;
   }
 
+  p.abstract {
+    line-height: 120%;
+  }
+
   h3.title {
     grid-area: title;
     margin: 0;
