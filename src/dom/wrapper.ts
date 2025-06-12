@@ -3,6 +3,8 @@ import { generateScheduleBoard } from "./schedule-board"
 import { generateTimeGutter } from "./time-gutter"
 import { generateToolbarStructure } from "./toolbar"
 import pkg from "../../package.json"
+import enterFullscreenIcon from '../icons/enter-fullscreen.svg'
+import exitFullscreenIcon from '../icons/exit-fullscreen.svg'
 
 export interface DOMStructure {
   wrapper: HTMLDivElement
@@ -30,7 +32,7 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   const scheduleWrapper = generateScheduleWrapper()
   const scheduleBoard = generateScheduleBoard()
 
-  const { toolbar, filter, personalAgendaToggle, toIcalButton } = generateToolbarStructure()
+  const { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton } = generateToolbarStructure()
   wrapper.appendChild(toolbar)
 
   scheduleWrapper.appendChild(dayGutter)
@@ -49,6 +51,33 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
       event.preventDefault()
       event.stopPropagation()
       filter.focus()
+    }
+  })
+
+  // Initial state preset for the fullscreen button
+  fullscreenButton.innerHTML = enterFullscreenIcon
+  fullscreenButton.title = 'Enter Fullscreen'
+
+  fullscreenButton.addEventListener('click', event => {
+    const hasFullscreen = document.fullscreenElement !== null
+    const isWrapperFullscreen = document.fullscreenElement === wrapper
+
+    if (hasFullscreen && !isWrapperFullscreen) {
+      return // Something else has fullscreen, don't interfere
+    } else if (hasFullscreen && isWrapperFullscreen) {
+      document.exitFullscreen()
+        .catch(err => console.error('Could not exit Conferia.js fullscreen', err))
+        .then(() => {
+          fullscreenButton.innerHTML = enterFullscreenIcon
+          fullscreenButton.title = 'Enter Fullscreen'
+        })
+    } else {
+      wrapper.requestFullscreen()
+        .catch(err => console.error('Conferia could not enter fullscreen', err))
+        .then(() => {
+          fullscreenButton.innerHTML = exitFullscreenIcon
+          fullscreenButton.title = 'Exit Fullscreen'
+        })
     }
   })
 

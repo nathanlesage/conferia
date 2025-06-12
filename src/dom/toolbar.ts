@@ -5,6 +5,7 @@ export interface ToolbarDOMStructure {
   filter: HTMLInputElement
   personalAgendaToggle: HTMLInputElement
   toIcalButton: HTMLButtonElement
+  fullscreenButton: HTMLButtonElement
 }
 
 export function generateToolbarStructure (): ToolbarDOMStructure {
@@ -28,5 +29,8 @@ export function generateToolbarStructure (): ToolbarDOMStructure {
   toIcalButton.textContent = 'Add to calendar'
   toolbar.appendChild(toIcalButton)
 
-  return { toolbar, filter, personalAgendaToggle, toIcalButton }
+  const fullscreenButton = document.createElement('button')
+  toolbar.appendChild(fullscreenButton)
+
+  return { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton }
 }

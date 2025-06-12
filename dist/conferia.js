@@ -8618,12 +8618,18 @@
         const toIcalButton = document.createElement('button');
         toIcalButton.textContent = 'Add to calendar';
         toolbar.appendChild(toIcalButton);
-        return { toolbar, filter, personalAgendaToggle, toIcalButton };
+        const fullscreenButton = document.createElement('button');
+        toolbar.appendChild(fullscreenButton);
+        return { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton };
     }
 
     var version = "0.3.0";
     var pkg = {
     	version: version};
+
+    var enterFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path></svg>";
+
+    var exitFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-minimize\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path></svg>";
 
     /**
      * Generates the primary Conferia.js DOM structure.
@@ -8639,7 +8645,7 @@
         const timeGutter = generateTimeGutter();
         const scheduleWrapper = generateScheduleWrapper();
         const scheduleBoard = generateScheduleBoard();
-        const { toolbar, filter, personalAgendaToggle, toIcalButton } = generateToolbarStructure();
+        const { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton } = generateToolbarStructure();
         wrapper.appendChild(toolbar);
         scheduleWrapper.appendChild(dayGutter);
         scheduleWrapper.appendChild(timeGutter);
@@ -8654,6 +8660,32 @@
                 event.preventDefault();
                 event.stopPropagation();
                 filter.focus();
+            }
+        });
+        // Initial state preset for the fullscreen button
+        fullscreenButton.innerHTML = enterFullscreenIcon;
+        fullscreenButton.title = 'Enter Fullscreen';
+        fullscreenButton.addEventListener('click', event => {
+            const hasFullscreen = document.fullscreenElement !== null;
+            const isWrapperFullscreen = document.fullscreenElement === wrapper;
+            if (hasFullscreen && !isWrapperFullscreen) {
+                return; // Something else has fullscreen, don't interfere
+            }
+            else if (hasFullscreen && isWrapperFullscreen) {
+                document.exitFullscreen()
+                    .catch(err => console.error('Could not exit Conferia.js fullscreen', err))
+                    .then(() => {
+                    fullscreenButton.innerHTML = enterFullscreenIcon;
+                    fullscreenButton.title = 'Enter Fullscreen';
+                });
+            }
+            else {
+                wrapper.requestFullscreen()
+                    .catch(err => console.error('Conferia could not enter fullscreen', err))
+                    .then(() => {
+                    fullscreenButton.innerHTML = exitFullscreenIcon;
+                    fullscreenButton.title = 'Exit Fullscreen';
+                });
             }
         });
         return {
