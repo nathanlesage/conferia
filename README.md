@@ -218,6 +218,45 @@ export interface ConferiaOptions {
 }
 ```
 
+## Developing
+
+This section provides you some info on how to get started with developing for
+Conferia. Conferia is a TypeScript library that uses Rollup as a bundler. To
+get started, make sure you have a Node.js stack installed on your machine. Then,
+clone the repository and install its dependencies. We provide NPM lockfiles, but
+using Yarn or pnpm should also work (albeit these might ignore the lockfile).
+
+Then, you can run `npm run build` to build the library, or `npm run watch` to
+make Rollup watch the files for changes. In addition, when running the `watch`
+command, a development server will spin up that allows you to directly observe
+any changes in your browser.
+
+The repository contains a variety of folders with different purposes:
+
+* `dist`: This folder serves as the target for the built files. Whenever you
+  change something, the JavaScript bundle will change, too. You should commit
+  the updated files to git. The directory also houses the CSS files which you
+  may want to update.
+* `docs`: This folder contains the Conferia website and user/developer manual
+  that lives at <https://nathanlesage.github.io/conferia/>. It also contains the
+  demo files.
+* `src`: This folder contains the actual source code.
+
+Inside the `src` folder, you will find a few files that Conferia references:
+
+* `dom`: This folder contains files that can build DOM structures or interact
+  with the DOM itself. Since we do not use a framework like Vue or React, these
+  files contain a certain amount of boilerplate.
+* `icons`: This folder contains SVG icons that the app uses.
+* `util`: This contains helper functions for time functionality as well as the
+  iCal exporting.
+* `agenda.ts`: This contains code to manage the user's personal agenda
+  (including storage management).
+* `conferia.ts`: The main class file for Conferia.
+* `csv.ts`: A small CSV parser library to load in CSV files.
+* `main.ts`: The main entry point that binds Conferia to the global scope.
+* `global.d.ts`: Some global typings required for the app.
+
 ## Acknowledgements
 
 Many of the design decisions that shaped Conferia.js have been influenced by
