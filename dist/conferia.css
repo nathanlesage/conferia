@@ -6,6 +6,7 @@
   --schedule-board-grid: #dfdfdf;
   --element-background: white;
   --font-color: #333;
+  --font-color-muted: #777;
   --element-shadow-color: rgba(0, 0, 0, .1);
   --input-background: white;
   --placeholder-color: #666;
@@ -24,6 +25,7 @@
     --schedule-board-grid: #3c3c3c;
     --element-background: #333;
     --font-color: #eee;
+    --font-color-muted: #aaa;
     --element-shadow-color: rgba(0, 0, 0, .3);
     --input-background: #333;
     --placeholder-color: #aaa;
@@ -84,7 +86,11 @@ dialog.conferia-dialog, #conferia-wrapper {
     margin-top: 10px;
   }
 
-  p.author { font-style: italic; }
+  p.author {
+    font-style: italic;
+    color: var(--font-color-muted);
+    font-size: 90%;
+  }
 }
 
 /* END: CONFERIA-SCOPED GENERICS */
