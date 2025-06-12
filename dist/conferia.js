@@ -9142,8 +9142,8 @@ agenda.`, [
                 .map(r => getTimeOffset(r.dateEnd, r.dateStart))
                 .reduce((prev, cur) => { cur in prev ? prev[cur] += 1 : prev[cur] = 1; return prev; }, {});
             const vals = Object.entries(counter).map(([int, cnt]) => parseInt(int, 10) * cnt);
-            const mean = vals.reduce((prev, cur) => prev + cur, 0) / records.length;
-            console.log({ counter, mean });
+            vals.reduce((prev, cur) => prev + cur, 0) / records.length;
+            // console.log({counter, mean})
             // DEBUG END
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
