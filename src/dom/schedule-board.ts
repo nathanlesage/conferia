@@ -27,7 +27,7 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
   card.appendChild(header)
 
   const title = document.createElement('h3')
-  title.classList.add('title')
+  title.classList.add('cf-event-title')
   title.textContent = event.title
   header.appendChild(title)
 

@@ -8542,7 +8542,7 @@
         header.classList.add('event-header');
         card.appendChild(header);
         const title = document.createElement('h3');
-        title.classList.add('title');
+        title.classList.add('cf-event-title');
         title.textContent = event.title;
         header.appendChild(title);
         if (event.location !== undefined) {
@@ -8623,7 +8623,7 @@
         return { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton };
     }
 
-    var version = "0.4.0";
+    var version = "0.5.0";
     var pkg = {
     	version: version};
 
@@ -8744,7 +8744,7 @@
         const dialog = document.createElement('dialog');
         dialog.classList.add('conferia-dialog', 'conferia-event-details');
         const title = document.createElement('h3');
-        title.classList.add('title');
+        title.classList.add('cf-event-title');
         switch (event.type) {
             case 'keynote':
                 title.textContent = 'Keynote: ' + event.title;

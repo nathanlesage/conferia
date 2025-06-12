@@ -213,7 +213,7 @@ dialog.conferia-dialog, #conferia-wrapper {
       display: flex;
       justify-content: space-between;
 
-      h3.title {
+      h3.cf-event-title {
         margin: 0;
         font-size: 1rem;
         line-height: 100%;
@@ -339,7 +339,7 @@ dialog.conferia-event-details {
     line-height: 120%;
   }
 
-  h3.title {
+  h3.cf-event-title {
     grid-area: title;
     margin: 0;
   }

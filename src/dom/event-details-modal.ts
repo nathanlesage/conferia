@@ -10,7 +10,7 @@ export function showEventDetailsModal (event: CSVRecord): void {
   dialog.classList.add('conferia-dialog', 'conferia-event-details')
 
   const title = document.createElement('h3')
-  title.classList.add('title')
+  title.classList.add('cf-event-title')
   switch (event.type) {
     case 'keynote':
       title.textContent = 'Keynote: ' + event.title
