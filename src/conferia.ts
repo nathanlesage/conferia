@@ -222,11 +222,12 @@ export class Conferia {
     // Then, figure out the axis limits and other information regarding the times.
     const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
 
-    // First, the vertical (time) and horizontal (day) scale limits
-    const earliestTime = getEarliestTime(dates.flat())
-    const latestTime = getLatestTime(dates.flat())
-    const earliestDay = getEarliestDay(dates.flat())
-    const latestDay = getLatestDay(dates.flat())
+    // First, the vertical (time) and horizontal (day) scale limits. Default to
+    // now in case the records have been filtered to zero length.
+    const earliestTime = getEarliestTime(dates.flat()) ?? DateTime.now()
+    const latestTime = getLatestTime(dates.flat()) ?? DateTime.now()
+    const earliestDay = getEarliestDay(dates.flat()) ?? DateTime.now()
+    const latestDay = getLatestDay(dates.flat()) ?? DateTime.now()
 
     // Second, the shortest event duration (which determines the vertical
     // resolution). Minimum: 5 minutes (in case there are "zero-length" events)

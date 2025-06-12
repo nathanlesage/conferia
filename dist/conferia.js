@@ -8351,6 +8351,9 @@
      * @return  {DateTime}           The date with the earliest time of day
      */
     function getEarliestTime(dates) {
+        if (dates.length === 0) {
+            return undefined;
+        }
         return dates.sort((a, b) => {
             if (a.hour !== b.hour) {
                 return a.hour - b.hour;
@@ -8374,6 +8377,9 @@
      * @return  {DateTime}           The date with the latest time of day
      */
     function getLatestTime(dates) {
+        if (dates.length === 0) {
+            return undefined;
+        }
         return dates.sort((a, b) => {
             if (a.hour !== b.hour) {
                 return a.hour - b.hour;
@@ -9131,16 +9137,17 @@ agenda.`, [
          * entire UI, based on any filters, etc.
          */
         updateUI() {
-            var _a, _b;
+            var _a, _b, _c, _d, _e, _f;
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
             // Then, figure out the axis limits and other information regarding the times.
             const dates = records.map(r => [r.dateStart, r.dateEnd]);
-            // First, the vertical (time) and horizontal (day) scale limits
-            const earliestTime = getEarliestTime(dates.flat());
-            const latestTime = getLatestTime(dates.flat());
-            const earliestDay = getEarliestDay(dates.flat());
-            const latestDay = getLatestDay(dates.flat());
+            // First, the vertical (time) and horizontal (day) scale limits. Default to
+            // now in case the records have been filtered to zero length.
+            const earliestTime = (_a = getEarliestTime(dates.flat())) !== null && _a !== void 0 ? _a : DateTime.now();
+            const latestTime = (_b = getLatestTime(dates.flat())) !== null && _b !== void 0 ? _b : DateTime.now();
+            const earliestDay = (_c = getEarliestDay(dates.flat())) !== null && _c !== void 0 ? _c : DateTime.now();
+            const latestDay = (_d = getLatestDay(dates.flat())) !== null && _d !== void 0 ? _d : DateTime.now();
             // Second, the shortest event duration (which determines the vertical
             // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
             const shortestInterval = Math.max(300, getShortestInterval(dates));
@@ -9184,7 +9191,7 @@ agenda.`, [
                 updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH);
             }
             // Draw a grid in the scheduleBoard
-            const timeGridInterval = (_a = this.opt.timeGridSeconds) !== null && _a !== void 0 ? _a : shortestInterval;
+            const timeGridInterval = (_e = this.opt.timeGridSeconds) !== null && _e !== void 0 ? _e : shortestInterval;
             updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
             // Finally, draw the events on the scheduleboard
             this.dom.scheduleBoard.innerHTML = '';
@@ -9197,7 +9204,7 @@ agenda.`, [
                 const withinDayOffset = event.location ? roomsPerDay[dayOffset].indexOf(event.location) : 0;
                 const prevColumnsOffset = roomsPerDay.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0);
                 const eventDuration = getTimeOffset(event.dateEnd, event.dateStart);
-                const PADDING = (_b = this.opt.eventCardPadding) !== null && _b !== void 0 ? _b : 10;
+                const PADDING = (_f = this.opt.eventCardPadding) !== null && _f !== void 0 ? _f : 10;
                 // Ensure each event is *at least* shortestInterval high.
                 const height = Math.max(pps * shortestInterval, eventDuration * pps - PADDING * 2);
                 card.style.top = `${timeOffset * pps + PADDING}px`;

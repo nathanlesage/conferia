@@ -7,7 +7,11 @@ import { DateTime } from 'luxon'
  *
  * @return  {DateTime}           The date with the earliest time of day
  */
-export function getEarliestTime (dates: DateTime[]): DateTime {
+export function getEarliestTime (dates: DateTime[]): DateTime|undefined {
+  if (dates.length === 0) {
+    return undefined
+  }
+
   return dates.sort((a, b) => {
     if (a.hour !== b.hour) {
       return a.hour - b.hour
@@ -28,7 +32,11 @@ export function getEarliestTime (dates: DateTime[]): DateTime {
  *
  * @return  {DateTime}           The date with the latest time of day
  */
-export function getLatestTime (dates: DateTime[]): DateTime {
+export function getLatestTime (dates: DateTime[]): DateTime|undefined {
+  if (dates.length === 0) {
+    return undefined
+  }
+
   return dates.sort((a, b) => {
     if (a.hour !== b.hour) {
       return a.hour - b.hour
@@ -49,7 +57,7 @@ export function getLatestTime (dates: DateTime[]): DateTime {
  *
  * @return  {DateTime}           The earliest date
  */
-export function getEarliestDay (dates: DateTime[]): DateTime {
+export function getEarliestDay (dates: DateTime[]): DateTime|undefined {
   return DateTime.min(...dates)
 }
 
@@ -60,7 +68,7 @@ export function getEarliestDay (dates: DateTime[]): DateTime {
  *
  * @return  {DateTime}           The latest date
  */
-export function getLatestDay (dates: DateTime[]): DateTime {
+export function getLatestDay (dates: DateTime[]): DateTime|undefined {
   return DateTime.max(...dates)
 }
 
