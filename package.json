@@ -12,6 +12,7 @@
   "license": "AGPL-3.0-only",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/hash-sum": "^1.0.2",

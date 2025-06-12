@@ -8615,6 +8615,10 @@
         return { toolbar, filter, personalAgendaToggle, toIcalButton };
     }
 
+    var version = "0.2.0";
+    var pkg = {
+    	version: version};
+
     /**
      * Generates the primary Conferia.js DOM structure.
      *
@@ -8679,7 +8683,7 @@
         const div = document.createElement('div');
         div.setAttribute('id', 'conferia-footer');
         const copy = document.createElement('span');
-        copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> &copy 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`;
+        copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> ${pkg.version} | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`;
         div.appendChild(copy);
         return div;
     }
@@ -9133,6 +9137,14 @@ agenda.`, [
             const shortestInterval = Math.max(300, getShortestInterval(dates));
             // How many days do we have in total?
             const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
+            // DEBUG START
+            const counter = records
+                .map(r => getTimeOffset(r.dateEnd, r.dateStart))
+                .reduce((prev, cur) => { cur in prev ? prev[cur] += 1 : prev[cur] = 1; return prev; }, {});
+            const vals = Object.entries(counter).map(([int, cnt]) => parseInt(int, 10) * cnt);
+            const mean = vals.reduce((prev, cur) => prev + cur, 0) / records.length;
+            console.log({ counter, mean });
+            // DEBUG END
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
             const MIN_HEIGHT = 25; // How small should the events be at minimum?

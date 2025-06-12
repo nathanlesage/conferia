@@ -2,6 +2,7 @@ import { generateDayGutter } from "./day-gutter"
 import { generateScheduleBoard } from "./schedule-board"
 import { generateTimeGutter } from "./time-gutter"
 import { generateToolbarStructure } from "./toolbar"
+import pkg from "../../package.json"
 
 export interface DOMStructure {
   wrapper: HTMLDivElement
@@ -91,7 +92,7 @@ function generateFooter (): HTMLDivElement {
   div.setAttribute('id', 'conferia-footer')
 
   const copy = document.createElement('span')
-  copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> &copy 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`
+  copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> ${pkg.version} | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`
   div.appendChild(copy)
 
   return div

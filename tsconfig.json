@@ -3,6 +3,7 @@
     "target": "ES2015",
     "module": "esnext",
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "noEmitOnError": true,
     "lib": ["es5", "dom"],
     "allowJs": true,
