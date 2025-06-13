@@ -9156,11 +9156,9 @@ agenda.`, [
                     continue;
                 }
                 if (eventHasConflict(event, todaysEvents)) {
-                    console.log('Conflict for event', event);
                     roomsWithConflictsToday.add(event.location);
                 }
             }
-            console.log({ todaysEvents, roomsWithConflictsToday });
             // Finally, sort them so that each room will always be in the same location
             const allRooms = [...roomsWithConflictsToday];
             allRooms.sort();
