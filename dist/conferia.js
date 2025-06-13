@@ -8131,11 +8131,14 @@
      *
      * @param   {string}       csvData     The CSV string
      * @param   {string}       timeZone    An optional time zone (IANA string)
-     * @param   {Function}     dateParser  An optional parser function
+     * @param   {Function}     dateParser  An optional date parser function
+     * @param   {Function}     rowParser   A parser to modify the records parsed
+     *                                     from the CSV, in case you have additional
+     *                                     columns you want to take in.
      *
      * @return  {CSVRecord[]}              The parsed CSV records
      */
-    function parseCsv(csvData, timeZone, dateParser) {
+    function parseCsv(csvData, timeZone, dateParser, rowParser) {
         // Small utility function to harmonize datetime parsing
         const parseISODate = (isoDate) => {
             if (dateParser !== undefined) {
@@ -8217,49 +8220,59 @@
             const chair = row[CHAIR_IDX];
             const id = hash(String(start) + String(end) + type + title);
             switch (type) {
-                case 'session_presentation':
+                case 'session_presentation': {
                     // NOTE that we place session presentations in a different array to
                     // simplify the interface the rest of the library has to work with.
-                    onlySessionPresentations.push({
+                    const record = {
                         type: 'session_presentation',
                         dateStart: start,
                         dateEnd: end,
                         title, abstract, author, location, session, chair, id,
                         sessionOrder: parseInt(sessionOrder, 10)
-                    });
+                    };
+                    onlySessionPresentations.push(rowParser ? rowParser(row, header, record) : record);
                     break;
-                case 'keynote':
-                    returnValue.push({
+                }
+                case 'keynote': {
+                    const record = {
                         type: 'keynote',
                         dateStart: start,
                         dateEnd: end,
                         title, abstract, author, location, chair, id
-                    });
+                    };
+                    returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
-                case 'meta':
-                    returnValue.push({
+                }
+                case 'meta': {
+                    const record = {
                         type: 'meta',
                         dateStart: start,
                         dateEnd: end,
                         title, location, id
-                    });
+                    };
+                    returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
-                case 'single':
-                    returnValue.push({
+                }
+                case 'single': {
+                    const record = {
                         type: 'single',
                         dateStart: start,
                         dateEnd: end,
                         title, location, abstract, author, chair, id
-                    });
+                    };
+                    returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
-                case 'special':
-                    returnValue.push({
+                }
+                case 'special': {
+                    const record = {
                         type: 'special',
                         dateStart: start,
                         dateEnd: end,
                         title, location, abstract, author, chair, id
-                    });
+                    };
+                    returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
+                }
                 default:
                     console.warn(`Unknown type detected in entry: ${type}. Skipping row.`);
             }
@@ -9109,6 +9122,86 @@ agenda.`, [
         return false;
     }
 
+    // This file contains a few helper functions that help us arrange the various
+    // events on the schedule more appropriately.
+    /**
+     * Figure out the rooms which need their own, dedicated rooms for each day. NOTE
+     * that this function **only** returns, for each day, those rooms where there
+     * are conflicts with other events.
+     *
+     * @param   {CSVRecord[]}  records  The records to display
+     *
+     * @return  {string[][]}            An array of strings in the form [day][room]
+     */
+    function roomsPerDay(records) {
+        var _a, _b;
+        const dates = records.map(r => [r.dateStart, r.dateEnd]);
+        const now = DateTime.now();
+        const earliestDay = (_a = getEarliestDay(dates.flat())) !== null && _a !== void 0 ? _a : now;
+        const latestDay = (_b = getLatestDay(dates.flat())) !== null && _b !== void 0 ? _b : now.plus({ day: 1 });
+        const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
+        const roomsPerDay = [];
+        for (let i = 0; i < days; i++) {
+            // First, get all events happening today
+            const today = earliestDay.plus({ days: i }).startOf('day');
+            const todaysEvents = records.filter(r => {
+                return r.dateStart.startOf('day').diff(today).as('days') === 0;
+            });
+            // Then, create a set of all rooms where there are time-conflicts. (Rooms
+            // without time-conflicts do not need their own column, they will be spread
+            // across all columns.)
+            const roomsWithConflictsToday = new Set();
+            for (const event of todaysEvents) {
+                if (!('location' in event) || event.location.trim() === '') {
+                    continue;
+                }
+                if (eventHasConflict(event, todaysEvents)) {
+                    console.log('Conflict for event', event);
+                    roomsWithConflictsToday.add(event.location);
+                }
+            }
+            console.log({ todaysEvents, roomsWithConflictsToday });
+            // Finally, sort them so that each room will always be in the same location
+            const allRooms = [...roomsWithConflictsToday];
+            allRooms.sort();
+            roomsPerDay[i] = allRooms;
+        }
+        return roomsPerDay;
+    }
+    /**
+     * Utility function that returns true if an event has a conflict with any other
+     * event in the entire list of records.
+     *
+     * @param   {CSVRecord}    record   The focus record to check.
+     * @param   {CSVRecord[]}  records  A list of all records to check against.
+     *
+     * @return  {boolean}               Whether there is at least one record that
+     *                                  overlaps with the focus record time-wise.
+     */
+    function eventHasConflict(record, records) {
+        const thisStart = record.dateStart;
+        const thisEnd = record.dateEnd;
+        const listIncludesFocus = records.includes(record);
+        const overlappingRecords = records.filter(rec => {
+            const otherStart = rec.dateStart;
+            const otherEnd = rec.dateEnd;
+            if (thisStart >= otherStart && thisEnd <= otherEnd) {
+                return true; // Focus event is contained within the other event
+            }
+            else if (thisStart < otherStart && thisEnd > otherEnd) {
+                return true; // Other event is contained within the focus event
+            }
+            else if (thisStart < otherStart && thisEnd > otherStart) {
+                return true; // Focus event overlaps with the beginning of the other event
+            }
+            else if (thisStart < otherEnd && thisEnd > otherEnd) {
+                return true; // Focus event overlaps with the end of the other event
+            }
+            return false;
+        });
+        return listIncludesFocus ? overlappingRecords.length > 1 : overlappingRecords.length > 0;
+    }
+
     class Conferia {
         constructor(opt) {
             this.query = '';
@@ -9222,20 +9315,11 @@ agenda.`, [
             // info to the dayGutter updater so that it can add a second "heading row"
             // with the room designations at the corresponding places, AND we need to
             // offset the events based on that information.
-            const roomsPerDay = [];
-            for (let i = 0; i < days; i++) {
-                const today = earliestDay.plus({ days: i }).startOf('day');
-                const todaysEvents = records.filter(r => {
-                    return r.dateStart.startOf('day').diff(today).as('days') === 0;
-                });
-                const allRooms = [...new Set(todaysEvents.map(r => r.location).filter(l => l !== undefined).filter(l => l.trim() !== ''))];
-                allRooms.sort();
-                roomsPerDay[i] = allRooms;
-            }
+            const rpd = roomsPerDay(records);
             // Now, update the time and day gutters
             updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps);
             if (this.opt.groupByLocation) {
-                updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, roomsPerDay);
+                updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd);
             }
             else {
                 updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH);
@@ -9251,8 +9335,14 @@ agenda.`, [
                 // Place the event on the schedule board
                 const timeOffset = getTimeOffset(event.dateStart, earliestTime);
                 const dayOffset = getDayOffset(event.dateEnd, earliestDay);
-                const withinDayOffset = event.location ? roomsPerDay[dayOffset].indexOf(event.location) : 0;
-                const prevColumnsOffset = roomsPerDay.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0);
+                let withinDayOffset = event.location ? rpd[dayOffset].indexOf(event.location) : 0;
+                const prevColumnsOffset = rpd.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0);
+                const hasConflict = eventHasConflict(event, records);
+                // If an event has no conflicting other events, we make it span the entire
+                // column.
+                if (!hasConflict) {
+                    withinDayOffset = 0;
+                }
                 const eventDuration = getTimeOffset(event.dateEnd, event.dateStart);
                 const PADDING = (_f = this.opt.eventCardPadding) !== null && _f !== void 0 ? _f : 10;
                 // Ensure each event is *at least* shortestInterval high.
@@ -9262,11 +9352,20 @@ agenda.`, [
                 // left & width are more complex
                 if (this.opt.groupByLocation) {
                     card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`;
-                    if (event.location) {
+                    if (event.location && hasConflict) {
                         card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
                     }
                     else {
-                        card.style.width = `${COLUMN_WIDTH * roomsPerDay[dayOffset].length - PADDING * 2}px`;
+                        // No conflict with other events -> make it span th entire day column
+                        card.style.width = `${COLUMN_WIDTH * rpd[dayOffset].length - PADDING * 2}px`;
+                    }
+                    // Ensure that meta events (such as lunches and coffee breaks) overlap
+                    // any events that cross through them. (Oftentimes, if there are longer
+                    // events, there is usually a short break in between, but it is easier
+                    // to make both events additive instead of splitting the longer events
+                    // up into two separate smaller events in the Excel file.)
+                    if (event.type === 'meta') {
+                        card.style.zIndex = '1';
                     }
                 }
                 else {
@@ -9301,7 +9400,7 @@ agenda.`, [
                 try {
                     const response = yield fetch(this.opt.src);
                     const data = yield response.text();
-                    const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser);
+                    const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser);
                     if (this.opt.debug) {
                         console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`);
                         console.log({ csv });

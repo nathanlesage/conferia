@@ -9,6 +9,7 @@ import { showEventDetailsModal } from "./dom/event-details-modal"
 import { Agenda } from "./agenda"
 import { initiateIcalDownload } from "./util/ical"
 import { matchEvent } from "./util/fuzzy-match"
+import { eventHasConflict, roomsPerDay } from "./util/conflicts-and-columns"
 
 export interface ConferiaOptions {
   /**
@@ -243,22 +244,13 @@ export class Conferia {
     // info to the dayGutter updater so that it can add a second "heading row"
     // with the room designations at the corresponding places, AND we need to
     // offset the events based on that information.
-    const roomsPerDay: Array<string[]> = []
-    for (let i = 0; i < days; i++) {
-      const today = earliestDay.plus({ days: i }).startOf('day')
-      const todaysEvents = records.filter(r => {
-        return r.dateStart.startOf('day').diff(today).as('days') === 0
-      })
-      const allRooms = [...new Set(todaysEvents.map(r => r.location).filter(l => l !== undefined).filter(l => l.trim() !== ''))]
-      allRooms.sort()
-      roomsPerDay[i] = allRooms
-    }
+    const rpd = roomsPerDay(records)
 
     // Now, update the time and day gutters
     updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, pps)
 
     if (this.opt.groupByLocation) {
-      updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, roomsPerDay)
+      updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd)
     } else {
       updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH)
     }
@@ -277,8 +269,14 @@ export class Conferia {
       const timeOffset = getTimeOffset(event.dateStart, earliestTime)
       const dayOffset = getDayOffset(event.dateEnd, earliestDay)
 
-      const withinDayOffset = event.location ? roomsPerDay[dayOffset].indexOf(event.location) : 0
-      const prevColumnsOffset = roomsPerDay.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0)
+      let withinDayOffset = event.location ? rpd[dayOffset].indexOf(event.location) : 0
+      const prevColumnsOffset = rpd.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0)
+      const hasConflict = eventHasConflict(event, records)
+      // If an event has no conflicting other events, we make it span the entire
+      // column.
+      if (!hasConflict) {
+        withinDayOffset = 0
+      }
       
       const eventDuration = getTimeOffset(event.dateEnd, event.dateStart)
 
@@ -293,10 +291,20 @@ export class Conferia {
       // left & width are more complex
       if (this.opt.groupByLocation) {
         card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`
-        if (event.location) {
+        if (event.location && hasConflict) {
           card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`
         } else {
-          card.style.width = `${COLUMN_WIDTH * roomsPerDay[dayOffset].length - PADDING * 2}px`
+          // No conflict with other events -> make it span th entire day column
+          card.style.width = `${COLUMN_WIDTH * rpd[dayOffset].length - PADDING * 2}px`
+        }
+
+        // Ensure that meta events (such as lunches and coffee breaks) overlap
+        // any events that cross through them. (Oftentimes, if there are longer
+        // events, there is usually a short break in between, but it is easier
+        // to make both events additive instead of splitting the longer events
+        // up into two separate smaller events in the Excel file.)
+        if (event.type === 'meta') {
+          card.style.zIndex = '1'
         }
       } else {
         card.style.left = `${COLUMN_WIDTH * dayOffset + PADDING}px`
