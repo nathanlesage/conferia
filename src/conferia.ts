@@ -67,7 +67,7 @@ export interface ConferiaOptions {
    * An optional function that you can use to correct the dates in your CSV
    * file. Use this to fix datetimes, if whichever application you peruse to
    * generate the CSV file cannot properly output ISO 8601 strings (such as
-   * Microsoft Excel).
+   * Microsoft Excel or Google Spreadsheets).
    *
    * @param   {string}    dateString  The raw date string as it comes from your
    *                                  CSV file.
@@ -77,7 +77,22 @@ export interface ConferiaOptions {
    * @return  {string}                Must return an ISO 8601-compatible
    *                                  datetime string.
    */
-  dateParser?: (dateString: string, luxon: typeof DateTime) => string
+  dateParser?: (dateString: string, luxon: typeof DateTime) => string,
+
+  /**
+   * An optional function that you can use to fine-tune the data in the loading
+   * step while the library is loading it from the CSV file. It provides you the
+   * record, the raw CSV row that the record has been parsed from (an array of
+   * strings), as well as the header row (so that you can identify which column
+   * you need). Return the record from this function once you're done.
+   *
+   * @param   {string[]}                             row     The CSV row
+   * @param   {string[]}                             header  The CSV header
+   * @param   {CSVRecord|SessionPresentationRecord}  record  The parsed record
+   *
+   * @return  {CSVRecord|SessionPresentationRecord}          The parsed and modified record
+   */
+  rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
 }
 
 export class Conferia {
@@ -317,7 +332,7 @@ export class Conferia {
     try {
       const response = await fetch(this.opt.src)
       const data = await response.text()
-      const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser)
+      const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser)
   
       if (this.opt.debug) {
         console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`)

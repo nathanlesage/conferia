@@ -45,11 +45,19 @@ export type CSVRecord = SingleRecord|MetaRecord|SessionRecord
  *
  * @param   {string}       csvData     The CSV string
  * @param   {string}       timeZone    An optional time zone (IANA string)
- * @param   {Function}     dateParser  An optional parser function
+ * @param   {Function}     dateParser  An optional date parser function
+ * @param   {Function}     rowParser   A parser to modify the records parsed
+ *                                     from the CSV, in case you have additional
+ *                                     columns you want to take in.
  *
  * @return  {CSVRecord[]}              The parsed CSV records
  */
-export function parseCsv (csvData: string, timeZone?: string, dateParser?: (dateString: string, luxon: typeof DateTime) => string): CSVRecord[] {
+export function parseCsv (
+  csvData: string,
+  timeZone?: string,
+  dateParser?: (dateString: string, luxon: typeof DateTime) => string,
+  rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
+): CSVRecord[] {
   // Small utility function to harmonize datetime parsing
   const parseISODate = (isoDate: string) => {
     if (dateParser !== undefined) {
@@ -141,49 +149,59 @@ export function parseCsv (csvData: string, timeZone?: string, dateParser?: (date
     const id = hash(String(start) + String(end) + type + title)
 
     switch (type as CSVRecord["type"] & 'session_presentation') {
-      case 'session_presentation':
+      case 'session_presentation': {
         // NOTE that we place session presentations in a different array to
         // simplify the interface the rest of the library has to work with.
-        onlySessionPresentations.push({
+        const record: SessionPresentationRecord = {
           type: 'session_presentation',
           dateStart: start,
           dateEnd: end,
           title, abstract, author, location, session, chair, id,
           sessionOrder: parseInt(sessionOrder, 10)
-        })
+        }
+        onlySessionPresentations.push(rowParser ? rowParser(row, header, record) : record)
         break
-      case 'keynote':
-        returnValue.push({
+      }
+      case 'keynote': {
+        const record: CSVRecord = {
           type: 'keynote',
           dateStart: start,
           dateEnd: end,
           title, abstract, author, location, chair, id
-        })
+        }
+        returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
-      case 'meta':
-        returnValue.push({
+      }
+      case 'meta': {
+        const record: CSVRecord = {
           type: 'meta',
           dateStart: start,
           dateEnd: end,
           title, location, id
-        })
+        }
+        returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
-      case 'single':
-        returnValue.push({
+      }
+      case 'single': {
+        const record: CSVRecord = {
           type: 'single',
           dateStart: start,
           dateEnd: end,
           title, location, abstract, author, chair, id
-        })
+        }
+        returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
-      case 'special':
-        returnValue.push({
+      }
+      case 'special': {
+        const record: CSVRecord = {
           type: 'special',
           dateStart: start,
           dateEnd: end,
           title, location, abstract, author, chair, id
-        })
+        }
+        returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
+      }
       default:
         console.warn(`Unknown type detected in entry: ${type}. Skipping row.`)
     }
