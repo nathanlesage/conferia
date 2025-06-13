@@ -15,6 +15,10 @@
 
   --accent-color: #27538c;
 
+  --keynote-background: #fdeef3;
+  --special-background: #effcff;
+  --meta-background: #f9f9f9;
+
   /* Non-color variables */
   --cf-border-radius: 8px;
 }
@@ -33,6 +37,10 @@
     --border-color: #5e5e5e;
 
     --accent-color: #9ec8ff;
+
+    --keynote-background: #372626;
+    --special-background: #20393e;
+    --meta-background: #515050;
   }
 }
 /* END: CONFERIA VARIABLES */
@@ -202,12 +210,24 @@ dialog.conferia-dialog, #conferia-wrapper {
     background-color: var(--element-background);
     box-shadow: 5px 5px 5px 0px var(--element-shadow-color);
     padding: 6px;
-    border: 1px solid transparent;
+    border: 1px solid var(--border-color);
     border-radius: var(--cf-border-radius);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow: hidden;
+
+    &.keynote {
+      background-color: var(--keynote-background);
+    }
+
+    &.special {
+      background-color: var(--special-background);
+    }
+
+    &.meta {
+      background-color: var(--meta-background);
+    }
 
     .event-header {
       display: flex;
@@ -230,6 +250,10 @@ dialog.conferia-dialog, #conferia-wrapper {
       overflow: auto;
       flex-grow: 1; /* Ensure that the content takes most space */
       font-size: 0.8rem;
+
+      ol.presentation-list li:not(:last-child) {
+        margin-bottom: 5px;
+      }
     }
 
     .event-footer {
@@ -251,21 +275,13 @@ dialog.conferia-dialog, #conferia-wrapper {
       }
     }
 
-    &:not(.meta) {
-      /* Meta events are usually without location and thus span the entire
-       * column width. Pushing all other events to the front ensures that they
-       * overlay the meta events (such as coffee breaks), so that longer events
-       * that continue after such a coffee or lunch break can be displayed
-       * appropriately.
-       */
-      z-index: 1;
-    }
-
     &.bookmarked {
       border-color: var(--accent-color);
+      outline: 3px solid var(--accent-color);
 
-      .bookmark svg {
+      .cf-event-title, .bookmark svg {
         color: var(--accent-color);
+        fill: var(--accent-color);
       }
     }
   }
