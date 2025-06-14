@@ -64,9 +64,10 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
   const time = document.createElement('p')
   time.classList.add('time')
   wrapper.appendChild(time)
+  const date = event.dateStart.toLocaleString({ dateStyle: 'medium' })
   const fromString = event.dateStart.toLocaleString({ timeStyle: 'short' })
   const toString = event.dateEnd.toLocaleString({ timeStyle: 'short' })
-  time.textContent = `${fromString} – ${toString}`
+  time.textContent = `${date}, ${fromString} – ${toString}`
 
   if (event.chair !== undefined && event.chair !== '') {
     const chair = document.createElement('p')
