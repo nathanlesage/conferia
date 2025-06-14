@@ -16,7 +16,7 @@ as a full solution for participants to find and filter events, create their own
 personal schedule, and even add the events to their own calendar to never miss
 an exciting presentation.
 
-> You can see an [interactive demo](demo/index.htm) to experience Conferia.js.
+> You can see an [interactive demo](demo) to experience Conferia.js.
 
 This documentation includes three documents:
 
