@@ -270,7 +270,9 @@ export class Conferia {
       const dayOffset = getDayOffset(event.dateEnd, earliestDay)
 
       let withinDayOffset = event.location ? rpd[dayOffset].indexOf(event.location) : 0
-      const prevColumnsOffset = rpd.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0)
+      // NOTE the Math.max in the MapReduce below: If there are no conflicts on
+      // a day, the array length will be zero, so we need to set it at least to 1.
+      const prevColumnsOffset = rpd.slice(0, dayOffset).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0)
       const hasConflict = eventHasConflict(event, records)
       // If an event has no conflicting other events, we make it span the entire
       // column.
