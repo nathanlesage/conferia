@@ -10,6 +10,7 @@ import { Agenda } from "./agenda"
 import { initiateIcalDownload } from "./util/ical"
 import { matchEvent } from "./util/fuzzy-match"
 import { eventHasConflict, roomsPerDay } from "./util/conflicts-and-columns"
+import { askUser } from "./dom/ask-user"
 
 export interface ConferiaOptions {
   /**
@@ -133,6 +134,30 @@ export class Conferia {
 
     this.dom.toIcalButton.addEventListener('click', () => {
       initiateIcalDownload(this)
+    })
+
+    this.dom.clearButton.addEventListener('click', () => {
+      askUser(
+        'Clear data',
+        `Here you can delete the various data that the app stores in your
+        browser. Use this to quickly clear out your agenda, or reset the tips.`,
+        [
+          'Clear personal agenda',
+          'Reset tips',
+          'Cancel'
+        ]
+      ).then(response => {
+        if (response === 0) {
+          // Clear personal agenda
+          this.agenda.clearPersonalAgenda()
+          this.updateUI()
+        } else if (response === 1) {
+          // Reset tips
+          this.agenda.resetHasShown()
+        } else if (response === 2) {
+          // Cancel
+        }
+      })
     })
 
     // Begin loading

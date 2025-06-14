@@ -15,6 +15,7 @@ export interface DOMStructure {
   filter: HTMLInputElement
   personalAgendaToggle: HTMLInputElement
   toIcalButton: HTMLButtonElement
+  clearButton: HTMLButtonElement
 }
 
 /**
@@ -32,7 +33,11 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   const scheduleWrapper = generateScheduleWrapper()
   const scheduleBoard = generateScheduleBoard()
 
-  const { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton } = generateToolbarStructure()
+  const {
+    toolbar,
+    filter, personalAgendaToggle,
+    toIcalButton, fullscreenButton, clearButton
+  } = generateToolbarStructure()
   wrapper.appendChild(toolbar)
 
   scheduleWrapper.appendChild(dayGutter)
@@ -83,7 +88,7 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
 
   return {
     wrapper, timeGutter, dayGutter, scheduleBoard,
-    filter, personalAgendaToggle, toIcalButton
+    filter, personalAgendaToggle, toIcalButton, clearButton
   }
 }
 

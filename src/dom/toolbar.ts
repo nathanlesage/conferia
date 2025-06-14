@@ -1,4 +1,5 @@
 // Toolbar related DOM structure generation
+import slashIcon from '../icons/slash.svg'
 
 export interface ToolbarDOMStructure {
   toolbar: HTMLDivElement
@@ -6,6 +7,7 @@ export interface ToolbarDOMStructure {
   personalAgendaToggle: HTMLInputElement
   toIcalButton: HTMLButtonElement
   fullscreenButton: HTMLButtonElement
+  clearButton: HTMLButtonElement
 }
 
 export function generateToolbarStructure (): ToolbarDOMStructure {
@@ -32,5 +34,14 @@ export function generateToolbarStructure (): ToolbarDOMStructure {
   const fullscreenButton = document.createElement('button')
   toolbar.appendChild(fullscreenButton)
 
-  return { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton }
+  const clearButton = document.createElement('button')
+  clearButton.setAttribute('title', 'Clear data…')
+  clearButton.innerHTML = slashIcon
+  toolbar.appendChild(clearButton)
+
+  return {
+    toolbar,
+    filter, personalAgendaToggle,
+    toIcalButton, fullscreenButton, clearButton
+  }
 }

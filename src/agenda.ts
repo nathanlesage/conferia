@@ -59,6 +59,25 @@ export class Agenda {
     }
   }
 
+  public clearPersonalAgenda () {
+    askUser(
+      'Clear Personal Agenda?',
+      'This action will reset your entire personal agenda. This is an irreversable action. Proceed?',
+      ['Yes, clear personal agenda', 'Cancel']
+    ).then(response => {
+      if (response === 0) {
+        // Clear agenda
+        this.itemIDs = []
+        this.persistToStorage()
+      }
+    })
+  }
+
+  public resetHasShown () {
+    this.hasShownIntro = false
+    this.persistToStorage()
+  }
+
   public hasItem (id: string) {
     return this.itemIDs.includes(id)
   }
