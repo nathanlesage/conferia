@@ -52,6 +52,9 @@ dialog.conferia-dialog, #conferia-wrapper {
     box-sizing: border-box;
   }
 
+  /* Smaller default size for feather icons across the app */
+  svg.feather { width: 16px; }
+
   hr {
     border: none;
     border-bottom: 1px solid var(--border-color);
@@ -66,7 +69,7 @@ dialog.conferia-dialog, #conferia-wrapper {
     background-color: var(--button-background);
     border: 1px solid var(--border-color);
     border-radius: var(--cf-border-radius);
-    padding: 6px 18px;
+    padding: 4px 10px;
 
     &:hover {
       background-color: var(--button-background-hover);
