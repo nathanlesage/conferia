@@ -226,6 +226,17 @@ export class Conferia {
     // Before doing anything, retrieve the records we are supposed to show.
     const records = this.filterRecords()
 
+    if (records.length === 0) {
+      this.dom.scheduleBoard.innerHTML = ''
+      const noeventscard = document.createElement('div')
+      noeventscard.classList.add('event', 'meta')
+      noeventscard.style.margin = (this.opt.eventCardPadding ?? 10) + 'px'
+      noeventscard.style.height = '75%'
+      noeventscard.innerHTML = '<strong>No events to show.</strong>'
+      this.dom.scheduleBoard.appendChild(noeventscard)
+      return
+    }
+
     // Then, figure out the axis limits and other information regarding the times.
     const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
 
