@@ -8614,6 +8614,8 @@
         return card;
     }
 
+    var slashIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-slash\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line></svg>";
+
     // Toolbar related DOM structure generation
     function generateToolbarStructure() {
         const toolbar = document.createElement('div');
@@ -8633,10 +8635,18 @@
         toolbar.appendChild(toIcalButton);
         const fullscreenButton = document.createElement('button');
         toolbar.appendChild(fullscreenButton);
-        return { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton };
+        const clearButton = document.createElement('button');
+        clearButton.setAttribute('title', 'Clear data…');
+        clearButton.innerHTML = slashIcon;
+        toolbar.appendChild(clearButton);
+        return {
+            toolbar,
+            filter, personalAgendaToggle,
+            toIcalButton, fullscreenButton, clearButton
+        };
     }
 
-    var version = "0.7.0";
+    var version = "0.8.0";
     var pkg = {
     	version: version};
 
@@ -8658,7 +8668,7 @@
         const timeGutter = generateTimeGutter();
         const scheduleWrapper = generateScheduleWrapper();
         const scheduleBoard = generateScheduleBoard();
-        const { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton } = generateToolbarStructure();
+        const { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton, clearButton } = generateToolbarStructure();
         wrapper.appendChild(toolbar);
         scheduleWrapper.appendChild(dayGutter);
         scheduleWrapper.appendChild(timeGutter);
@@ -8703,7 +8713,7 @@
         });
         return {
             wrapper, timeGutter, dayGutter, scheduleBoard,
-            filter, personalAgendaToggle, toIcalButton
+            filter, personalAgendaToggle, toIcalButton, clearButton
         };
     }
     /**
@@ -8804,9 +8814,10 @@
         const time = document.createElement('p');
         time.classList.add('time');
         wrapper.appendChild(time);
+        const date = event.dateStart.toLocaleString({ dateStyle: 'medium' });
         const fromString = event.dateStart.toLocaleString({ timeStyle: 'short' });
         const toString = event.dateEnd.toLocaleString({ timeStyle: 'short' });
-        time.textContent = `${fromString} – ${toString}`;
+        time.textContent = `${date}, ${fromString} – ${toString}`;
         if (event.chair !== undefined && event.chair !== '') {
             const chair = document.createElement('p');
             chair.classList.add('chair');
@@ -8943,6 +8954,19 @@ import your agenda to transfer it between devices.`;
                 this.itemIDs.splice(this.itemIDs.indexOf(id), 1);
                 this.persistToStorage();
             }
+        }
+        clearPersonalAgenda() {
+            askUser('Clear Personal Agenda?', 'This action will reset your entire personal agenda. This is an irreversable action. Proceed?', ['Yes, clear personal agenda', 'Cancel']).then(response => {
+                if (response === 0) {
+                    // Clear agenda
+                    this.itemIDs = [];
+                    this.persistToStorage();
+                }
+            });
+        }
+        resetHasShown() {
+            this.hasShownIntro = false;
+            this.persistToStorage();
         }
         hasItem(id) {
             return this.itemIDs.includes(id);
@@ -9223,6 +9247,25 @@ agenda.`, [
             this.dom.toIcalButton.addEventListener('click', () => {
                 initiateIcalDownload(this);
             });
+            this.dom.clearButton.addEventListener('click', () => {
+                askUser('Clear data', `Here you can delete the various data that the app stores in your
+        browser. Use this to quickly clear out your agenda, or reset the tips.`, [
+                    'Clear personal agenda',
+                    'Reset tips',
+                    'Cancel'
+                ]).then(response => {
+                    if (response === 0) {
+                        // Clear personal agenda
+                        this.agenda.clearPersonalAgenda();
+                        this.updateUI();
+                    }
+                    else if (response === 1) {
+                        // Reset tips
+                        this.agenda.resetHasShown();
+                    }
+                    else ;
+                });
+            });
             // Begin loading
             this.loadPromise = this.load();
             // Perform initial update
@@ -9276,19 +9319,29 @@ agenda.`, [
          * entire UI, based on any filters, etc.
          */
         updateUI() {
-            var _a, _b, _c, _d, _e, _f;
+            var _a, _b, _c, _d, _e, _f, _g;
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
+            if (records.length === 0) {
+                this.dom.scheduleBoard.innerHTML = '';
+                const noeventscard = document.createElement('div');
+                noeventscard.classList.add('event', 'meta');
+                noeventscard.style.margin = ((_a = this.opt.eventCardPadding) !== null && _a !== void 0 ? _a : 10) + 'px';
+                noeventscard.style.height = '75%';
+                noeventscard.innerHTML = '<strong>No events to show.</strong>';
+                this.dom.scheduleBoard.appendChild(noeventscard);
+                return;
+            }
             // Then, figure out the axis limits and other information regarding the times.
             const dates = records.map(r => [r.dateStart, r.dateEnd]);
             // First, the vertical (time) and horizontal (day) scale limits. Default to
             // an hour around right now to display at least something. Later on we can
             // add an "error" card.
             const now = DateTime.now();
-            const earliestTime = (_a = getEarliestTime(dates.flat())) !== null && _a !== void 0 ? _a : now;
-            const latestTime = (_b = getLatestTime(dates.flat())) !== null && _b !== void 0 ? _b : now.plus({ hour: 1 });
-            const earliestDay = (_c = getEarliestDay(dates.flat())) !== null && _c !== void 0 ? _c : now;
-            const latestDay = (_d = getLatestDay(dates.flat())) !== null && _d !== void 0 ? _d : now.plus({ day: 1 });
+            const earliestTime = (_b = getEarliestTime(dates.flat())) !== null && _b !== void 0 ? _b : now;
+            const latestTime = (_c = getLatestTime(dates.flat())) !== null && _c !== void 0 ? _c : now.plus({ hour: 1 });
+            const earliestDay = (_d = getEarliestDay(dates.flat())) !== null && _d !== void 0 ? _d : now;
+            const latestDay = (_e = getLatestDay(dates.flat())) !== null && _e !== void 0 ? _e : now.plus({ day: 1 });
             // Second, the shortest event duration (which determines the vertical
             // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
             const shortestInterval = Math.max(300, getShortestInterval(dates));
@@ -9323,7 +9376,7 @@ agenda.`, [
                 updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH);
             }
             // Draw a grid in the scheduleBoard
-            const timeGridInterval = (_e = this.opt.timeGridSeconds) !== null && _e !== void 0 ? _e : shortestInterval;
+            const timeGridInterval = (_f = this.opt.timeGridSeconds) !== null && _f !== void 0 ? _f : shortestInterval;
             updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
             // Finally, draw the events on the scheduleboard
             this.dom.scheduleBoard.innerHTML = '';
@@ -9334,7 +9387,9 @@ agenda.`, [
                 const timeOffset = getTimeOffset(event.dateStart, earliestTime);
                 const dayOffset = getDayOffset(event.dateEnd, earliestDay);
                 let withinDayOffset = event.location ? rpd[dayOffset].indexOf(event.location) : 0;
-                const prevColumnsOffset = rpd.slice(0, dayOffset).reduce((prev, cur) => prev + cur.length, 0);
+                // NOTE the Math.max in the MapReduce below: If there are no conflicts on
+                // a day, the array length will be zero, so we need to set it at least to 1.
+                const prevColumnsOffset = rpd.slice(0, dayOffset).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0);
                 const hasConflict = eventHasConflict(event, records);
                 // If an event has no conflicting other events, we make it span the entire
                 // column.
@@ -9342,7 +9397,7 @@ agenda.`, [
                     withinDayOffset = 0;
                 }
                 const eventDuration = getTimeOffset(event.dateEnd, event.dateStart);
-                const PADDING = (_f = this.opt.eventCardPadding) !== null && _f !== void 0 ? _f : 10;
+                const PADDING = (_g = this.opt.eventCardPadding) !== null && _g !== void 0 ? _g : 10;
                 // Ensure each event is *at least* shortestInterval high.
                 const height = Math.max(pps * shortestInterval, eventDuration * pps - PADDING * 2);
                 card.style.top = `${timeOffset * pps + PADDING}px`;
@@ -9350,7 +9405,7 @@ agenda.`, [
                 // left & width are more complex
                 if (this.opt.groupByLocation) {
                     card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`;
-                    if (hasConflict) {
+                    if (event.location && hasConflict) {
                         card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
                     }
                     else {
