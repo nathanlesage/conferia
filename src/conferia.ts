@@ -291,7 +291,7 @@ export class Conferia {
       // left & width are more complex
       if (this.opt.groupByLocation) {
         card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`
-        if (hasConflict) {
+        if (event.location && hasConflict) {
           card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`
         } else {
           // No conflict with other events -> make it span th entire day column
