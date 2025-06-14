@@ -1,6 +1,6 @@
-# Conferia.js
-
-> You can see an [interactive demo](demo/index.htm) to experience Conferia.js.
+---
+layout: home
+---
 
 Conferia.js is a drop-in solution that connects the needs of conference
 organizers and participants. For organizers, it aims to make it easy to create
@@ -16,9 +16,11 @@ as a full solution for participants to find and filter events, create their own
 personal schedule, and even add the events to their own calendar to never miss
 an exciting presentation.
 
+> You can see an [interactive demo](demo/index.htm) to experience Conferia.js.
+
 This documentation includes three documents:
 
-* [An interactive demo with test data to try the tool out.](demo/index.htm)
+* [An interactive demo with test data to try the tool out.](demo/index.md)
 * [A comprehensive setup guide for conference organizers.](organizers-guide.md)
 * [A user's guide for participants and users of the app.](users-guide.md)
 
