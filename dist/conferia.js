@@ -8636,7 +8636,7 @@
         return { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton };
     }
 
-    var version = "0.6.0";
+    var version = "0.7.0";
     var pkg = {
     	version: version};
 
@@ -9350,12 +9350,15 @@ agenda.`, [
                 // left & width are more complex
                 if (this.opt.groupByLocation) {
                     card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`;
-                    if (event.location && hasConflict) {
+                    if (hasConflict) {
                         card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
                     }
                     else {
                         // No conflict with other events -> make it span th entire day column
-                        card.style.width = `${COLUMN_WIDTH * rpd[dayOffset].length - PADDING * 2}px`;
+                        // This line here is necessary since, if there are no conflicts, the
+                        // rpd array will be empty.
+                        const colspan = Math.max(rpd[dayOffset].length, 1);
+                        card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`;
                     }
                     // Ensure that meta events (such as lunches and coffee breaks) overlap
                     // any events that cross through them. (Oftentimes, if there are longer
