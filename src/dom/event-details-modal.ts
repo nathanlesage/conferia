@@ -44,10 +44,23 @@ export function showEventDetailsModal (event: CSVRecord): void {
   closeButton.addEventListener('click', () => dialog.close())
   dialog.appendChild(closeButton)
 
-  document.body.appendChild(dialog)
-  dialog.addEventListener('close', () => {
+  const closeDialog = (event: Event|MouseEvent) => {
+    if (event instanceof MouseEvent) {
+      const { top, right, bottom, left } = dialog.getBoundingClientRect()
+      if (
+        event.clientX >= left && event.clientX <= right &&
+        event.clientY >= top && event.clientY <= bottom
+      ) {
+        return // Do not close dialog
+      }
+    }
     document.body.removeChild(dialog)
-  })
+    document.removeEventListener('mouseup', closeDialog)
+  }
+
+  document.body.appendChild(dialog)
+  dialog.addEventListener('close', closeDialog)
+  document.addEventListener('mouseup', closeDialog)
   dialog.showModal()
 }
 
