@@ -66,6 +66,15 @@ export interface ConferiaOptions {
    */
   timeGridSeconds?: number
   /**
+   * The minimum height of a card on the schedule. Provide a number of pixels.
+   * By default, this is XX. This will be the height of the shortest event on
+   * the schedule. Note that all other events will likewise be scaled by this
+   * factor. Example: If you have one event of 5 minutes and one of 3 hours, the
+   * 5 minute event will be this amount of pixels high, while the 3 hour event
+   * will be 36 times this amount of pixels high (3 hours / 5 minutes).
+   */
+  minimumCardHeight?: number
+  /**
    * An optional function that you can use to correct the dates in your CSV
    * file. Use this to fix datetimes, if whichever application you peruse to
    * generate the CSV file cannot properly output ISO 8601 strings (such as
@@ -269,7 +278,7 @@ export class Conferia {
 
     // Calculate the "pixels per second," a measure to ensure the events have a
     // proper "minimum height."
-    const MIN_HEIGHT = 25 // How small should the events be at minimum?
+    const MIN_HEIGHT = this.opt.minimumCardHeight ?? 75
     const pps = MIN_HEIGHT / shortestInterval
 
     // Now, determine the "raster" size (minimum size for a time interval in
@@ -321,7 +330,7 @@ export class Conferia {
       const PADDING = this.opt.eventCardPadding ?? 10
 
       // Ensure each event is *at least* shortestInterval high.
-      const height = Math.max(pps * shortestInterval, eventDuration * pps - PADDING * 2)
+      const height = Math.max(pps * shortestInterval, eventDuration * pps) - PADDING * 2
 
       card.style.top = `${timeOffset * pps + PADDING}px`
       card.style.height = `${height}px`
