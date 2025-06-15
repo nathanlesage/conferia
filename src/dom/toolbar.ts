@@ -1,5 +1,6 @@
 // Toolbar related DOM structure generation
 import slashIcon from '../icons/slash.svg'
+import calendarIcon from '../icons/calendar.svg'
 
 export interface ToolbarDOMStructure {
   toolbar: HTMLDivElement
@@ -28,7 +29,8 @@ export function generateToolbarStructure (): ToolbarDOMStructure {
   toolbar.appendChild(agendaLabel)
 
   const toIcalButton = document.createElement('button')
-  toIcalButton.textContent = 'Add to calendar'
+  toIcalButton.innerHTML = calendarIcon
+  toIcalButton.setAttribute('title', 'Add to calendar')
   toolbar.appendChild(toIcalButton)
 
   const fullscreenButton = document.createElement('button')
