@@ -47,6 +47,10 @@
 
 /* BEGIN: CONFERIA-SCOPED GENERICS */
 dialog.conferia-dialog, #conferia-wrapper {
+  /* Define reasonable base styles for everything */
+  font-size: 16px;
+  line-height: 120%;
+
   * {
     outline-color: var(--accent-color);
     box-sizing: border-box;
@@ -297,7 +301,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 }
 
 dialog.conferia-dialog {
-  width: min(100%, 600px);
+  width: min(100%, 1024px);
   border: none;
   border-radius: var(--cf-border-radius);
   background-color: var(--element-background);
