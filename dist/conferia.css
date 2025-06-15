@@ -238,6 +238,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 
       h3.cf-event-title {
         margin: 0;
+        color: inherit;
         font-size: 1rem;
         line-height: 100%;
         grid-area: title;
