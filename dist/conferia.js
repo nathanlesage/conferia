@@ -8479,11 +8479,35 @@
         return date.diff(referenceDate).as('days');
     }
 
+    /**
+     * Utility function that allows creation of DOM elements in a more ergonomic way
+     * than the default document.createElement way.
+     *
+     * @param   {HTMLElementTagNameMap}  tagName  The tag name
+     * @param   {string[][]}             classes  Optional classes to add
+     * @param   {Record<string, string>} attr     Attributes to set
+     *
+     * @return  {HTMLElement}                     The HTML Element
+     */
+    function dom(tagName, classes, attr) {
+        const elem = document.createElement(tagName);
+        if (typeof classes === 'string') {
+            elem.classList.value = classes;
+        }
+        else if (Array.isArray(classes)) {
+            elem.classList.add(...classes);
+        }
+        if (attr !== undefined) {
+            for (const prop in attr) {
+                elem.setAttribute(prop, attr[prop]);
+            }
+        }
+        return elem;
+    }
+
     const MINIMUM_TICK_HEIGHT = 25;
     function generateTimeGutter() {
-        const div = document.createElement('div');
-        div.setAttribute('id', 'conferia-time-gutter');
-        return div;
+        return dom('div', undefined, { id: 'conferia-time-gutter' });
     }
     /**
      * Updates the time gutter to reflect the full range of times
@@ -8506,8 +8530,7 @@
         // One tick per shortest interval
         timeGutter.style = `height: ${(tickCount + 1) * tickSize * pps}px;`;
         for (let i = 0; i <= tickCount; i++) {
-            const tick = document.createElement('div');
-            tick.classList.add('tick', 'time');
+            const tick = dom('div', 'tick time');
             tick.style = `height: ${tickSize * pps}px;`;
             const tickTime = startTime.plus({ seconds: i * tickSize });
             tick.textContent = tickTime.toLocaleString({ timeStyle: 'short', hourCycle: 'h24' });
@@ -8516,9 +8539,7 @@
     }
 
     function generateDayGutter() {
-        const div = document.createElement('div');
-        div.setAttribute('id', 'conferia-day-gutter');
-        return div;
+        return dom('div', undefined, { id: 'conferia-day-gutter' });
     }
     function updateGutterTicks(dayGutter, startDay, totalDays, colWidth, dayLocations) {
         dayGutter.innerHTML = '';
@@ -8527,8 +8548,7 @@
             // day there are only no-location events.
             const nSubCols = dayLocations !== undefined ? Math.max(1, dayLocations[i].length) : 1;
             const thisDay = startDay.plus({ days: i });
-            const dayTick = document.createElement('div');
-            dayTick.classList.add('tick', 'day');
+            const dayTick = dom('div', 'tick day');
             dayTick.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             dayTick.style.width = `${colWidth * nSubCols}px`;
             dayGutter.appendChild(dayTick);
@@ -8538,9 +8558,7 @@
     var bookmarkIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-bookmark\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path></svg>";
 
     function generateScheduleBoard() {
-        const div = document.createElement('div');
-        div.setAttribute('id', 'conferia-schedule-board');
-        return div;
+        return dom('div', undefined, { id: 'conferia-schedule-board' });
     }
     function updateScheduleBoard(scheduleBoard, dayWidth, timeWidth) {
         scheduleBoard.style = `background-size: ${dayWidth}px ${timeWidth}px;
@@ -8548,58 +8566,62 @@
     repeating-linear-gradient(90deg, transparent, transparent ${dayWidth - 1}px, var(--schedule-board-grid) ${dayWidth - 1}px, var(--schedule-board-grid) ${dayWidth}px),
     repeating-linear-gradient(0deg, transparent, transparent ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth}px);`;
     }
+    function drawVerticalDayDividers(startTime, endTime, scheduleBoard, columnWidth, colsPerDay, pps) {
+        const secondsPerDay = getTimeOffset(endTime, startTime);
+        const dividerHeight = secondsPerDay * pps;
+        const dividerWidth = 6;
+        for (let day = 1; day < colsPerDay.length; day++) {
+            const prevColumnsOffset = colsPerDay.slice(0, day).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0);
+            const div = dom('div', 'cf-day-divider');
+            div.style.width = `${dividerWidth}px`;
+            div.style.height = `${dividerHeight}px`;
+            div.style.top = '0px';
+            div.style.left = `${prevColumnsOffset * columnWidth - dividerWidth / 2}px`;
+            scheduleBoard.appendChild(div);
+        }
+    }
     function generateEventCard(event, agenda) {
-        const card = document.createElement('div');
-        card.classList.add('event', event.type);
+        const card = dom('div', ['event', event.type]);
         card.style.position = 'absolute';
         // Card header
         // ==========================================
-        const header = document.createElement('div');
-        header.classList.add('event-header');
+        const header = dom('div', 'event-header');
         card.appendChild(header);
-        const title = document.createElement('h3');
-        title.classList.add('cf-event-title');
+        const title = dom('h3', 'cf-event-title');
         title.textContent = event.title;
         header.appendChild(title);
         if (event.location !== undefined) {
-            const loc = document.createElement('p');
-            loc.classList.add('location');
+            const loc = dom('p', 'location');
             loc.textContent = event.location;
             header.appendChild(loc);
         }
         // Card content
         // ==========================================
-        const content = document.createElement('div');
-        content.classList.add('event-content');
+        const content = dom('div', 'event-content');
         card.appendChild(content);
         if (event.type === 'session') {
-            const ol = document.createElement('ol');
-            ol.classList.add('presentation-list');
+            const ol = dom('ol', 'presentation-list');
             for (const presentation of event.presentations) {
-                const li = document.createElement('li');
+                const li = dom('li');
                 li.textContent = presentation.title;
                 ol.appendChild(li);
             }
             content.appendChild(ol);
         }
         else if (event.type === 'keynote' || event.type === 'single') {
-            const author = document.createElement('p');
-            author.classList.add('author');
+            const author = dom('p', 'author');
             author.textContent = event.author;
             content.appendChild(author);
         }
         // Card footer
         // ==========================================
-        const footer = document.createElement('div');
-        footer.classList.add('event-footer');
+        const footer = dom('div', 'event-footer');
         card.appendChild(footer);
         // Footer information
-        const idElem = document.createElement('p');
-        idElem.classList.add('event-id');
+        const idElem = dom('p', 'event-id');
         idElem.textContent = event.id;
         footer.appendChild(idElem);
-        const bookmarkItem = document.createElement('div');
-        bookmarkItem.classList.add('bookmark');
+        const bookmarkItem = dom('div', 'bookmark');
         bookmarkItem.innerHTML = bookmarkIcon;
         card.classList.toggle('bookmarked', agenda.hasItem(event.id));
         bookmarkItem.addEventListener('click', evt => {
@@ -8619,27 +8641,24 @@
 
     var slashIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-slash\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line></svg>";
 
+    var calendarIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-calendar\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>";
+
     // Toolbar related DOM structure generation
     function generateToolbarStructure() {
-        const toolbar = document.createElement('div');
-        toolbar.setAttribute('id', 'conferia-toolbar');
-        const filter = document.createElement('input');
-        filter.setAttribute('type', 'search');
-        filter.setAttribute('placeholder', 'Search…');
+        const toolbar = dom('div', undefined, { id: 'conferia-toolbar' });
+        const filter = dom('input', undefined, { type: 'search', placeholder: 'Search…' });
         toolbar.appendChild(filter);
-        const agendaLabel = document.createElement('label');
-        const personalAgendaToggle = document.createElement('input');
-        personalAgendaToggle.setAttribute('type', 'checkbox');
+        const agendaLabel = dom('label');
+        const personalAgendaToggle = dom('input', undefined, { type: 'checkbox' });
         agendaLabel.appendChild(personalAgendaToggle);
         agendaLabel.appendChild(new Text('Only Personal Agenda'));
         toolbar.appendChild(agendaLabel);
-        const toIcalButton = document.createElement('button');
-        toIcalButton.textContent = 'Add to calendar';
+        const toIcalButton = dom('button', undefined, { title: 'Add to calendar' });
+        toIcalButton.innerHTML = calendarIcon;
         toolbar.appendChild(toIcalButton);
-        const fullscreenButton = document.createElement('button');
+        const fullscreenButton = dom('button');
         toolbar.appendChild(fullscreenButton);
-        const clearButton = document.createElement('button');
-        clearButton.setAttribute('title', 'Clear data…');
+        const clearButton = dom('button', undefined, { title: 'Clear data…' });
         clearButton.innerHTML = slashIcon;
         toolbar.appendChild(clearButton);
         return {
@@ -8725,9 +8744,7 @@
      * @return  {HTMLDivElement}  The wrapper DIV
      */
     function generateScheduleWrapper() {
-        const div = document.createElement('div');
-        div.setAttribute('id', 'conferia-schedule-wrapper');
-        return div;
+        return dom('div', undefined, { id: 'conferia-schedule-wrapper' });
     }
     /**
      * Generates the outer wrapper
@@ -8738,10 +8755,9 @@
      * @return  {HTMLDivElement}             The wrapper DIV
      */
     function generateWrapper(title, maxHeight) {
-        const div = document.createElement('div');
-        div.setAttribute('id', 'conferia-wrapper');
+        const div = dom('div', undefined, { id: 'conferia-wrapper' });
         if (title !== undefined) {
-            const h1 = document.createElement('h1');
+            const h1 = dom('h1');
             h1.textContent = title;
             div.appendChild(h1);
         }
@@ -8753,9 +8769,8 @@
      * @return  {HTMLDivElement}  The footer DIV
      */
     function generateFooter() {
-        const div = document.createElement('div');
-        div.setAttribute('id', 'conferia-footer');
-        const copy = document.createElement('span');
+        const div = dom('div', undefined, { id: 'conferia-footer' });
+        const copy = dom('span');
         copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> ${pkg.version} | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`;
         div.appendChild(copy);
         return div;
@@ -8767,10 +8782,8 @@
      * @param   {CSVRecord}  event  The event to detail
      */
     function showEventDetailsModal(event) {
-        const dialog = document.createElement('dialog');
-        dialog.classList.add('conferia-dialog', 'conferia-event-details');
-        const title = document.createElement('h3');
-        title.classList.add('cf-event-title');
+        const dialog = dom('dialog', 'conferia-dialog conferia-event-details');
+        const title = dom('h3', 'cf-event-title');
         switch (event.type) {
             case 'keynote':
                 title.textContent = 'Keynote: ' + event.title;
@@ -8783,19 +8796,16 @@
         }
         dialog.appendChild(title);
         if (event.location !== undefined) {
-            const loc = document.createElement('p');
-            loc.classList.add('location');
+            const loc = dom('p', 'location');
             loc.textContent = event.location;
             dialog.appendChild(loc);
         }
         const content = generateEventDOMStructure(event);
         dialog.appendChild(content);
-        const idElem = document.createElement('p');
-        idElem.classList.add('event-id');
+        const idElem = dom('p', 'event-id');
         idElem.textContent = event.id;
         dialog.appendChild(idElem);
-        const closeButton = document.createElement('button');
-        closeButton.classList.add('close-button');
+        const closeButton = dom('button', 'close-button');
         closeButton.textContent = 'Close';
         closeButton.addEventListener('click', () => dialog.close());
         dialog.appendChild(closeButton);
@@ -8824,47 +8834,40 @@
      */
     function generateEventDOMStructure(event) {
         const wrapper = generateDialogWrapper();
-        const time = document.createElement('p');
-        time.classList.add('time');
+        const time = dom('p', 'time');
         wrapper.appendChild(time);
         const date = event.dateStart.toLocaleString({ dateStyle: 'medium' });
         const fromString = event.dateStart.toLocaleString({ timeStyle: 'short' });
         const toString = event.dateEnd.toLocaleString({ timeStyle: 'short' });
         time.textContent = `${date}, ${fromString} – ${toString}`;
         if (event.chair !== undefined && event.chair !== '') {
-            const chair = document.createElement('p');
-            chair.classList.add('chair');
+            const chair = dom('p', 'chair');
             chair.textContent = 'Chair: ' + event.chair;
             wrapper.appendChild(chair);
         }
         if (event.type === 'session') {
             for (const pres of event.presentations) {
-                const details = document.createElement('details');
-                details.classList.add('presentation');
-                const summary = document.createElement('summary');
+                const details = dom('details', 'presentation');
+                const summary = dom('summary');
                 details.appendChild(summary);
-                const title = document.createElement('strong');
+                const title = dom('strong');
                 title.textContent = pres.title;
                 summary.appendChild(title);
-                const author = document.createElement('p');
-                author.classList.add('author');
+                const author = dom('p', 'author');
                 author.textContent = pres.author;
                 summary.appendChild(author);
-                const abstract = document.createElement('p');
-                abstract.classList.add('abstract');
+                const abstract = dom('p', 'abstract');
                 abstract.textContent = pres.abstract;
                 details.appendChild(abstract);
                 wrapper.appendChild(details);
-                wrapper.appendChild(document.createElement('hr'));
+                wrapper.appendChild(dom('hr'));
             }
         }
         if (event.type === 'keynote' || event.type === 'single' || event.type === 'special') {
-            const author = document.createElement('p');
-            author.classList.add('author');
+            const author = dom('p', 'author');
             author.textContent = event.author;
             wrapper.appendChild(author);
-            const abstract = document.createElement('p');
-            abstract.classList.add('abstract');
+            const abstract = dom('p', 'abstract');
             abstract.textContent = event.abstract;
             wrapper.appendChild(abstract);
         }
@@ -8876,9 +8879,7 @@
      * @return  {HTMLElement}  The content div
      */
     function generateDialogWrapper() {
-        const div = document.createElement('div');
-        div.classList.add('dialog-content-wrapper');
-        return div;
+        return dom('div', 'dialog-content-wrapper');
     }
 
     // Utility to ask the user using a dialog
@@ -8896,17 +8897,14 @@
     function askUser(title, message, buttons) {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
-                const dialog = document.createElement('dialog');
-                dialog.classList.add('conferia-dialog');
-                const titleElem = document.createElement('h3');
+                const dialog = dom('dialog', 'conferia-dialog');
+                const titleElem = dom('h3', 'title');
                 titleElem.textContent = title;
-                titleElem.classList.add('title');
                 dialog.appendChild(titleElem);
-                const content = document.createElement('div');
+                const content = dom('div');
                 content.textContent = message;
                 dialog.appendChild(content);
-                const buttonGroup = document.createElement('div');
-                buttonGroup.classList.add('button-group');
+                const buttonGroup = dom('div', 'button-group');
                 dialog.appendChild(buttonGroup);
                 for (let i = 0; i < buttons.length; i++) {
                     const buttonElement = document.createElement('button');
@@ -9386,8 +9384,8 @@ agenda.`, [
             // Draw a grid in the scheduleBoard
             const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
             updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
-            // Finally, draw the events on the scheduleboard
             this.dom.scheduleBoard.innerHTML = '';
+            // Draw the events on the scheduleboard
             for (const event of records) {
                 const card = generateEventCard(event, this.agenda);
                 card.addEventListener('click', () => showEventDetailsModal(event));
@@ -9432,6 +9430,9 @@ agenda.`, [
                 }
                 this.dom.scheduleBoard.appendChild(card);
             }
+            // Final step: draw the vertical day-dividers so that the borders between
+            // the days become more pronounced
+            drawVerticalDayDividers(earliestTime, latestTime, this.dom.scheduleBoard, COLUMN_WIDTH, rpd, pps);
         }
         /**
          * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1

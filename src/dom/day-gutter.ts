@@ -1,9 +1,8 @@
 import { DateTime } from "luxon"
+import { dom } from "./util"
 
 export function generateDayGutter (): HTMLDivElement {
-  const div = document.createElement('div')
-  div.setAttribute('id', 'conferia-day-gutter')
-  return div
+  return dom('div', undefined, { id: 'conferia-day-gutter' })
 }
 
 export function updateGutterTicks (dayGutter: HTMLElement, startDay: DateTime, totalDays: number, colWidth: number, dayLocations?: Array<string[]>): void {
@@ -13,8 +12,7 @@ export function updateGutterTicks (dayGutter: HTMLElement, startDay: DateTime, t
     // day there are only no-location events.
     const nSubCols = dayLocations !== undefined ? Math.max(1, dayLocations[i].length) : 1
     const thisDay = startDay.plus({ days: i })
-    const dayTick = document.createElement('div')
-    dayTick.classList.add('tick', 'day')
+    const dayTick = dom('div', 'tick day')
     dayTick.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
     dayTick.style.width = `${colWidth * nSubCols}px`
     dayGutter.appendChild(dayTick)

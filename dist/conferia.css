@@ -209,6 +209,11 @@ dialog.conferia-dialog, #conferia-wrapper {
   grid-area: schedule;
   position: relative;
 
+  .cf-day-divider {
+    position: absolute;
+    background-color: var(--accent-color);
+  }
+
   .event {
     background-color: var(--element-background);
     box-shadow: 5px 5px 5px 0px var(--element-shadow-color);

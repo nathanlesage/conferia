@@ -3,7 +3,7 @@ import { updateGutterTicks as updateTimeGutter } from "./dom/time-gutter"
 import { updateGutterTicks as updateDayGutter } from "./dom/day-gutter"
 import { DOMStructure, generateDOMStructure } from "./dom/wrapper"
 import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset } from "./util/time-helpers"
-import { generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
+import { drawVerticalDayDividers, generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
 import { DateTime } from "luxon"
 import { showEventDetailsModal } from "./dom/event-details-modal"
 import { Agenda } from "./agenda"
@@ -17,19 +17,18 @@ export interface ConferiaOptions {
    * Where in the DOM should the schedule live?
    */
   parent: HTMLElement
+
+  /**
+   * The link to the data file
+   */
+  src: string
+
   /**
    * An optional title to be rendered above the schedule (useful if you have the
    * schedule live on its dedicated page)
    */
   title?: string
-  /**
-   * The link to the data file
-   */
-  src: string
-  /**
-   * If true, makes the library print out some debug info
-   */
-  debug?: boolean
+
   /**
    * Specifies the IANA timezone for the entire event. This is optional, in
    * which case the timezone information in the data file take precedence, or
@@ -38,16 +37,18 @@ export interface ConferiaOptions {
    * See the README.md for more information.
    */
   timeZone?: string
+
   /**
    * Specifies the maximum height of the entire wrapper. Defaults to 100% of the
    * visible window height. Provide a number of pixels.
    */
   maxHeight?: number
+
   /**
-   * Allows you to specify some padding for the event cards on the calendar
-   * (default: 10).
+   * Specifies the padding on the calendar board (default: 10).
    */
   eventCardPadding?: number
+
   /**
    * Specifies a specific grid line interval. By default, the grid lines will
    * mark the smallest interval available. With this setting, you can "fix" the
@@ -59,6 +60,7 @@ export interface ConferiaOptions {
    * * `3600`: 1 hour
    */
   timeGridSeconds?: number
+
   /**
    * The minimum height of a card on the schedule. Provide a number of pixels.
    * By default, this is 75. This will be the height of the shortest event on
@@ -68,6 +70,7 @@ export interface ConferiaOptions {
    * will be 36 times this amount of pixels high (3 hours / 5 minutes).
    */
   minimumCardHeight?: number
+
   /**
    * An optional function that you can use to correct the dates in your CSV
    * file. Use this to fix datetimes, if whichever application you peruse to
@@ -82,7 +85,7 @@ export interface ConferiaOptions {
    * @return  {string}                Must return an ISO 8601-compatible
    *                                  datetime string.
    */
-  dateParser?: (dateString: string, luxon: typeof DateTime) => string,
+  dateParser?: (dateString: string, luxon: typeof DateTime) => string
 
   /**
    * An optional function that you can use to fine-tune the data in the loading
@@ -98,6 +101,11 @@ export interface ConferiaOptions {
    * @return  {CSVRecord|SessionPresentationRecord}          The parsed and modified record
    */
   rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
+
+  /**
+   * If true, makes the library print out some debug info
+   */
+  debug?: boolean
 }
 
 export class Conferia {
@@ -293,8 +301,9 @@ export class Conferia {
     const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
     updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps)
 
-    // Finally, draw the events on the scheduleboard
     this.dom.scheduleBoard.innerHTML = ''
+
+    // Draw the events on the scheduleboard
     for (const event of records) {
       const card = generateEventCard(event, this.agenda)
       card.addEventListener('click', () => showEventDetailsModal(event))
@@ -347,6 +356,10 @@ export class Conferia {
 
       this.dom.scheduleBoard.appendChild(card)
     }
+
+    // Final step: draw the vertical day-dividers so that the borders between
+    // the days become more pronounced
+    drawVerticalDayDividers(earliestTime, latestTime, this.dom.scheduleBoard, COLUMN_WIDTH, rpd, pps)
   }
 
   /**

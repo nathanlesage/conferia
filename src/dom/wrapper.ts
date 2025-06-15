@@ -5,6 +5,7 @@ import { generateToolbarStructure } from "./toolbar"
 import pkg from "../../package.json"
 import enterFullscreenIcon from '../icons/enter-fullscreen.svg'
 import exitFullscreenIcon from '../icons/exit-fullscreen.svg'
+import { dom } from "./util"
 
 export interface DOMStructure {
   wrapper: HTMLDivElement
@@ -98,9 +99,7 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
  * @return  {HTMLDivElement}  The wrapper DIV
  */
 function generateScheduleWrapper (): HTMLDivElement {
-  const div = document.createElement('div')
-  div.setAttribute('id', 'conferia-schedule-wrapper')
-  return div
+  return dom('div', undefined, { id: 'conferia-schedule-wrapper' })
 }
 
 /**
@@ -112,14 +111,13 @@ function generateScheduleWrapper (): HTMLDivElement {
  * @return  {HTMLDivElement}             The wrapper DIV
  */
 function generateWrapper (title?: string, maxHeight?: string): HTMLDivElement {
-  const div = document.createElement('div')
-  div.setAttribute('id', 'conferia-wrapper')
+  const div = dom('div', undefined, { id: 'conferia-wrapper' })
   if (maxHeight !== undefined) {
     div.style.maxHeight = maxHeight
   }
 
   if (title !== undefined) {
-    const h1 = document.createElement('h1')
+    const h1 = dom('h1')
     h1.textContent = title
     div.appendChild(h1)
   }
@@ -133,10 +131,9 @@ function generateWrapper (title?: string, maxHeight?: string): HTMLDivElement {
  * @return  {HTMLDivElement}  The footer DIV
  */
 function generateFooter (): HTMLDivElement {
-  const div = document.createElement('div')
-  div.setAttribute('id', 'conferia-footer')
+  const div = dom('div', undefined, { id: 'conferia-footer' })
 
-  const copy = document.createElement('span')
+  const copy = dom('span')
   copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> ${pkg.version} | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`
   div.appendChild(copy)
 

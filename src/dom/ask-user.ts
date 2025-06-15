@@ -1,5 +1,7 @@
 // Utility to ask the user using a dialog
 
+import { dom } from "./util"
+
 /**
  * Shows a dialog to the user asking to click one of the buttons. The promise
  * resolves with either the clicked button ID, or undefined if the dialog was
@@ -13,20 +15,17 @@
  */
 export async function askUser (title: string, message: string, buttons: string[]): Promise<number|undefined> {
   return new Promise((resolve, reject) => {
-    const dialog = document.createElement('dialog')
-    dialog.classList.add('conferia-dialog')
+    const dialog = dom('dialog', 'conferia-dialog')
 
-    const titleElem = document.createElement('h3')
+    const titleElem = dom('h3', 'title')
     titleElem.textContent = title
-    titleElem.classList.add('title')
     dialog.appendChild(titleElem)
 
-    const content = document.createElement('div')
+    const content = dom('div')
     content.textContent = message
     dialog.appendChild(content)
 
-    const buttonGroup = document.createElement('div')
-    buttonGroup.classList.add('button-group')
+    const buttonGroup = dom('div', 'button-group')
     dialog.appendChild(buttonGroup)
 
     for (let i = 0; i < buttons.length; i++) {
