@@ -8646,7 +8646,7 @@
         };
     }
 
-    var version = "0.8.0";
+    var version = "0.9.0";
     var pkg = {
     	version: version};
 
@@ -9319,7 +9319,7 @@ agenda.`, [
          * entire UI, based on any filters, etc.
          */
         updateUI() {
-            var _a, _b, _c, _d, _e, _f, _g;
+            var _a, _b, _c, _d, _e, _f, _g, _h;
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
             if (records.length === 0) {
@@ -9357,7 +9357,7 @@ agenda.`, [
             // DEBUG END
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
-            const MIN_HEIGHT = 25; // How small should the events be at minimum?
+            const MIN_HEIGHT = (_f = this.opt.minimumCardHeight) !== null && _f !== void 0 ? _f : 75;
             const pps = MIN_HEIGHT / shortestInterval;
             // Now, determine the "raster" size (minimum size for a time interval in
             // width and height based on the shortest interval)
@@ -9376,7 +9376,7 @@ agenda.`, [
                 updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH);
             }
             // Draw a grid in the scheduleBoard
-            const timeGridInterval = (_f = this.opt.timeGridSeconds) !== null && _f !== void 0 ? _f : shortestInterval;
+            const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
             updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
             // Finally, draw the events on the scheduleboard
             this.dom.scheduleBoard.innerHTML = '';
@@ -9397,9 +9397,9 @@ agenda.`, [
                     withinDayOffset = 0;
                 }
                 const eventDuration = getTimeOffset(event.dateEnd, event.dateStart);
-                const PADDING = (_g = this.opt.eventCardPadding) !== null && _g !== void 0 ? _g : 10;
+                const PADDING = (_h = this.opt.eventCardPadding) !== null && _h !== void 0 ? _h : 10;
                 // Ensure each event is *at least* shortestInterval high.
-                const height = Math.max(pps * shortestInterval, eventDuration * pps - PADDING * 2);
+                const height = Math.max(pps * shortestInterval, eventDuration * pps) - PADDING * 2;
                 card.style.top = `${timeOffset * pps + PADDING}px`;
                 card.style.height = `${height}px`;
                 // left & width are more complex

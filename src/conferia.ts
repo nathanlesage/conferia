@@ -67,7 +67,7 @@ export interface ConferiaOptions {
   timeGridSeconds?: number
   /**
    * The minimum height of a card on the schedule. Provide a number of pixels.
-   * By default, this is XX. This will be the height of the shortest event on
+   * By default, this is 75. This will be the height of the shortest event on
    * the schedule. Note that all other events will likewise be scaled by this
    * factor. Example: If you have one event of 5 minutes and one of 3 hours, the
    * 5 minute event will be this amount of pixels high, while the 3 hour event
