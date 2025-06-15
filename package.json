@@ -1,6 +1,6 @@
 {
   "name": "conferia",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "A small library to display a conference schedule",
   "main": "src/main.ts",
   "scripts": {

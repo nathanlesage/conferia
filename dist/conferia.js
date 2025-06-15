@@ -8284,7 +8284,10 @@
             const { dateStart, dateEnd, location, chair } = presentations[0];
             // Sort the presentations according to their ordering
             presentations.sort((a, b) => a.sessionOrder - b.sessionOrder);
-            const id = hash(name + 'session' + presentations.map(p => hash(p)));
+            // Use just the date and session name to identify sessions. This way,
+            // presentations can change without removing the session itself from any
+            // users' agenda.
+            const id = hash(String(dateStart) + String(dateEnd) + 'session' + name);
             returnValue.push({
                 type: 'session', title: name,
                 dateStart, dateEnd, location, presentations, chair, id
@@ -8646,7 +8649,7 @@
         };
     }
 
-    var version = "0.9.0";
+    var version = "0.10.0";
     var pkg = {
     	version: version};
 
@@ -8796,10 +8799,20 @@
         closeButton.textContent = 'Close';
         closeButton.addEventListener('click', () => dialog.close());
         dialog.appendChild(closeButton);
-        document.body.appendChild(dialog);
-        dialog.addEventListener('close', () => {
+        const closeDialog = (event) => {
+            if (event instanceof MouseEvent) {
+                const { top, right, bottom, left } = dialog.getBoundingClientRect();
+                if (event.clientX >= left && event.clientX <= right &&
+                    event.clientY >= top && event.clientY <= bottom) {
+                    return; // Do not close dialog
+                }
+            }
             document.body.removeChild(dialog);
-        });
+            document.removeEventListener('mouseup', closeDialog);
+        };
+        document.body.appendChild(dialog);
+        dialog.addEventListener('close', closeDialog);
+        document.addEventListener('mouseup', closeDialog);
         dialog.showModal();
     }
     /**
@@ -9369,12 +9382,7 @@ agenda.`, [
             const rpd = roomsPerDay(records);
             // Now, update the time and day gutters
             updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps);
-            if (this.opt.groupByLocation) {
-                updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd);
-            }
-            else {
-                updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH);
-            }
+            updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd);
             // Draw a grid in the scheduleBoard
             const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
             updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
@@ -9403,30 +9411,24 @@ agenda.`, [
                 card.style.top = `${timeOffset * pps + PADDING}px`;
                 card.style.height = `${height}px`;
                 // left & width are more complex
-                if (this.opt.groupByLocation) {
-                    card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`;
-                    if (event.location && hasConflict) {
-                        card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
-                    }
-                    else {
-                        // No conflict with other events -> make it span th entire day column
-                        // This line here is necessary since, if there are no conflicts, the
-                        // rpd array will be empty.
-                        const colspan = Math.max(rpd[dayOffset].length, 1);
-                        card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`;
-                    }
-                    // Ensure that meta events (such as lunches and coffee breaks) overlap
-                    // any events that cross through them. (Oftentimes, if there are longer
-                    // events, there is usually a short break in between, but it is easier
-                    // to make both events additive instead of splitting the longer events
-                    // up into two separate smaller events in the Excel file.)
-                    if (event.type === 'meta') {
-                        card.style.zIndex = '1';
-                    }
+                card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`;
+                if (event.location && hasConflict) {
+                    card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
                 }
                 else {
-                    card.style.left = `${COLUMN_WIDTH * dayOffset + PADDING}px`;
-                    card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
+                    // No conflict with other events -> make it span th entire day column
+                    // This line here is necessary since, if there are no conflicts, the
+                    // rpd array will be empty.
+                    const colspan = Math.max(rpd[dayOffset].length, 1);
+                    card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`;
+                }
+                // Ensure that meta events (such as lunches and coffee breaks) overlap
+                // any events that cross through them. (Oftentimes, if there are longer
+                // events, there is usually a short break in between, but it is easier
+                // to make both events additive instead of splitting the longer events
+                // up into two separate smaller events in the Excel file.)
+                if (event.type === 'meta') {
+                    card.style.zIndex = '1';
                 }
                 this.dom.scheduleBoard.appendChild(card);
             }
