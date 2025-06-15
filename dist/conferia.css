@@ -335,8 +335,22 @@ dialog.conferia-event-details {
   grid-template-areas:
     "title title location"
     "cnt cnt cnt"
-    "footer-left close-button .";
+    "footer-left close-button bookmark-button";
   grid-template-columns: 1fr 3fr 1fr; /* TODO */
+
+  div.bookmark {
+    grid-area: bookmark-button;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    &.bookmarked svg {
+      color: var(--accent-color);
+      fill: var(--accent-color);
+    }
+  }
 
   .dialog-content-wrapper {
     grid-area: cnt;

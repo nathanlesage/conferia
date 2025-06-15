@@ -1,12 +1,14 @@
 import { CSVRecord } from "../csv"
 import { dom } from "./util"
+import bookmarkIcon from '../icons/bookmark.svg'
+import { Conferia } from "../conferia"
 
 /**
  * Creates and shows a dialog showing details for the provided event.
  *
  * @param   {CSVRecord}  event  The event to detail
  */
-export function showEventDetailsModal (event: CSVRecord): void {
+export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): void {
   const dialog = dom('dialog', 'conferia-dialog conferia-event-details')
 
   const title = dom('h3', 'cf-event-title')
@@ -35,6 +37,27 @@ export function showEventDetailsModal (event: CSVRecord): void {
   idElem.textContent = event.id
   dialog.appendChild(idElem)
 
+  // Bookmarking Capabilities
+  const bookmarkButton = dom('div', 'bookmark')
+  if (conferia.agenda.hasItem(event.id)) {
+    bookmarkButton.classList.add('bookmarked')
+  }
+
+  bookmarkButton.innerHTML = bookmarkIcon
+  dialog.appendChild(bookmarkButton)
+  bookmarkButton.addEventListener('click', () => {
+    if (conferia.agenda.hasItem(event.id)) {
+      conferia.agenda.removeItem(event.id)
+      bookmarkButton.classList.remove('bookmarked')
+    } else {
+      conferia.agenda.addItem(event.id)
+      bookmarkButton.classList.add('bookmarked')
+    }
+    conferia.updateUI()
+  })
+  // End Bookmarking
+
+  // Dialog closing
   const closeButton = dom('button', 'close-button')
   closeButton.textContent = 'Close'
   closeButton.addEventListener('click', () => dialog.close())

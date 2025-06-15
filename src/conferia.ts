@@ -117,7 +117,7 @@ export class Conferia {
   private query: string
   private showOnlyPersonalAgenda: boolean
 
-  private agenda: Agenda
+  public agenda: Agenda
 
   public constructor (opt: ConferiaOptions) {
     this.query = ''
@@ -233,7 +233,7 @@ export class Conferia {
    * This is the major function of this class. It completely (re)builds the
    * entire UI, based on any filters, etc.
    */
-  private updateUI () {
+  public updateUI () {
     // Before doing anything, retrieve the records we are supposed to show.
     const records = this.filterRecords()
 
@@ -306,7 +306,7 @@ export class Conferia {
     // Draw the events on the scheduleboard
     for (const event of records) {
       const card = generateEventCard(event, this.agenda)
-      card.addEventListener('click', () => showEventDetailsModal(event))
+      card.addEventListener('click', () => showEventDetailsModal(event, this))
 
       // Place the event on the schedule board
       const timeOffset = getTimeOffset(event.dateStart, earliestTime)

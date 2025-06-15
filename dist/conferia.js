@@ -8781,7 +8781,7 @@
      *
      * @param   {CSVRecord}  event  The event to detail
      */
-    function showEventDetailsModal(event) {
+    function showEventDetailsModal(event, conferia) {
         const dialog = dom('dialog', 'conferia-dialog conferia-event-details');
         const title = dom('h3', 'cf-event-title');
         switch (event.type) {
@@ -8805,6 +8805,26 @@
         const idElem = dom('p', 'event-id');
         idElem.textContent = event.id;
         dialog.appendChild(idElem);
+        // Bookmarking Capabilities
+        const bookmarkButton = dom('div', 'bookmark');
+        if (conferia.agenda.hasItem(event.id)) {
+            bookmarkButton.classList.add('bookmarked');
+        }
+        bookmarkButton.innerHTML = bookmarkIcon;
+        dialog.appendChild(bookmarkButton);
+        bookmarkButton.addEventListener('click', () => {
+            if (conferia.agenda.hasItem(event.id)) {
+                conferia.agenda.removeItem(event.id);
+                bookmarkButton.classList.remove('bookmarked');
+            }
+            else {
+                conferia.agenda.addItem(event.id);
+                bookmarkButton.classList.add('bookmarked');
+            }
+            conferia.updateUI();
+        });
+        // End Bookmarking
+        // Dialog closing
         const closeButton = dom('button', 'close-button');
         closeButton.textContent = 'Close';
         closeButton.addEventListener('click', () => dialog.close());
@@ -9388,7 +9408,7 @@ agenda.`, [
             // Draw the events on the scheduleboard
             for (const event of records) {
                 const card = generateEventCard(event, this.agenda);
-                card.addEventListener('click', () => showEventDetailsModal(event));
+                card.addEventListener('click', () => showEventDetailsModal(event, this));
                 // Place the event on the schedule board
                 const timeOffset = getTimeOffset(event.dateStart, earliestTime);
                 const dayOffset = getDayOffset(event.dateEnd, earliestDay);
