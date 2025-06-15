@@ -31,12 +31,6 @@ export interface ConferiaOptions {
    */
   debug?: boolean
   /**
-   * Specifies if all events are in a single column for each day, of if the
-   * various locations should form sub-columns under each day. Empty locations
-   * (i.e. when a room is only used on specific days) won't be rendered.
-   */
-  groupByLocation: boolean
-  /**
    * Specifies the IANA timezone for the entire event. This is optional, in
    * which case the timezone information in the data file take precedence, or
    * the timezone of the user. We recommend providing timezone information
@@ -293,12 +287,7 @@ export class Conferia {
 
     // Now, update the time and day gutters
     updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, pps)
-
-    if (this.opt.groupByLocation) {
-      updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd)
-    } else {
-      updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH)
-    }
+    updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd)
 
     // Draw a grid in the scheduleBoard
     const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
@@ -336,29 +325,24 @@ export class Conferia {
       card.style.height = `${height}px`
 
       // left & width are more complex
-      if (this.opt.groupByLocation) {
-        card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`
-        if (event.location && hasConflict) {
-          card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`
-        } else {
-          // No conflict with other events -> make it span th entire day column
-          // This line here is necessary since, if there are no conflicts, the
-          // rpd array will be empty.
-          const colspan = Math.max(rpd[dayOffset].length, 1)
-          card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`
-        }
-
-        // Ensure that meta events (such as lunches and coffee breaks) overlap
-        // any events that cross through them. (Oftentimes, if there are longer
-        // events, there is usually a short break in between, but it is easier
-        // to make both events additive instead of splitting the longer events
-        // up into two separate smaller events in the Excel file.)
-        if (event.type === 'meta') {
-          card.style.zIndex = '1'
-        }
-      } else {
-        card.style.left = `${COLUMN_WIDTH * dayOffset + PADDING}px`
+      card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`
+      if (event.location && hasConflict) {
         card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`
+      } else {
+        // No conflict with other events -> make it span th entire day column
+        // This line here is necessary since, if there are no conflicts, the
+        // rpd array will be empty.
+        const colspan = Math.max(rpd[dayOffset].length, 1)
+        card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`
+      }
+
+      // Ensure that meta events (such as lunches and coffee breaks) overlap
+      // any events that cross through them. (Oftentimes, if there are longer
+      // events, there is usually a short break in between, but it is easier
+      // to make both events additive instead of splitting the longer events
+      // up into two separate smaller events in the Excel file.)
+      if (event.type === 'meta') {
+        card.style.zIndex = '1'
       }
 
       this.dom.scheduleBoard.appendChild(card)

@@ -18,7 +18,6 @@ You can [download the demo data (CSV file)](test_data.csv).
     const conf = new Conferia({
       parent: document.getElementById('conferia'),
       src: 'test_data.csv',
-      groupByLocation: true,
       eventCardPadding: 10,
       timeZone: 'Europe/Stockholm'
     })
