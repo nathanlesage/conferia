@@ -216,7 +216,10 @@ export function parseCsv (
     // Sort the presentations according to their ordering
     presentations.sort((a, b) => a.sessionOrder - b.sessionOrder)
 
-    const id = hash(name + 'session' + presentations.map(p => hash(p)))
+    // Use just the date and session name to identify sessions. This way,
+    // presentations can change without removing the session itself from any
+    // users' agenda.
+    const id = hash(String(dateStart) + String(dateEnd) + 'session' + name)
 
     returnValue.push({
       type: 'session', title: name,
