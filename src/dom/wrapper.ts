@@ -65,25 +65,14 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   fullscreenButton.title = 'Enter Fullscreen'
 
   fullscreenButton.addEventListener('click', event => {
-    const hasFullscreen = document.fullscreenElement !== null
-    const isWrapperFullscreen = document.fullscreenElement === wrapper
-
-    if (hasFullscreen && !isWrapperFullscreen) {
-      return // Something else has fullscreen, don't interfere
-    } else if (hasFullscreen && isWrapperFullscreen) {
-      document.exitFullscreen()
-        .catch(err => console.error('Could not exit Conferia.js fullscreen', err))
-        .then(() => {
-          fullscreenButton.innerHTML = enterFullscreenIcon
-          fullscreenButton.title = 'Enter Fullscreen'
-        })
+    if (wrapper.classList.contains('fullscreen')) {
+      wrapper.classList.remove('fullscreen')
+      fullscreenButton.innerHTML = enterFullscreenIcon
+      fullscreenButton.title = 'Enter Fullscreen'
     } else {
-      wrapper.requestFullscreen()
-        .catch(err => console.error('Conferia could not enter fullscreen', err))
-        .then(() => {
-          fullscreenButton.innerHTML = exitFullscreenIcon
-          fullscreenButton.title = 'Exit Fullscreen'
-        })
+      wrapper.classList.add('fullscreen')
+      fullscreenButton.innerHTML = exitFullscreenIcon
+      fullscreenButton.title = 'Exit Fullscreen'
     }
   })
 
