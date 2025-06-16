@@ -119,9 +119,77 @@ function recordToIcal (record: CSVRecord): string[] {
     `LOCATION:${record.location}`,
     // iCal requires DTSTAMP
     `DTSTAMP:${dtNow}`,
-    `SUMMARY:${record.title}`, // Summary = title
-    `DESCRIPTION:${'abstract' in record ? record.abstract : ''}`,
+    ...foldIcalLines(`SUMMARY:${record.title}`), // Summary = title
+    ...icalDescriptionForRecord(record),
     `UID:${record.id}`,
     'END:VEVENT'
   ]
+}
+
+/**
+ * Generates a valid `DESCRIPTION:` component for a `VEVENT` entry. Takes care
+ * of line folding.
+ *
+ * @param   {CSVRecord[]}  record  The record in question.
+ *
+ * @return  {string[]}             The (properly parsed) lines of the DESCRIPTION.
+ */
+function icalDescriptionForRecord (record: CSVRecord): string[] {
+  // We have three possibilities:
+  // * Sessions need to contain a list of presentation titles
+  // * If the record has an abstract, use that one
+  // * If it doesn't, return the empty string
+
+  // NOTE: We do not add an EOL feed here, as this will be added by the compiler.
+  // However, we do remove any carriage returns in the text to ensure that we
+  // only have them where actually allowed.
+  if (record.type === 'session') {
+    // DESCRIPTION can contain the literal "\n" to denote newlines. Note that it
+    // must contain those characters LITERALLY. Otherwise the validator is going
+    // to complain. (See RFC 2445, p. 80 f.) Do not ask me who came up with this
+    // convention.
+    const description = 'DESCRIPTION:Presentations:\\n\\n' + record.presentations.map((pres, idx) => `${idx + 1}.\t` + pres.title.replace('\r', '')).join('\\n\\n')
+    return foldIcalLines(description)
+  } else if ('abstract' in record) {
+    const description = 'DESCRIPTION:' + record.abstract.replace('\r', '')
+    return foldIcalLines(description)
+  } else {
+    return ['DESCRIPTION:'] // Just return the empty description string
+  }
+}
+
+/**
+ * Implements RFC 2445 line folding consistent for iCalendar files.
+ *
+ * @param   {string}    text  The input text
+ *
+ * @return  {string[]}        Properly folded lines.
+ */
+function foldIcalLines (text: string): string[] {
+  // iCal descriptions should use what RFC 2445 calls a "line folding"
+  // technique. To quote:
+  // "Lines of text SHOULD NOT be longer than 75 octets, excluding the line
+  // break. Long content lines SHOULD be split into a multiple line
+  // representations using a line "folding" technique. That is, a long
+  // line can be split between any two characters by inserting a CRLF
+  // immediately followed by a single linear white space character (i.e.,
+  // SPACE, US-ASCII decimal 32 or HTAB, US-ASCII decimal 9). Any sequence
+  // of CRLF followed immediately by a single linear white space character
+  // is ignored (i.e., removed) when processing the content type." (p. 12)
+
+  if (text.length < 75) {
+    return [text]
+  }
+
+  const lines: string[] = []
+
+  let i = 0
+  while (i < text.length) {
+    // We're increasing by 70 instead of 75 because I'm not going to deal with
+    // UTF8 or UTF16 code point clusters just to ensure the octet rule.
+    lines.push((i > 0 ? ' ' : '') + text.slice(i, i + 70))
+    i += 70
+  }
+
+  return lines
 }
