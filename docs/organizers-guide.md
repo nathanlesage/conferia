@@ -33,8 +33,7 @@ this:
 document.addEventListener('DOMContentLoaded', () => {
   const conf = new Conferia({
     parent: document.body,
-    src: '/program.csv', // You can also specify the full URL if necessary
-    groupByLocation: true
+    src: '/program.csv' // You can also specify the full URL if necessary
   })
 })
 </script>
@@ -119,8 +118,7 @@ options.
 document.addEventListener('DOMContentLoaded', () => {
   const conf = new Conferia({
     parent: document.body,
-    src: 'http://www.example.com/program.csv',
-    groupByLocation: true
+    src: 'http://www.example.com/program.csv'
   })
 })
 </script>
