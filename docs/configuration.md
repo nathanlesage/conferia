@@ -5,8 +5,9 @@ title: Configuration
 
 This page describes the available configuration options available to customize
 your Conferia experience. It contains a dump of the configuration interface.
+These are the options you pass in to `new Conferia({ /* Options */ })`.
 
-For more details on the more complex options, please refer to the
+For more details and help for the more complex options, please refer to the
 [organizer's guide](organizers-guide.md).
 
 ```typescript
@@ -17,13 +18,16 @@ export interface ConferiaOptions {
   parent: HTMLElement
 
   /**
-   * The link to the data file
+   * The link to the data file. Can be a relative path (`/schedule.csv`) or an
+   * absolute URL (`https://www.example.com/schedule.csv`). The library uses
+   * `fetch` to download the data from there. If hosted on a different domain,
+   * may cause CORS errors.
    */
   src: string
 
   /**
    * An optional title to be rendered above the schedule (useful if you have the
-   * schedule live on its dedicated page)
+   * schedule live on its dedicated page).
    */
   title?: string
 
@@ -32,7 +36,7 @@ export interface ConferiaOptions {
    * which case the timezone information in the data file take precedence, or
    * the timezone of the user. We recommend providing timezone information
    * either within the datetimes in the data file, or by setting this property.
-   * See the README.md for more information.
+   * Refer to the manual for more information.
    */
   timeZone?: string
 
@@ -43,14 +47,14 @@ export interface ConferiaOptions {
   maxHeight?: number
 
   /**
-   * Specifies the padding on the calendar board (default: 10).
+   * Specifies the padding on the calendar board (default: 10px).
    */
   eventCardPadding?: number
 
   /**
    * Specifies a specific grid line interval. By default, the grid lines will
    * mark the smallest interval available. With this setting, you can "fix" the
-   * grid size to a specified number. Some values would be:
+   * grid size to a specified number. Some common values might be:
    *
    * * `300`: 5 minutes
    * * `900`: 15 minutes
@@ -65,7 +69,7 @@ export interface ConferiaOptions {
    * the schedule. Note that all other events will likewise be scaled by this
    * factor. Example: If you have one event of 5 minutes and one of 3 hours, the
    * 5 minute event will be this amount of pixels high, while the 3 hour event
-   * will be 36 times this amount of pixels high (3 hours / 5 minutes).
+   * will be 36 times this amount of pixels high (3 hours divided by 5 minutes).
    */
   minimumCardHeight?: number
 
@@ -92,6 +96,9 @@ export interface ConferiaOptions {
    * strings), as well as the header row (so that you can identify which column
    * you need). Return the record from this function once you're done.
    *
+   * NOTE: This function will *not* be called for the session events, as those
+   * are created only after the CSV file has been fully parsed.
+   *
    * @param   {string[]}                             row     The CSV row
    * @param   {string[]}                             header  The CSV header
    * @param   {CSVRecord|SessionPresentationRecord}  record  The parsed record
@@ -101,7 +108,7 @@ export interface ConferiaOptions {
   rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
 
   /**
-   * If true, makes the library print out some debug info
+   * If true, makes the library print out some debug info.
    */
   debug?: boolean
 }
