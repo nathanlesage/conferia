@@ -115,16 +115,30 @@ dialog.conferia-dialog, #conferia-wrapper {
   display: flex;
   flex-direction: column;
   background-color: var(--schedule-board-background);
+
+  &.fullscreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+  }
 }
 
 #conferia-footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 5px 10px;
   border: 1px solid var(--border-color);
   border-top: none;
   border-bottom-left-radius: var(--cf-border-radius);
   border-bottom-right-radius: var(--cf-border-radius);
+
+  span#cf-version {
+    display: block;
+  }
 }
 
 #conferia-toolbar {
@@ -188,7 +202,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 #conferia-day-gutter {
   height: 60px;
   background-color: var(--element-background);
-  font-size: 0.8rem;
+  font-size: 150%;
   grid-area: day-gutter;
   display: flex;
   position: sticky;
@@ -197,7 +211,6 @@ dialog.conferia-dialog, #conferia-wrapper {
   box-shadow: 0px 5px 5px 0px var(--element-shadow-color);
 
   .tick.day {
-    padding: 4px 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -249,7 +262,7 @@ dialog.conferia-dialog, #conferia-wrapper {
         margin: 0;
         color: inherit;
         font-size: 1rem;
-        line-height: 100%;
+        line-height: 120%;
         grid-area: title;
       }
   
