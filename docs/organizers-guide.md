@@ -67,6 +67,9 @@ prepare an Excel spreadsheet (or Google Docs -- whichever floats your boat), and
 pre-set it with the necessary columns. Then, you can already fill in information
 such as keynotes, lunch breaks, or the conference dinner date.
 
+Refer to the [CSV format reference](csv-format.md) to see exactly which columns
+are required.
+
 Be prepared that filling in this information will take some time. (It may also
 be wise to build an automated program export based on this Excel spreadsheet if
 you plan to distribute a PDF/printed program, too.)
@@ -102,7 +105,9 @@ will be available under the same domain as the schedule, because otherwise your
 visitors may run into so-called CORS errors.
 
 Then, add the corresponding code to your page, and provide the path to your
-CSV file. Adapt the various configuration options as necessary.
+CSV file. Adapt the various configuration options as necessary. Refer to the
+[configuration guide](configuration.md) for a complete list of configuration
+options.
 
 ```html
 <!-- Import Conferia.js-specific styles. -->
@@ -128,11 +133,11 @@ events.
 ## Customizing Conferia.js
 
 Configuring the schedule is possible via a set of configuration options. Please
-refer to the [README.md](https://github.com/nathanlesage/conferia) to see a full
-list of configuration options and their meaning.
+refer to the [configuration guide](configuration.md) to see a full list of
+configuration options and their meaning.
 
-In this section, we only highlight a few more important options that we believe
-you are most likely to customize or make use of:
+In this section, we only highlight a few more important and complex options that
+we believe you are most likely to customize or make use of.
 
 ### `parent`
 
@@ -163,19 +168,6 @@ unique ID, and provide that element to the library. For example:
 
 In this case, only set the `title` element if appropriate, since the function of
 the schedule should also be apparent from the page's context.
-
-### `groupByLocation`
-
-This property allows you to determine if the library should create a single
-column for each day, or generate sub-columns for each individual room. We
-recommend setting this to `true`, since Conferia will already do some
-calculations under the hood to ensure the schedule is as compact as possible.
-This means that, even if this property is `true`, there won't be any multiple
-columns if you have no overlapping/parallel sessions.
-
-> **Note**: If you set this to `false` but have parallel sessions, those will be
-> displayed on top of each other, meaning that only one session is actually
-> visible to participants, with the rest being hidden behind that one.
 
 ### `timeZone`
 
