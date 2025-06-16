@@ -117,7 +117,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   background-color: var(--schedule-board-background);
 
   &.fullscreen {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
