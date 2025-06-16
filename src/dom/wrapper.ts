@@ -134,8 +134,12 @@ function generateFooter (): HTMLDivElement {
   const div = dom('div', undefined, { id: 'conferia-footer' })
 
   const copy = dom('span')
-  copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> ${pkg.version} | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`
+  copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide" target="_blank">User‘s Guide</a>`
   div.appendChild(copy)
+
+  const ver = dom('span', undefined, { id: 'cf-version' })
+  ver.textContent = 'v' + pkg.version
+  div.appendChild(ver)
 
   return div
 }
