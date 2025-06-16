@@ -6,9 +6,9 @@ permalink: /users-guide/
 
 This documentation is intended for participants of conferences which use
 Conferia.js to display an interactive agenda. If you are a conference organizer,
-feel free to distribute a link to this document to ensure your participants know
-how to utilize the schedule. It is also linked from the footer of any Conferia
-instance so that users can click a link to land here.
+you can distribute a link to this document to ensure your participants know
+how to utilize the schedule. It is also linked from any Conferia instance so
+that users can click a link to land here.
 
 ## Overview
 
@@ -34,9 +34,15 @@ display a list of the presentation titles in the center of their card. You can
 view the authors and abstracts of all presentations by clicking on the card to
 open the detail view.
 
-In the bottom right, you can find a "bookmark" icon. If you click it, this will
-add the event to your personal agenda. Items on your personal agenda will
-receive a colored highlight to indicate this fact to you.
+In the bottom right of a card, you can find a "bookmark" icon. If you click it,
+this will add the event to your personal agenda. Items on your personal agenda
+will receive a colored highlight to indicate this fact to you.
+
+> Note: The tool remembers your personal agenda even if you close your browser
+> or restart your computer (as long as you do not delete the browsing data).
+> However, if the conference organizers change name or date of an event, this
+> will result in Conferia assuming a new event, and you will have to re-add this
+> to your agenda. Make sure you check your personal agenda from time to time.
 
 ## The Toolbar
 
@@ -69,12 +75,20 @@ When you click this button, the system will ask you what you wish to export:
   visible. This lets you, e.g., export the results of a search query.
 * **Personal Agenda**: This exports all events from your personal agenda.
 
+> Note: Usually, conference programs are subject to change up until the very
+> last minute. As long as your personal agenda is still in the Conferia
+> framework, changes will be reflected automatically. However, as soon as you
+> export any events into your personal calendar, this will break the connection
+> to the updated schedule. Your calendar events are static and will not be
+> updated if the organizers update the schedule. Therefore, we recommend you
+> export the personal agenda only once you are leaving for the conference.
+
 ### Viewing the Agenda in Fullscreen
 
 The next button in the toolbar is a fullscreen button. Click it to make the
 agenda fullscreen. This is especially convenient if the agenda lives on a page
 on the conference website and has a lot of margin to the sides. This feature may
-not work in all browsers (e.g., on iOS, this button unfortunately does nothing).
+not work in all browsers and contexts.
 
 ## Suggested Workflow / How to Use Conferia
 
