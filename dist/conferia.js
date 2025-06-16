@@ -8641,7 +8641,52 @@
 
     var slashIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-slash\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line></svg>";
 
+    var helpIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-help-circle\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line></svg>";
+
     var calendarIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-calendar\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>";
+
+    // Utility to ask the user using a dialog
+    /**
+     * Shows a dialog to the user asking to click one of the buttons. The promise
+     * resolves with either the clicked button ID, or undefined if the dialog was
+     * closed without clicking a button.
+     *
+     * @param   {string}                     title    The dialog title
+     * @param   {string}                     message  The dialog message
+     * @param   {string[]}                   buttons  The button labels
+     *
+     * @return  {Promise<number|undefined>}           The button ID, or undefined
+     */
+    function askUser(title, message, buttons) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                const dialog = dom('dialog', 'conferia-dialog');
+                const titleElem = dom('h3', 'title');
+                titleElem.textContent = title;
+                dialog.appendChild(titleElem);
+                const content = dom('div');
+                content.textContent = message;
+                dialog.appendChild(content);
+                const buttonGroup = dom('div', 'button-group');
+                dialog.appendChild(buttonGroup);
+                for (let i = 0; i < buttons.length; i++) {
+                    const buttonElement = document.createElement('button');
+                    buttonElement.textContent = buttons[i];
+                    buttonElement.addEventListener('click', () => {
+                        resolve(i);
+                        dialog.close();
+                    });
+                    buttonGroup.appendChild(buttonElement);
+                }
+                document.body.appendChild(dialog);
+                dialog.addEventListener('close', () => {
+                    resolve(undefined);
+                    document.body.removeChild(dialog);
+                });
+                dialog.showModal();
+            });
+        });
+    }
 
     // Toolbar related DOM structure generation
     function generateToolbarStructure() {
@@ -8661,6 +8706,28 @@
         const clearButton = dom('button', undefined, { title: 'Clear data…' });
         clearButton.innerHTML = slashIcon;
         toolbar.appendChild(clearButton);
+        const helpButton = dom('button', undefined, { title: 'Help' });
+        helpButton.innerHTML = helpIcon;
+        toolbar.appendChild(helpButton);
+        // We can handle the help button directly here.
+        helpButton.addEventListener('click', () => {
+            askUser('About Conferia.js', `This conference utilizes the Free and Open Source framework Conferia.js to implement an interactive agenda. Conferia allows you to browse the program effortlessly, search for events, and even bookmark sessions and export them into your personal calendar. Conferia.js has a manual that explains its features and how to use them.`, [
+                'Open documentation',
+                'Close'
+            ]).then(response => {
+                if (response === 0) {
+                    // User wants to open the documentation -> redirect them to the documentation.
+                    // NOTE: We have to do this little anchor element programmatic click dance
+                    // because Safari on iOS again does not allow opening a new tab using window.open.
+                    const a = dom('a', undefined, { href: 'https://nathanlesage.github.io/conferia/users-guide/', target: '_blank' });
+                    document.body.appendChild(a);
+                    a.addEventListener('mouseup', event => {
+                        document.body.removeChild(a);
+                    });
+                    a.click();
+                }
+            });
+        });
         return {
             toolbar,
             filter, personalAgendaToggle,
@@ -8668,7 +8735,7 @@
         };
     }
 
-    var version = "0.11.0";
+    var version = "0.12.0";
     var pkg = {
     	version: version};
 
@@ -8711,26 +8778,15 @@
         fullscreenButton.innerHTML = enterFullscreenIcon;
         fullscreenButton.title = 'Enter Fullscreen';
         fullscreenButton.addEventListener('click', event => {
-            const hasFullscreen = document.fullscreenElement !== null;
-            const isWrapperFullscreen = document.fullscreenElement === wrapper;
-            if (hasFullscreen && !isWrapperFullscreen) {
-                return; // Something else has fullscreen, don't interfere
-            }
-            else if (hasFullscreen && isWrapperFullscreen) {
-                document.exitFullscreen()
-                    .catch(err => console.error('Could not exit Conferia.js fullscreen', err))
-                    .then(() => {
-                    fullscreenButton.innerHTML = enterFullscreenIcon;
-                    fullscreenButton.title = 'Enter Fullscreen';
-                });
+            if (wrapper.classList.contains('fullscreen')) {
+                wrapper.classList.remove('fullscreen');
+                fullscreenButton.innerHTML = enterFullscreenIcon;
+                fullscreenButton.title = 'Enter Fullscreen';
             }
             else {
-                wrapper.requestFullscreen()
-                    .catch(err => console.error('Conferia could not enter fullscreen', err))
-                    .then(() => {
-                    fullscreenButton.innerHTML = exitFullscreenIcon;
-                    fullscreenButton.title = 'Exit Fullscreen';
-                });
+                wrapper.classList.add('fullscreen');
+                fullscreenButton.innerHTML = exitFullscreenIcon;
+                fullscreenButton.title = 'Exit Fullscreen';
             }
         });
         return {
@@ -8771,8 +8827,11 @@
     function generateFooter() {
         const div = dom('div', undefined, { id: 'conferia-footer' });
         const copy = dom('span');
-        copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> ${pkg.version} | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide.html" target="_blank">User‘s Guide</a>`;
+        copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> | &copy; 2025 | <a href="https://nathanlesage.github.io/conferia/users-guide" target="_blank">User‘s Guide</a>`;
         div.appendChild(copy);
+        const ver = dom('span', undefined, { id: 'cf-version' });
+        ver.textContent = 'v' + pkg.version;
+        div.appendChild(ver);
         return div;
     }
 
@@ -8900,49 +8959,6 @@
      */
     function generateDialogWrapper() {
         return dom('div', 'dialog-content-wrapper');
-    }
-
-    // Utility to ask the user using a dialog
-    /**
-     * Shows a dialog to the user asking to click one of the buttons. The promise
-     * resolves with either the clicked button ID, or undefined if the dialog was
-     * closed without clicking a button.
-     *
-     * @param   {string}                     title    The dialog title
-     * @param   {string}                     message  The dialog message
-     * @param   {string[]}                   buttons  The button labels
-     *
-     * @return  {Promise<number|undefined>}           The button ID, or undefined
-     */
-    function askUser(title, message, buttons) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                const dialog = dom('dialog', 'conferia-dialog');
-                const titleElem = dom('h3', 'title');
-                titleElem.textContent = title;
-                dialog.appendChild(titleElem);
-                const content = dom('div');
-                content.textContent = message;
-                dialog.appendChild(content);
-                const buttonGroup = dom('div', 'button-group');
-                dialog.appendChild(buttonGroup);
-                for (let i = 0; i < buttons.length; i++) {
-                    const buttonElement = document.createElement('button');
-                    buttonElement.textContent = buttons[i];
-                    buttonElement.addEventListener('click', () => {
-                        resolve(i);
-                        dialog.close();
-                    });
-                    buttonGroup.appendChild(buttonElement);
-                }
-                document.body.appendChild(dialog);
-                dialog.addEventListener('close', () => {
-                    resolve(undefined);
-                    document.body.removeChild(dialog);
-                });
-                dialog.showModal();
-            });
-        });
     }
 
     const AGENDA_ITEM_KEY = 'conferia-agenda';
@@ -9124,11 +9140,74 @@ agenda.`, [
             `LOCATION:${record.location}`,
             // iCal requires DTSTAMP
             `DTSTAMP:${dtNow}`,
-            `SUMMARY:${record.title}`, // Summary = title
-            `DESCRIPTION:${'abstract' in record ? record.abstract : ''}`,
+            ...foldIcalLines(`SUMMARY:${record.title}`), // Summary = title
+            ...icalDescriptionForRecord(record),
             `UID:${record.id}`,
             'END:VEVENT'
         ];
+    }
+    /**
+     * Generates a valid `DESCRIPTION:` component for a `VEVENT` entry. Takes care
+     * of line folding.
+     *
+     * @param   {CSVRecord[]}  record  The record in question.
+     *
+     * @return  {string[]}             The (properly parsed) lines of the DESCRIPTION.
+     */
+    function icalDescriptionForRecord(record) {
+        // We have three possibilities:
+        // * Sessions need to contain a list of presentation titles
+        // * If the record has an abstract, use that one
+        // * If it doesn't, return the empty string
+        // NOTE: We do not add an EOL feed here, as this will be added by the compiler.
+        // However, we do remove any carriage returns in the text to ensure that we
+        // only have them where actually allowed.
+        if (record.type === 'session') {
+            // DESCRIPTION can contain the literal "\n" to denote newlines. Note that it
+            // must contain those characters LITERALLY. Otherwise the validator is going
+            // to complain. (See RFC 2445, p. 80 f.) Do not ask me who came up with this
+            // convention.
+            const description = 'DESCRIPTION:Presentations:\\n\\n' + record.presentations.map((pres, idx) => `${idx + 1}.\t` + pres.title.replace('\r', '')).join('\\n\\n');
+            return foldIcalLines(description);
+        }
+        else if ('abstract' in record) {
+            const description = 'DESCRIPTION:' + record.abstract.replace('\r', '');
+            return foldIcalLines(description);
+        }
+        else {
+            return ['DESCRIPTION:']; // Just return the empty description string
+        }
+    }
+    /**
+     * Implements RFC 2445 line folding consistent for iCalendar files.
+     *
+     * @param   {string}    text  The input text
+     *
+     * @return  {string[]}        Properly folded lines.
+     */
+    function foldIcalLines(text) {
+        // iCal descriptions should use what RFC 2445 calls a "line folding"
+        // technique. To quote:
+        // "Lines of text SHOULD NOT be longer than 75 octets, excluding the line
+        // break. Long content lines SHOULD be split into a multiple line
+        // representations using a line "folding" technique. That is, a long
+        // line can be split between any two characters by inserting a CRLF
+        // immediately followed by a single linear white space character (i.e.,
+        // SPACE, US-ASCII decimal 32 or HTAB, US-ASCII decimal 9). Any sequence
+        // of CRLF followed immediately by a single linear white space character
+        // is ignored (i.e., removed) when processing the content type." (p. 12)
+        if (text.length < 75) {
+            return [text];
+        }
+        const lines = [];
+        let i = 0;
+        while (i < text.length) {
+            // We're increasing by 70 instead of 75 because I'm not going to deal with
+            // UTF8 or UTF16 code point clusters just to ensure the octet rule.
+            lines.push((i > 0 ? ' ' : '') + text.slice(i, i + 70));
+            i += 70;
+        }
+        return lines;
     }
 
     /**
