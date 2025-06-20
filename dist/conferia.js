@@ -8511,7 +8511,7 @@
 
     const MINIMUM_TICK_HEIGHT = 25;
     function generateTimeGutter() {
-        return dom('div', undefined, { id: 'conferia-time-gutter' });
+        return dom('div', undefined, { id: 'conferia-time-gutter', role: 'presentation' });
     }
     /**
      * Updates the time gutter to reflect the full range of times
@@ -8534,7 +8534,7 @@
         // One tick per shortest interval
         timeGutter.style = `height: ${(tickCount + 1) * tickSize * pps}px;`;
         for (let i = 0; i <= tickCount; i++) {
-            const tick = dom('div', 'tick time');
+            const tick = dom('div', 'tick time', { role: 'presentation' });
             tick.style = `height: ${tickSize * pps}px;`;
             const tickTime = startTime.plus({ seconds: i * tickSize });
             tick.textContent = tickTime.toLocaleString({ timeStyle: 'short', hourCycle: 'h24' });
@@ -8543,7 +8543,7 @@
     }
 
     function generateDayGutter() {
-        return dom('div', undefined, { id: 'conferia-day-gutter' });
+        return dom('div', undefined, { id: 'conferia-day-gutter', role: 'presentation' });
     }
     function updateGutterTicks(dayGutter, startDay, totalDays, colWidth, dayLocations) {
         dayGutter.innerHTML = '';
@@ -8552,7 +8552,7 @@
             // day there are only no-location events.
             const nSubCols = dayLocations !== undefined ? Math.max(1, dayLocations[i].length) : 1;
             const thisDay = startDay.plus({ days: i });
-            const dayTick = dom('div', 'tick day');
+            const dayTick = dom('div', 'tick day', { role: 'presentation' });
             dayTick.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             dayTick.style.width = `${colWidth * nSubCols}px`;
             dayGutter.appendChild(dayTick);
@@ -8561,8 +8561,34 @@
 
     var bookmarkIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-bookmark\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path></svg>";
 
+    function getAriaEventType(event) {
+        if (event.type === 'keynote') {
+            return 'Keynote';
+        }
+        else if (event.type === 'session') {
+            return 'Parallel Session';
+        }
+        else if (event.type === 'special') {
+            return 'Special Event';
+        }
+        else {
+            return 'Event';
+        }
+    }
+    /**
+     * Generates the schedule board wrapper
+     *
+     * @return  {HTMLDivElement}  The wrapper DIV
+     */
+    function generateScheduleWrapper() {
+        return dom('div', undefined, { id: 'conferia-schedule-wrapper', role: 'presentation' });
+    }
     function generateScheduleBoard() {
-        return dom('div', undefined, { id: 'conferia-schedule-board' });
+        return dom('div', undefined, {
+            id: 'conferia-schedule-board',
+            role: 'region',
+            'aria-label': 'Agenda'
+        });
     }
     function updateScheduleBoard(scheduleBoard, dayWidth, timeWidth) {
         scheduleBoard.style = `background-size: ${dayWidth}px ${timeWidth}px;
@@ -8585,13 +8611,17 @@
         }
     }
     function generateEventCard(event, agenda) {
-        const card = dom('div', ['event', event.type], { tabindex: '0' });
+        const card = dom('div', ['event', event.type], {
+            tabindex: '0',
+            role: 'button',
+            'aria-label': `${getAriaEventType(event)}: ${event.title}; ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })} in ${event.location === '' ? 'No location' : event.location}`
+        });
         card.style.position = 'absolute';
         // Card header
         // ==========================================
         const header = dom('div', 'event-header');
         card.appendChild(header);
-        const title = dom('h3', 'cf-event-title');
+        const title = dom('h3', 'cf-event-title', { id: `title-${event.id}` });
         title.textContent = event.title;
         header.appendChild(title);
         if (event.location !== undefined) {
@@ -8739,7 +8769,7 @@
         };
     }
 
-    var version = "0.13.0";
+    var version = "0.14.0";
     var pkg = {
     	version: version};
 
@@ -8799,14 +8829,6 @@
         };
     }
     /**
-     * Generates the schedule board wrapper
-     *
-     * @return  {HTMLDivElement}  The wrapper DIV
-     */
-    function generateScheduleWrapper() {
-        return dom('div', undefined, { id: 'conferia-schedule-wrapper' });
-    }
-    /**
      * Generates the outer wrapper
      *
      * @param   {string}          title      The optional title
@@ -8815,7 +8837,7 @@
      * @return  {HTMLDivElement}             The wrapper DIV
      */
     function generateWrapper(title, maxHeight) {
-        const div = dom('div', undefined, { id: 'conferia-wrapper' });
+        const div = dom('div', undefined, { id: 'conferia-wrapper', role: 'presentation' });
         if (title !== undefined) {
             const h1 = dom('h1');
             h1.textContent = title;
@@ -8845,8 +8867,8 @@
      * @param   {CSVRecord}  event  The event to detail
      */
     function showEventDetailsModal(event, conferia) {
-        const dialog = dom('dialog', 'conferia-dialog conferia-event-details');
-        const title = dom('h3', 'cf-event-title');
+        const dialog = dom('dialog', 'conferia-dialog conferia-event-details', { tabindex: '0', 'aria-labelledby': `dialog-title-${event.id}` });
+        const title = dom('h3', 'cf-event-title', { id: `dialog-title-${event.id}` });
         switch (event.type) {
             case 'keynote':
                 title.textContent = 'Keynote: ' + event.title;
@@ -8930,16 +8952,16 @@
         }
         if (event.type === 'session') {
             for (const pres of event.presentations) {
-                const details = dom('details', 'presentation');
+                const details = dom('details', 'presentation', { 'aria-details': `dialog-abstract-${pres.id}` });
                 const summary = dom('summary');
                 details.appendChild(summary);
-                const title = dom('strong');
+                const title = dom('strong', undefined, { 'aria-label': 'Presentation: ' + pres.title });
                 title.textContent = pres.title;
                 summary.appendChild(title);
-                const author = dom('p', 'author');
+                const author = dom('p', 'author', { 'aria-label': `Authors: ${pres.author}` });
                 author.textContent = pres.author;
                 summary.appendChild(author);
-                const abstract = dom('p', 'abstract');
+                const abstract = dom('p', 'abstract', { id: `dialog-abstract-${pres.id}` });
                 abstract.textContent = pres.abstract;
                 details.appendChild(abstract);
                 wrapper.appendChild(details);
