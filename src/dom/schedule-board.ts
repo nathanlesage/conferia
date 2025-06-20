@@ -5,8 +5,33 @@ import bookmarkIcon from '../icons/bookmark.svg'
 import { getTimeOffset } from "../util/time-helpers"
 import { dom } from "./util"
 
+function getAriaEventType (event: CSVRecord): string {
+  if (event.type === 'keynote') {
+    return 'Keynote'
+  } else if (event.type === 'session') {
+    return 'Parallel Session'
+  } else if (event.type === 'special') {
+    return 'Special Event'
+  } else {
+    return 'Event'
+  }
+}
+
+/**
+ * Generates the schedule board wrapper
+ *
+ * @return  {HTMLDivElement}  The wrapper DIV
+ */
+export function generateScheduleWrapper (): HTMLDivElement {
+  return dom('div', undefined, { id: 'conferia-schedule-wrapper', role: 'presentation' })
+}
+
 export function generateScheduleBoard (): HTMLDivElement {
-  return dom('div', undefined, { id: 'conferia-schedule-board' })
+  return dom('div', undefined, {
+    id: 'conferia-schedule-board',
+    role: 'region',
+    'aria-label': 'Agenda'
+  })
 }
 
 export function updateScheduleBoard (scheduleBoard: HTMLElement, dayWidth: number, timeWidth: number) {
@@ -33,7 +58,11 @@ export function drawVerticalDayDividers (startTime: DateTime, endTime: DateTime,
 }
 
 export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivElement {
-  const card = dom('div', ['event', event.type], { tabindex: '0' })
+  const card = dom('div', ['event', event.type], {
+    tabindex: '0',
+    role: 'button',
+    'aria-label': `${getAriaEventType(event)}: ${event.title}; ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })} in ${event.location === '' ? 'No location' : event.location}`
+  })
   card.style.position = 'absolute'
 
   // Card header
@@ -41,7 +70,7 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
   const header = dom('div', 'event-header')
   card.appendChild(header)
 
-  const title = dom('h3', 'cf-event-title')
+  const title = dom('h3', 'cf-event-title', { id: `title-${event.id}` })
   title.textContent = event.title
   header.appendChild(title)
 

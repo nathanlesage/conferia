@@ -5,7 +5,7 @@ import { dom } from "./util"
 const MINIMUM_TICK_HEIGHT = 25
 
 export function generateTimeGutter (): HTMLDivElement {
-  return dom('div', undefined, { id: 'conferia-time-gutter' })
+  return dom('div', undefined, { id: 'conferia-time-gutter', role: 'presentation' })
 }
 
 /**
@@ -30,7 +30,7 @@ export function updateGutterTicks (timeGutter: HTMLElement, startTime: DateTime,
   // One tick per shortest interval
   timeGutter.style = `height: ${(tickCount + 1) * tickSize * pps}px;`
   for (let i = 0; i <= tickCount; i++) {
-    const tick = dom('div', 'tick time')
+    const tick = dom('div', 'tick time', { role: 'presentation' })
     tick.style = `height: ${tickSize * pps}px;`
     const tickTime = startTime.plus({ seconds: i * tickSize })
     tick.textContent = tickTime.toLocaleString({ timeStyle: 'short', hourCycle: 'h24' })

@@ -1,5 +1,5 @@
 import { generateDayGutter } from "./day-gutter"
-import { generateScheduleBoard } from "./schedule-board"
+import { generateScheduleBoard, generateScheduleWrapper } from "./schedule-board"
 import { generateTimeGutter } from "./time-gutter"
 import { generateToolbarStructure } from "./toolbar"
 import pkg from "../../package.json"
@@ -83,15 +83,6 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
 }
 
 /**
- * Generates the schedule board wrapper
- *
- * @return  {HTMLDivElement}  The wrapper DIV
- */
-function generateScheduleWrapper (): HTMLDivElement {
-  return dom('div', undefined, { id: 'conferia-schedule-wrapper' })
-}
-
-/**
  * Generates the outer wrapper
  *
  * @param   {string}          title      The optional title
@@ -100,7 +91,7 @@ function generateScheduleWrapper (): HTMLDivElement {
  * @return  {HTMLDivElement}             The wrapper DIV
  */
 function generateWrapper (title?: string, maxHeight?: string): HTMLDivElement {
-  const div = dom('div', undefined, { id: 'conferia-wrapper' })
+  const div = dom('div', undefined, { id: 'conferia-wrapper', role: 'presentation' })
   if (maxHeight !== undefined) {
     div.style.maxHeight = maxHeight
   }
