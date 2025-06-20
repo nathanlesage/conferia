@@ -33,7 +33,7 @@ export function drawVerticalDayDividers (startTime: DateTime, endTime: DateTime,
 }
 
 export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivElement {
-  const card = dom('div', ['event', event.type])
+  const card = dom('div', ['event', event.type], { tabindex: '0' })
   card.style.position = 'absolute'
 
   // Card header
