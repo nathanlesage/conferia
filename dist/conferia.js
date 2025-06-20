@@ -8293,6 +8293,10 @@
                 dateStart, dateEnd, location, presentations, chair, id
             });
         }
+        // Sort the events by time
+        returnValue.sort((a, b) => {
+            return a.dateStart.diff(b.dateStart, 'seconds').as('seconds');
+        });
         return returnValue;
     }
     /**
@@ -8581,7 +8585,7 @@
         }
     }
     function generateEventCard(event, agenda) {
-        const card = dom('div', ['event', event.type]);
+        const card = dom('div', ['event', event.type], { tabindex: '0' });
         card.style.position = 'absolute';
         // Card header
         // ==========================================
@@ -8735,7 +8739,7 @@
         };
     }
 
-    var version = "0.12.0";
+    var version = "0.13.0";
     var pkg = {
     	version: version};
 

@@ -227,6 +227,11 @@ export function parseCsv (
     })
   }
 
+  // Sort the events by time
+  returnValue.sort((a, b) => {
+    return a.dateStart.diff(b.dateStart, 'seconds').as('seconds')
+  })
+
   return returnValue
 }
 
