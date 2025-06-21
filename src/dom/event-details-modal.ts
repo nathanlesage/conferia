@@ -9,9 +9,9 @@ import { Conferia } from "../conferia"
  * @param   {CSVRecord}  event  The event to detail
  */
 export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): void {
-  const dialog = dom('dialog', 'conferia-dialog conferia-event-details', { tabindex: '0', 'aria-labelledby': `dialog-title-${event.id}` })
+  const dialog = dom('dialog', 'conferia-dialog conferia-event-details')
 
-  const title = dom('h3', 'cf-event-title', { id: `dialog-title-${event.id}` })
+  const title = dom('h3', 'cf-event-title', { tabindex: '0', 'aria-label': `Details for event: ${event.title}, ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })}, location: ${event.location ?? 'No location'}` })
   switch (event.type) {
     case 'keynote':
       title.textContent = 'Keynote: ' + event.title
@@ -121,8 +121,8 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
       author.textContent = pres.author
       summary.appendChild(author)
 
-      const abstract = dom('p', 'abstract', { id: `dialog-abstract-${pres.id}` })
-      abstract.textContent = pres.abstract
+      const abstract = dom('p', 'abstract', { id: `dialog-abstract-${pres.id}`, tabindex: '0' })
+      abstract.textContent = 'Abstract: ' + pres.abstract
       details.appendChild(abstract)
 
       wrapper.appendChild(details)
