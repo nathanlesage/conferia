@@ -38,7 +38,7 @@ export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): vo
   dialog.appendChild(idElem)
 
   // Bookmarking Capabilities
-  const bookmarkButton = dom('div', 'bookmark')
+  const bookmarkButton = dom('div', 'bookmark', { tabindex: '0', role: 'button', title: 'Bookmark this event' })
   if (conferia.agenda.hasItem(event.id)) {
     bookmarkButton.classList.add('bookmarked')
   }
@@ -101,7 +101,7 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
   time.textContent = `${date}, ${fromString} – ${toString}`
 
   if (event.chair !== undefined && event.chair !== '') {
-    const chair = dom('p', 'chair')
+    const chair = dom('p', 'chair', { tabindex: '0' })
     chair.textContent = 'Chair: ' + event.chair
     wrapper.appendChild(chair)
   }
@@ -117,7 +117,7 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
       title.textContent = pres.title
       summary.appendChild(title)
 
-      const author = dom('p', 'author', { 'aria-label': `Authors: ${pres.author}` })
+      const author = dom('p', 'author', { 'aria-label': `Author: ${pres.author}` })
       author.textContent = pres.author
       summary.appendChild(author)
 
@@ -131,11 +131,11 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
   }
 
   if (event.type === 'keynote' || event.type === 'single' || event.type === 'special') {
-    const author = dom('p', 'author')
+    const author = dom('p', 'author', { tabindex: '0', 'aria-label': 'Author: ' + event.author })
     author.textContent = event.author
     wrapper.appendChild(author)
 
-    const abstract = dom('p', 'abstract')
+    const abstract = dom('p', 'abstract', { tabindex: '0', 'aria-label': 'Abstract: ' + event.abstract })
     abstract.textContent = event.abstract
     wrapper.appendChild(abstract)
   }

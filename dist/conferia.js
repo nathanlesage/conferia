@@ -8867,8 +8867,9 @@
      * @param   {CSVRecord}  event  The event to detail
      */
     function showEventDetailsModal(event, conferia) {
-        const dialog = dom('dialog', 'conferia-dialog conferia-event-details', { tabindex: '0', 'aria-labelledby': `dialog-title-${event.id}` });
-        const title = dom('h3', 'cf-event-title', { id: `dialog-title-${event.id}` });
+        var _a;
+        const dialog = dom('dialog', 'conferia-dialog conferia-event-details');
+        const title = dom('h3', 'cf-event-title', { tabindex: '0', 'aria-label': `Details for event: ${event.title}, ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })}, location: ${(_a = event.location) !== null && _a !== void 0 ? _a : 'No location'}` });
         switch (event.type) {
             case 'keynote':
                 title.textContent = 'Keynote: ' + event.title;
@@ -8891,7 +8892,7 @@
         idElem.textContent = event.id;
         dialog.appendChild(idElem);
         // Bookmarking Capabilities
-        const bookmarkButton = dom('div', 'bookmark');
+        const bookmarkButton = dom('div', 'bookmark', { tabindex: '0', role: 'button', title: 'Bookmark this event' });
         if (conferia.agenda.hasItem(event.id)) {
             bookmarkButton.classList.add('bookmarked');
         }
@@ -8946,7 +8947,7 @@
         const toString = event.dateEnd.toLocaleString({ timeStyle: 'short' });
         time.textContent = `${date}, ${fromString} – ${toString}`;
         if (event.chair !== undefined && event.chair !== '') {
-            const chair = dom('p', 'chair');
+            const chair = dom('p', 'chair', { tabindex: '0' });
             chair.textContent = 'Chair: ' + event.chair;
             wrapper.appendChild(chair);
         }
@@ -8958,21 +8959,21 @@
                 const title = dom('strong', undefined, { 'aria-label': 'Presentation: ' + pres.title });
                 title.textContent = pres.title;
                 summary.appendChild(title);
-                const author = dom('p', 'author', { 'aria-label': `Authors: ${pres.author}` });
+                const author = dom('p', 'author', { 'aria-label': `Author: ${pres.author}` });
                 author.textContent = pres.author;
                 summary.appendChild(author);
-                const abstract = dom('p', 'abstract', { id: `dialog-abstract-${pres.id}` });
-                abstract.textContent = pres.abstract;
+                const abstract = dom('p', 'abstract', { id: `dialog-abstract-${pres.id}`, tabindex: '0' });
+                abstract.textContent = 'Abstract: ' + pres.abstract;
                 details.appendChild(abstract);
                 wrapper.appendChild(details);
                 wrapper.appendChild(dom('hr'));
             }
         }
         if (event.type === 'keynote' || event.type === 'single' || event.type === 'special') {
-            const author = dom('p', 'author');
+            const author = dom('p', 'author', { tabindex: '0', 'aria-label': 'Author: ' + event.author });
             author.textContent = event.author;
             wrapper.appendChild(author);
-            const abstract = dom('p', 'abstract');
+            const abstract = dom('p', 'abstract', { tabindex: '0', 'aria-label': 'Abstract: ' + event.abstract });
             abstract.textContent = event.abstract;
             wrapper.appendChild(abstract);
         }
