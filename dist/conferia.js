@@ -8868,8 +8868,14 @@
      */
     function showEventDetailsModal(event, conferia) {
         var _a;
-        const dialog = dom('dialog', 'conferia-dialog conferia-event-details');
-        const title = dom('h3', 'cf-event-title', { tabindex: '0', 'aria-label': `Details for event: ${event.title}, ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })}, location: ${(_a = event.location) !== null && _a !== void 0 ? _a : 'No location'}` });
+        const dialog = dom('dialog', 'conferia-dialog conferia-event-details', {
+            'aria-labelledby': `dialog-title-${event.id}`,
+            'aria-details': `dialog-content-${event.id}`
+        });
+        const title = dom('h3', 'cf-event-title', {
+            id: `dialog-title-${event.id}`,
+            'aria-label': `Details for event: ${event.title}, ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })}, location: ${(_a = event.location) !== null && _a !== void 0 ? _a : 'No location'}`
+        });
         switch (event.type) {
             case 'keynote':
                 title.textContent = 'Keynote: ' + event.title;
@@ -8887,6 +8893,7 @@
             dialog.appendChild(loc);
         }
         const content = generateEventDOMStructure(event);
+        content.setAttribute('id', `dialog-content-${event.id}`);
         dialog.appendChild(content);
         const idElem = dom('p', 'event-id');
         idElem.textContent = event.id;
@@ -8953,10 +8960,10 @@
         }
         if (event.type === 'session') {
             for (const pres of event.presentations) {
-                const details = dom('details', 'presentation', { 'aria-details': `dialog-abstract-${pres.id}` });
+                const details = dom('details', 'presentation', { 'aria-labelledby': `dialog-title-${pres.id}`, 'aria-details': `dialog-abstract-${pres.id}` });
                 const summary = dom('summary');
                 details.appendChild(summary);
-                const title = dom('strong', undefined, { 'aria-label': 'Presentation: ' + pres.title });
+                const title = dom('strong', undefined, { 'aria-label': 'Presentation: ' + pres.title, id: `dialog-title-${pres.id}` });
                 title.textContent = pres.title;
                 summary.appendChild(title);
                 const author = dom('p', 'author', { 'aria-label': `Author: ${pres.author}` });
@@ -8970,10 +8977,10 @@
             }
         }
         if (event.type === 'keynote' || event.type === 'single' || event.type === 'special') {
-            const author = dom('p', 'author', { tabindex: '0', 'aria-label': 'Author: ' + event.author });
+            const author = dom('p', 'author', { 'aria-label': 'Author: ' + event.author, tabindex: '0' });
             author.textContent = event.author;
             wrapper.appendChild(author);
-            const abstract = dom('p', 'abstract', { tabindex: '0', 'aria-label': 'Abstract: ' + event.abstract });
+            const abstract = dom('p', 'abstract', { 'aria-label': 'Abstract: ' + event.abstract, tabindex: '0' });
             abstract.textContent = event.abstract;
             wrapper.appendChild(abstract);
         }
