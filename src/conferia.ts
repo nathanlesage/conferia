@@ -245,6 +245,9 @@ export class Conferia {
 
     if (records.length === 0) {
       this.dom.scheduleBoard.innerHTML = ''
+      this.dom.timeGutter.innerHTML = ''
+      this.dom.dayGutter.innerHTML = ''
+
       const noeventscard = document.createElement('div')
       noeventscard.classList.add('event', 'meta')
       noeventscard.style.margin = (this.opt.eventCardPadding ?? 10) + 'px'

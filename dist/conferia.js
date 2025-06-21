@@ -9460,6 +9460,8 @@ agenda.`, [
             const records = this.filterRecords();
             if (records.length === 0) {
                 this.dom.scheduleBoard.innerHTML = '';
+                this.dom.timeGutter.innerHTML = '';
+                this.dom.dayGutter.innerHTML = '';
                 const noeventscard = document.createElement('div');
                 noeventscard.classList.add('event', 'meta');
                 noeventscard.style.margin = ((_a = this.opt.eventCardPadding) !== null && _a !== void 0 ? _a : 10) + 'px';
