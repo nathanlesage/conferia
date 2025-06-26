@@ -115,13 +115,17 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
   }
 
   if (event.type === 'session') {
+    const ol = dom('ol', 'presentation-list')
     for (const pres of event.presentations) {
-      const details = dom('details', 'presentation', { 'aria-labelledby': `dialog-title-${pres.id}`, 'aria-details': `dialog-abstract-${pres.id}` })
+      const details = dom('details', 'presentation', {
+        'aria-labelledby': `dialog-title-${pres.id}`,
+        'aria-details': `dialog-abstract-${pres.id}`
+      })
 
-      const summary = dom('summary')
+      const summary = dom('summary', undefined, { 'aria-label': 'Presentation: ' + pres.title, id: `dialog-title-${pres.id}` })
       details.appendChild(summary)
 
-      const title = dom('strong', undefined, { 'aria-label': 'Presentation: ' + pres.title, id: `dialog-title-${pres.id}` })
+      const title = dom('strong', 'presentation-title')
       title.textContent = pres.title
       summary.appendChild(title)
 
@@ -129,13 +133,22 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
       author.textContent = pres.author
       summary.appendChild(author)
 
-      const abstract = dom('p', 'abstract', { id: `dialog-abstract-${pres.id}`, tabindex: '0' })
-      abstract.textContent = 'Abstract: ' + pres.abstract
+      const toggle = dom('span', 'abstract-toggle', { role: 'presentation' })
+      summary.appendChild(toggle)
+
+      const abstract = dom('p', 'abstract', {
+        id: `dialog-abstract-${pres.id}`, tabindex: '0',
+        'aria-label': 'Abstract: ' + pres.abstract
+      })
+      abstract.textContent = pres.abstract
       details.appendChild(abstract)
 
-      wrapper.appendChild(details)
-      wrapper.appendChild(dom('hr'))
+      const li = dom('li')
+      li.appendChild(details)
+      li.appendChild(dom('hr'))
+      ol.appendChild(li)
     }
+    wrapper.appendChild(ol)
   }
 
   if (event.type === 'keynote' || event.type === 'single' || event.type === 'special') {

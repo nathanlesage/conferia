@@ -277,8 +277,15 @@ dialog.conferia-dialog, #conferia-wrapper {
       flex-grow: 1; /* Ensure that the content takes most space */
       font-size: 0.8rem;
 
-      ol.presentation-list li:not(:last-child) {
-        margin-bottom: 5px;
+      ol.presentation-list li {
+        &::marker {
+          color: var(--accent-color);
+          font-weight: bold;
+        }
+
+        &:not(:last-child) {
+          margin-bottom: 5px;
+        }
       }
     }
 
@@ -326,22 +333,46 @@ dialog.conferia-dialog {
     background-color: rgba(0, 0, 0, 0.4);
   }
 
-  details {
-    margin-left: 20px;
-  
-    & > summary {
-      cursor: pointer;
-      outline: none;
-      list-style-type: ' + ';
-      list-style-position: outside;
-  
-      &::marker {
-        font-size: 1.5rem;
-      }
+  ol.presentation-list li {
+    &::marker {
+      color: var(--accent-color);
+      font-weight: bold;
     }
-  
-    &[open] > summary {
-      list-style-type: ' - '
+
+    display: list-item;
+    --margin: 20px;
+
+    details {
+      margin: 0 var(--margin);
+    
+      & > summary {
+        cursor: pointer;
+        outline: none;
+        position: relative;
+        display: grid;
+        grid-template-areas: "title toggle" "author author";
+
+        .presentation-title { grid-area: title; }
+        .author { grid-area: author; }
+        .abstract-toggle {
+          grid-area: toggle;
+          text-align: right;
+
+          &::before {
+            content: '<show abstract>';
+            font-family: monospace;
+            font-size: 70%;
+          }
+        }
+    
+        &::marker {
+          content: '';
+        }
+      }
+    
+      &[open] > summary .abstract-toggle::before {
+        content: '<hide abstract>';
+      }
     }
   }
 }
