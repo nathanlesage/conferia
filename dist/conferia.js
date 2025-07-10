@@ -8520,11 +8520,15 @@
      * @param   {DateTime}     startTime   The earliest time available
      * @param   {DateTime}     endTime     The latest time available
      * @param   {number}       pps         Pixels per second (of height)
+     * @param   {number}       interval    Suggested interval in seconds (default:
+     *                                     5min/300sec). The library will increase
+     *                                     this in 5 minute steps if the ticks would
+     *                                     be too small. Minimum is 5 minutes.
      */
-    function updateGutterTicks$1(timeGutter, startTime, endTime, pps) {
+    function updateGutterTicks$1(timeGutter, startTime, endTime, pps, interval = 300) {
         const secondsPerDay = getTimeOffset(endTime, startTime);
         // NOTE: Ticks should increase or decrease by intervals of 300 seconds (5 minutes)
-        let tickSize = 300;
+        let tickSize = Math.max(300, interval);
         while (tickSize * pps < MINIMUM_TICK_HEIGHT) {
             tickSize += 300;
         }
@@ -8769,7 +8773,7 @@
         };
     }
 
-    var version = "0.16.0";
+    var version = "0.17.0";
     var pkg = {
     	version: version};
 
@@ -9525,11 +9529,11 @@ agenda.`, [
             // with the room designations at the corresponding places, AND we need to
             // offset the events based on that information.
             const rpd = roomsPerDay(records);
+            const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
             // Now, update the time and day gutters
-            updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps);
+            updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps, timeGridInterval);
             updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd);
             // Draw a grid in the scheduleBoard
-            const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
             updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps);
             this.dom.scheduleBoard.innerHTML = '';
             // Draw the events on the scheduleboard
