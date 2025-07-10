@@ -15,11 +15,15 @@ export function generateTimeGutter (): HTMLDivElement {
  * @param   {DateTime}     startTime   The earliest time available
  * @param   {DateTime}     endTime     The latest time available
  * @param   {number}       pps         Pixels per second (of height)
+ * @param   {number}       interval    Suggested interval in seconds (default:
+ *                                     5min/300sec). The library will increase
+ *                                     this in 5 minute steps if the ticks would
+ *                                     be too small. Minimum is 5 minutes.
  */
-export function updateGutterTicks (timeGutter: HTMLElement, startTime: DateTime, endTime: DateTime, pps: number): void {
+export function updateGutterTicks (timeGutter: HTMLElement, startTime: DateTime, endTime: DateTime, pps: number, interval: number = 300): void {
   const secondsPerDay = getTimeOffset(endTime, startTime)
   // NOTE: Ticks should increase or decrease by intervals of 300 seconds (5 minutes)
-  let tickSize = 300
+  let tickSize = Math.max(300, interval)
   while (tickSize * pps < MINIMUM_TICK_HEIGHT) {
     tickSize += 300
   }

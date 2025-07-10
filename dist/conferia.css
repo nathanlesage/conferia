@@ -191,7 +191,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   .tick.time {
     padding: 4px 10px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
 
     &:not(:last-child) {
       border-bottom: 1px solid var(--border-color);

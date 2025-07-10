@@ -302,12 +302,13 @@ export class Conferia {
     // offset the events based on that information.
     const rpd = roomsPerDay(records)
 
+    const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
+
     // Now, update the time and day gutters
-    updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, pps)
+    updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, pps, timeGridInterval)
     updateDayGutter(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd)
 
     // Draw a grid in the scheduleBoard
-    const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
     updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps)
 
     this.dom.scheduleBoard.innerHTML = ''
