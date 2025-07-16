@@ -414,6 +414,10 @@ dialog.conferia-event-details {
     text-align: right;
   }
 
+  p.notes {
+    font-style: italic;
+  }
+
   p.event-id {
     grid-area: footer-left;
     font-size: 0.8rem;

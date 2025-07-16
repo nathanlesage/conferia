@@ -39,6 +39,10 @@ The CSV file needs to include these columns:
   presentation within their session (e.g., for four presentations, you would use
   1, 2, 3, and 4).
 * `chair`: An optional chair for the session, keynote, or other event.
+* `notes`: This column does not need to be present in the CSV file, but if it
+  does, it can contain some text with notes for an event. For example, if you
+  offer hybrid sessions, you could add the Zoom link here. Notes will be shown
+  in the event details below the chair.
 
 > Tip: The CSV file can contain more than these columns, which spares you from
 > having to remove superfluous columns. Also, sometimes columns don't have to be

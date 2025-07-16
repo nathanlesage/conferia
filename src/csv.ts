@@ -5,39 +5,105 @@ import { DateTime } from "luxon"
 // (commonjs) and this concoction to make it work.
 import hash from 'hash-sum'
 
+/**
+ * This is the base record for all events that defines some basic data for them.
+ */
 interface BaseRecord {
+  /**
+   * An auto-generated ID for this record
+   */
   id: string
+  /**
+   * The type of the record
+   */
   type: 'session_presentation'|'single'|'keynote'|'meta'|'special'|'session'
+  /**
+   * Start time for this event
+   */
   dateStart: DateTime
+  /**
+   * End time for this event
+   */
   dateEnd: DateTime
+  /**
+   * The event's title
+   */
   title: string
+  /**
+   * Optional: A location for this event.
+   */
   location?: string
+  /**
+   * Optional: A chair for this event.
+   */
   chair?: string
+  /**
+   * Optional: Additional notes for this event.
+   */
+  notes?: string
 }
 
+/**
+ * A single presentation record. This record is a child of the SessionRecord.
+ */
 export interface SessionPresentationRecord extends BaseRecord {
   type: 'session_presentation'
+  /**
+   * The presentation's abstract
+   */
   abstract: string
+  /**
+   * The presentation's author(s)
+   */
   author: string
+  /**
+   * The session name
+   */
   session: string
+  /**
+   * Which order the presentation should be in
+   */
   sessionOrder: number
 }
 
+/**
+ * A session, including its presentations.
+ */
 export interface SessionRecord extends BaseRecord {
   type: 'session'
+  /**
+   * A list of presentations in this session
+   */
   presentations: SessionPresentationRecord[]
 }
 
+/**
+ * A single event (including keynotes and special events)
+ */
 export interface SingleRecord extends BaseRecord {
   type: 'single'|'keynote'|'special'
+  /**
+   * The event's abstract
+   */
   abstract: string
+  /**
+   * The event's author(s)
+   */
   author: string
 }
 
+/**
+ * A meta record (such as coffee or lunch breaks)
+ */
 export interface MetaRecord extends BaseRecord {
   type: 'meta'
 }
 
+/**
+ * A CSV record describes an event in the schedule. NOTE that individual
+ * parallel sessions are not part of this, even though they are individual
+ * events in the CSV. They will be merged into a session record by the library.
+ */
 export type CSVRecord = SingleRecord|MetaRecord|SessionRecord
 
 /**
@@ -96,6 +162,7 @@ export function parseCsv (
   const SESSION_IDX = header.findIndex(c => c === 'session')
   const SESSION_ORDER_IDX = header.findIndex(c => c === 'session_order')
   const CHAIR_IDX = header.findIndex(c => c === 'chair')
+  const NOTES_IDX = header.findIndex(c => c === 'notes')
 
   if (DATE_START_IDX < 0) {
     throw new Error('The CSV did not contain a `date_start` column.')
@@ -145,6 +212,7 @@ export function parseCsv (
     const session = row[SESSION_IDX]
     const sessionOrder = row[SESSION_ORDER_IDX]
     const chair = row[CHAIR_IDX]
+    const notes = NOTES_IDX > -1 ? row[NOTES_IDX] : undefined
 
     const id = hash(String(start) + String(end) + type + title)
 
@@ -156,7 +224,7 @@ export function parseCsv (
           type: 'session_presentation',
           dateStart: start,
           dateEnd: end,
-          title, abstract, author, location, session, chair, id,
+          title, abstract, author, location, session, chair, notes, id,
           sessionOrder: parseInt(sessionOrder, 10)
         }
         onlySessionPresentations.push(rowParser ? rowParser(row, header, record) : record)
@@ -167,7 +235,7 @@ export function parseCsv (
           type: 'keynote',
           dateStart: start,
           dateEnd: end,
-          title, abstract, author, location, chair, id
+          title, abstract, author, location, chair, notes, id
         }
         returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
@@ -177,7 +245,7 @@ export function parseCsv (
           type: 'meta',
           dateStart: start,
           dateEnd: end,
-          title, location, id
+          title, location, notes, id
         }
         returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
@@ -187,7 +255,7 @@ export function parseCsv (
           type: 'single',
           dateStart: start,
           dateEnd: end,
-          title, location, abstract, author, chair, id
+          title, location, abstract, author, chair, notes, id
         }
         returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
@@ -197,7 +265,7 @@ export function parseCsv (
           type: 'special',
           dateStart: start,
           dateEnd: end,
-          title, location, abstract, author, chair, id
+          title, location, abstract, author, chair, notes, id
         }
         returnValue.push(rowParser ? rowParser(row, header, record) : record)
         break
@@ -211,7 +279,7 @@ export function parseCsv (
   const sessionNames = [...new Set(onlySessionPresentations.map(s => s.session))]
   for (const name of sessionNames) {
     const presentations = onlySessionPresentations.filter(r => r.session === name)
-    const { dateStart, dateEnd, location, chair } = presentations[0]
+    const { dateStart, dateEnd, location, chair, notes } = presentations[0]
 
     // Sort the presentations according to their ordering
     presentations.sort((a, b) => a.sessionOrder - b.sessionOrder)
@@ -223,7 +291,7 @@ export function parseCsv (
 
     returnValue.push({
       type: 'session', title: name,
-      dateStart, dateEnd, location, presentations, chair, id
+      dateStart, dateEnd, location, presentations, chair, notes, id
     })
   }
 

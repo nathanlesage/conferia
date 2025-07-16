@@ -114,7 +114,14 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
     wrapper.appendChild(chair)
   }
 
+  if (event.notes !== undefined && event.notes !== '') {
+    const notes = dom('p', 'notes')
+    notes.textContent = 'Notes: ' + event.notes
+    wrapper.appendChild(notes)
+  }
+
   if (event.type === 'session') {
+    wrapper.appendChild(dom('hr')) // Add a divider
     const ol = dom('ol', 'presentation-list')
     for (const pres of event.presentations) {
       const details = dom('details', 'presentation', {

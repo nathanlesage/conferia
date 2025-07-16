@@ -8172,6 +8172,7 @@
         const SESSION_IDX = header.findIndex(c => c === 'session');
         const SESSION_ORDER_IDX = header.findIndex(c => c === 'session_order');
         const CHAIR_IDX = header.findIndex(c => c === 'chair');
+        const NOTES_IDX = header.findIndex(c => c === 'notes');
         if (DATE_START_IDX < 0) {
             throw new Error('The CSV did not contain a `date_start` column.');
         }
@@ -8218,6 +8219,7 @@
             const session = row[SESSION_IDX];
             const sessionOrder = row[SESSION_ORDER_IDX];
             const chair = row[CHAIR_IDX];
+            const notes = NOTES_IDX > -1 ? row[NOTES_IDX] : undefined;
             const id = hash(String(start) + String(end) + type + title);
             switch (type) {
                 case 'session_presentation': {
@@ -8227,7 +8229,7 @@
                         type: 'session_presentation',
                         dateStart: start,
                         dateEnd: end,
-                        title, abstract, author, location, session, chair, id,
+                        title, abstract, author, location, session, chair, notes, id,
                         sessionOrder: parseInt(sessionOrder, 10)
                     };
                     onlySessionPresentations.push(rowParser ? rowParser(row, header, record) : record);
@@ -8238,7 +8240,7 @@
                         type: 'keynote',
                         dateStart: start,
                         dateEnd: end,
-                        title, abstract, author, location, chair, id
+                        title, abstract, author, location, chair, notes, id
                     };
                     returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
@@ -8248,7 +8250,7 @@
                         type: 'meta',
                         dateStart: start,
                         dateEnd: end,
-                        title, location, id
+                        title, location, notes, id
                     };
                     returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
@@ -8258,7 +8260,7 @@
                         type: 'single',
                         dateStart: start,
                         dateEnd: end,
-                        title, location, abstract, author, chair, id
+                        title, location, abstract, author, chair, notes, id
                     };
                     returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
@@ -8268,7 +8270,7 @@
                         type: 'special',
                         dateStart: start,
                         dateEnd: end,
-                        title, location, abstract, author, chair, id
+                        title, location, abstract, author, chair, notes, id
                     };
                     returnValue.push(rowParser ? rowParser(row, header, record) : record);
                     break;
@@ -8281,7 +8283,7 @@
         const sessionNames = [...new Set(onlySessionPresentations.map(s => s.session))];
         for (const name of sessionNames) {
             const presentations = onlySessionPresentations.filter(r => r.session === name);
-            const { dateStart, dateEnd, location, chair } = presentations[0];
+            const { dateStart, dateEnd, location, chair, notes } = presentations[0];
             // Sort the presentations according to their ordering
             presentations.sort((a, b) => a.sessionOrder - b.sessionOrder);
             // Use just the date and session name to identify sessions. This way,
@@ -8290,7 +8292,7 @@
             const id = hash(String(dateStart) + String(dateEnd) + 'session' + name);
             returnValue.push({
                 type: 'session', title: name,
-                dateStart, dateEnd, location, presentations, chair, id
+                dateStart, dateEnd, location, presentations, chair, notes, id
             });
         }
         // Sort the events by time
@@ -8773,7 +8775,7 @@
         };
     }
 
-    var version = "0.17.0";
+    var version = "0.18.0";
     var pkg = {
     	version: version};
 
@@ -8962,7 +8964,13 @@
             chair.textContent = 'Chair: ' + event.chair;
             wrapper.appendChild(chair);
         }
+        if (event.notes !== undefined && event.notes !== '') {
+            const notes = dom('p', 'notes');
+            notes.textContent = 'Notes: ' + event.notes;
+            wrapper.appendChild(notes);
+        }
         if (event.type === 'session') {
+            wrapper.appendChild(dom('hr')); // Add a divider
             const ol = dom('ol', 'presentation-list');
             for (const pres of event.presentations) {
                 const details = dom('details', 'presentation', {
