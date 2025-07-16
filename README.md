@@ -73,10 +73,18 @@ make sure you have a Node.js stack installed on your machine. Then, clone the
 repository and install its dependencies. We provide NPM lockfiles, but using
 Yarn or pnpm should also work (albeit these might ignore the lockfile).
 
-Then, you can run `npm run build` to build the library, or `npm run watch` to
-make Rollup watch the files for changes. In addition, when running the `watch`
-command, a development server will spin up that allows you to directly observe
-any changes in your browser.
+```bash
+$ git clone https://github.com/nathanlesage/conferia
+$ cd conferia
+$ npm install
+$ npm run watch # Or `npm run build`
+```
+
+There are two commands available:
+
+* `npm run build`: Builds the entire project into the `dist` folder.
+* `npm run watch`: Does the same, but keeps a server open to preview the demo
+  data and which automatically recompiles the app whenever a file changes.
 
 The repository contains a variety of folders with different purposes:
 
