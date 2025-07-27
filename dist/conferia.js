@@ -8679,109 +8679,9 @@
         return card;
     }
 
-    var slashIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-slash\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line></svg>";
-
-    var helpIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-help-circle\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line></svg>";
-
-    var calendarIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-calendar\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>";
-
-    // Utility to ask the user using a dialog
-    /**
-     * Shows a dialog to the user asking to click one of the buttons. The promise
-     * resolves with either the clicked button ID, or undefined if the dialog was
-     * closed without clicking a button.
-     *
-     * @param   {string}                     title    The dialog title
-     * @param   {string}                     message  The dialog message
-     * @param   {string[]}                   buttons  The button labels
-     *
-     * @return  {Promise<number|undefined>}           The button ID, or undefined
-     */
-    function askUser(title, message, buttons) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                const dialog = dom('dialog', 'conferia-dialog');
-                const titleElem = dom('h3', 'title');
-                titleElem.textContent = title;
-                dialog.appendChild(titleElem);
-                const content = dom('div');
-                content.textContent = message;
-                dialog.appendChild(content);
-                const buttonGroup = dom('div', 'button-group');
-                dialog.appendChild(buttonGroup);
-                for (let i = 0; i < buttons.length; i++) {
-                    const buttonElement = document.createElement('button');
-                    buttonElement.textContent = buttons[i];
-                    buttonElement.addEventListener('click', () => {
-                        resolve(i);
-                        dialog.close();
-                    });
-                    buttonGroup.appendChild(buttonElement);
-                }
-                document.body.appendChild(dialog);
-                dialog.addEventListener('close', () => {
-                    resolve(undefined);
-                    document.body.removeChild(dialog);
-                });
-                dialog.showModal();
-            });
-        });
-    }
-
-    // Toolbar related DOM structure generation
-    function generateToolbarStructure() {
-        const toolbar = dom('div', undefined, { id: 'conferia-toolbar' });
-        const filter = dom('input', undefined, { type: 'search', placeholder: 'Search…' });
-        toolbar.appendChild(filter);
-        const agendaLabel = dom('label');
-        const personalAgendaToggle = dom('input', undefined, { type: 'checkbox' });
-        agendaLabel.appendChild(personalAgendaToggle);
-        agendaLabel.appendChild(new Text('Only Personal Agenda'));
-        toolbar.appendChild(agendaLabel);
-        const toIcalButton = dom('button', undefined, { title: 'Add to calendar' });
-        toIcalButton.innerHTML = calendarIcon;
-        toolbar.appendChild(toIcalButton);
-        const fullscreenButton = dom('button');
-        toolbar.appendChild(fullscreenButton);
-        const clearButton = dom('button', undefined, { title: 'Clear data…' });
-        clearButton.innerHTML = slashIcon;
-        toolbar.appendChild(clearButton);
-        const helpButton = dom('button', undefined, { title: 'Help' });
-        helpButton.innerHTML = helpIcon;
-        toolbar.appendChild(helpButton);
-        // We can handle the help button directly here.
-        helpButton.addEventListener('click', () => {
-            askUser('About Conferia.js', `This conference utilizes the Free and Open Source framework Conferia.js to implement an interactive agenda. Conferia allows you to browse the program effortlessly, search for events, and even bookmark sessions and export them into your personal calendar. Conferia.js has a manual that explains its features and how to use them.`, [
-                'Open documentation',
-                'Close'
-            ]).then(response => {
-                if (response === 0) {
-                    // User wants to open the documentation -> redirect them to the documentation.
-                    // NOTE: We have to do this little anchor element programmatic click dance
-                    // because Safari on iOS again does not allow opening a new tab using window.open.
-                    const a = dom('a', undefined, { href: 'https://nathanlesage.github.io/conferia/users-guide/', target: '_blank' });
-                    document.body.appendChild(a);
-                    a.addEventListener('mouseup', event => {
-                        document.body.removeChild(a);
-                    });
-                    a.click();
-                }
-            });
-        });
-        return {
-            toolbar,
-            filter, personalAgendaToggle,
-            toIcalButton, fullscreenButton, clearButton
-        };
-    }
-
-    var version = "0.18.0";
+    var version = "0.19.0";
     var pkg = {
     	version: version};
-
-    var enterFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path></svg>";
-
-    var exitFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-minimize\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path></svg>";
 
     /**
      * Generates the primary Conferia.js DOM structure.
@@ -8797,41 +8697,14 @@
         const timeGutter = generateTimeGutter();
         const scheduleWrapper = generateScheduleWrapper();
         const scheduleBoard = generateScheduleBoard();
-        const { toolbar, filter, personalAgendaToggle, toIcalButton, fullscreenButton, clearButton } = generateToolbarStructure();
-        wrapper.appendChild(toolbar);
         scheduleWrapper.appendChild(dayGutter);
         scheduleWrapper.appendChild(timeGutter);
         scheduleWrapper.appendChild(scheduleBoard);
         wrapper.appendChild(scheduleWrapper);
         const footer = generateFooter();
         wrapper.appendChild(footer);
-        // Hook shortcuts
-        document.addEventListener('keydown', event => {
-            const cmdOrCtrl = event.metaKey || event.ctrlKey;
-            if (cmdOrCtrl && event.key === 'f') {
-                event.preventDefault();
-                event.stopPropagation();
-                filter.focus();
-            }
-        });
-        // Initial state preset for the fullscreen button
-        fullscreenButton.innerHTML = enterFullscreenIcon;
-        fullscreenButton.title = 'Enter Fullscreen';
-        fullscreenButton.addEventListener('click', event => {
-            if (wrapper.classList.contains('fullscreen')) {
-                wrapper.classList.remove('fullscreen');
-                fullscreenButton.innerHTML = enterFullscreenIcon;
-                fullscreenButton.title = 'Enter Fullscreen';
-            }
-            else {
-                wrapper.classList.add('fullscreen');
-                fullscreenButton.innerHTML = exitFullscreenIcon;
-                fullscreenButton.title = 'Exit Fullscreen';
-            }
-        });
         return {
-            wrapper, timeGutter, dayGutter, scheduleBoard,
-            filter, personalAgendaToggle, toIcalButton, clearButton
+            wrapper, timeGutter, dayGutter, scheduleBoard
         };
     }
     /**
@@ -9017,6 +8890,49 @@
      */
     function generateDialogWrapper() {
         return dom('div', 'dialog-content-wrapper');
+    }
+
+    // Utility to ask the user using a dialog
+    /**
+     * Shows a dialog to the user asking to click one of the buttons. The promise
+     * resolves with either the clicked button ID, or undefined if the dialog was
+     * closed without clicking a button.
+     *
+     * @param   {string}                     title    The dialog title
+     * @param   {string}                     message  The dialog message
+     * @param   {string[]}                   buttons  The button labels
+     *
+     * @return  {Promise<number|undefined>}           The button ID, or undefined
+     */
+    function askUser(title, message, buttons) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                const dialog = dom('dialog', 'conferia-dialog');
+                const titleElem = dom('h3', 'title');
+                titleElem.textContent = title;
+                dialog.appendChild(titleElem);
+                const content = dom('div');
+                content.textContent = message;
+                dialog.appendChild(content);
+                const buttonGroup = dom('div', 'button-group');
+                dialog.appendChild(buttonGroup);
+                for (let i = 0; i < buttons.length; i++) {
+                    const buttonElement = document.createElement('button');
+                    buttonElement.textContent = buttons[i];
+                    buttonElement.addEventListener('click', () => {
+                        resolve(i);
+                        dialog.close();
+                    });
+                    buttonGroup.appendChild(buttonElement);
+                }
+                document.body.appendChild(dialog);
+                dialog.addEventListener('close', () => {
+                    resolve(undefined);
+                    document.body.removeChild(dialog);
+                });
+                dialog.showModal();
+            });
+        });
     }
 
     const AGENDA_ITEM_KEY = 'conferia-agenda';
@@ -9392,48 +9308,176 @@ agenda.`, [
         return listIncludesFocus ? overlappingRecords.length > 1 : overlappingRecords.length > 0;
     }
 
+    var enterFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path></svg>";
+
+    var exitFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-minimize\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path></svg>";
+
+    var slashIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-slash\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line></svg>";
+
+    var helpIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-help-circle\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line></svg>";
+
+    var calendarIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-calendar\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>";
+
+    // Utility functions to (re)generate various elements
+    function makeToolbarWrapper() {
+        return dom('div', undefined, { id: 'conferia-toolbar' });
+    }
+    function makeFilter() {
+        return dom('input', undefined, { type: 'search', placeholder: 'Search…' });
+    }
+    function makeAgendaToggle(showAgenda) {
+        const toggle = dom('button', undefined, { title: 'Only personal agenda' });
+        toggle.innerHTML = bookmarkIcon;
+        toggle.classList.toggle('active', showAgenda);
+        return toggle;
+    }
+    function makeIcalButton() {
+        const toIcalButton = dom('button', undefined, { title: 'Add to calendar' });
+        toIcalButton.innerHTML = calendarIcon;
+        return toIcalButton;
+    }
+    function makeFullscreenButton(isFs) {
+        const fullscreenButton = dom('button');
+        fullscreenButton.title = isFs ? 'Exit Fullscreen' : 'Enter Fullscreen';
+        fullscreenButton.innerHTML = isFs ? exitFullscreenIcon : enterFullscreenIcon;
+        fullscreenButton.classList.toggle('active', isFs);
+        return fullscreenButton;
+    }
+    function makeClearButton() {
+        const clearButton = dom('button', undefined, { title: 'Clear data…' });
+        clearButton.innerHTML = slashIcon;
+        return clearButton;
+    }
+    function makeHelpButton() {
+        const helpButton = dom('button', undefined, { title: 'Help' });
+        helpButton.innerHTML = helpIcon;
+        return helpButton;
+    }
+
+    // Toolbar related DOM structure generation
+    class Toolbar {
+        constructor(callbacks) {
+            this.callbacks = callbacks;
+            // We have some toggles and other state we need to maintain here
+            this.state = {
+                query: '',
+                personalAgenda: false,
+                fullscreen: false
+            };
+            // Generate the toolbar structure
+            this.toolbar = makeToolbarWrapper();
+            this.filter = makeFilter();
+            this.personalAgendaToggle = makeAgendaToggle(this.state.personalAgenda);
+            this.toIcalButton = makeIcalButton();
+            this.fullscreenButton = makeFullscreenButton(this.state.fullscreen);
+            this.clearButton = makeClearButton();
+            this.helpButton = makeHelpButton();
+            // Append the elements in order
+            this.toolbar.append(this.filter, this.personalAgendaToggle, this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton);
+            // Attach event listeners
+            this.setupEventListeners();
+            // Initial state preset for the fullscreen button
+        }
+        /**
+         * Returns the Toolbar DOM element
+         *
+         * @return  {HTMLDivElement}  The toolbar wrapper
+         */
+        get dom() {
+            return this.toolbar;
+        }
+        setupEventListeners() {
+            // Filtering
+            this.filter.addEventListener('keyup', () => {
+                this.state.query = this.filter.value;
+                this.callbacks.onFilter(this.state.query);
+            });
+            // Toggle personal agenda
+            this.personalAgendaToggle.addEventListener('click', () => {
+                this.state.personalAgenda = !this.state.personalAgenda;
+                this.personalAgendaToggle.classList.toggle('active', this.state.personalAgenda);
+                // TODO: Aria toggle label ('pressed'? or something -- same with all toggles)
+                this.callbacks.onToggle('personal-agenda', this.state.personalAgenda);
+            });
+            this.toIcalButton.addEventListener('click', () => {
+                this.callbacks.onClick('ical');
+            });
+            // We can handle the help button directly here, which keeps the main class
+            // a bit leaner.
+            this.helpButton.addEventListener('click', () => {
+                askUser('About Conferia.js', `This conference utilizes the Free and Open Source framework Conferia.js to implement an interactive agenda. Conferia allows you to browse the program effortlessly, search for events, and even bookmark sessions and export them into your personal calendar. Conferia.js has a manual that explains its features and how to use them.`, [
+                    'Open documentation',
+                    'Close'
+                ]).then(response => {
+                    if (response === 0) {
+                        // User wants to open the documentation -> redirect them to the documentation.
+                        // NOTE: We have to do this little anchor element programmatic click dance
+                        // because Safari on iOS again does not allow opening a new tab using window.open.
+                        const a = dom('a', undefined, { href: 'https://nathanlesage.github.io/conferia/users-guide/', target: '_blank' });
+                        document.body.appendChild(a);
+                        a.addEventListener('mouseup', event => {
+                            document.body.removeChild(a);
+                        });
+                        a.click();
+                    }
+                });
+            });
+            this.fullscreenButton.addEventListener('click', event => {
+                this.state.fullscreen = !this.state.fullscreen;
+                const fs = this.state.fullscreen;
+                this.fullscreenButton.title = fs ? 'Exit Fullscreen' : 'Enter Fullscreen';
+                this.fullscreenButton.innerHTML = fs ? exitFullscreenIcon : enterFullscreenIcon;
+                this.fullscreenButton.classList.toggle('active', fs);
+                this.callbacks.onToggle('fullscreen', this.state.fullscreen);
+            });
+        }
+    }
+
     class Conferia {
         constructor(opt) {
+            // Sub-classes for state management
+            this.agenda = new Agenda();
             this.query = '';
             this.opt = opt;
             this.records = [];
             this.columnScaleFactor = 1;
             this.showOnlyPersonalAgenda = false;
-            this.agenda = new Agenda();
-            // Mount everything
-            this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined);
-            this.opt.parent.appendChild(this.dom.wrapper);
-            // Attach event listeners
-            this.dom.filter.addEventListener('keyup', () => {
-                this.query = this.dom.filter.value;
-                this.updateUI();
-            });
-            this.dom.personalAgendaToggle.addEventListener('change', () => {
-                this.showOnlyPersonalAgenda = this.dom.personalAgendaToggle.checked;
-                this.updateUI();
-            });
-            this.dom.toIcalButton.addEventListener('click', () => {
-                initiateIcalDownload(this);
-            });
-            this.dom.clearButton.addEventListener('click', () => {
-                askUser('Clear data', `Here you can delete the various data that the app stores in your
-        browser. Use this to quickly clear out your agenda, or reset the tips.`, [
-                    'Clear personal agenda',
-                    'Reset tips',
-                    'Cancel'
-                ]).then(response => {
-                    if (response === 0) {
-                        // Clear personal agenda
-                        this.agenda.clearPersonalAgenda();
+            this.toolbar = new Toolbar({
+                onFilter: (query) => {
+                    this.query = query;
+                    this.updateUI();
+                },
+                onToggle: (which, state) => {
+                    if (which === 'personal-agenda') {
+                        this.showOnlyPersonalAgenda = state;
                         this.updateUI();
                     }
-                    else if (response === 1) {
-                        // Reset tips
-                        this.agenda.resetHasShown();
+                    else if (which === 'fullscreen') {
+                        this.dom.wrapper.classList.toggle('fullscreen', state);
                     }
-                    else ;
-                });
+                },
+                onClick: (which) => {
+                    if (which === 'ical') {
+                        initiateIcalDownload(this);
+                    }
+                    else if (which === 'clear') {
+                        askUser('Clear data', `Here you can delete the various data that the app stores in your
+          browser. Use this to quickly clear out your agenda, or reset the tips.`, ['Clear personal agenda', 'Reset tips', 'Cancel']).then(response => {
+                            if (response === 0) {
+                                this.agenda.clearPersonalAgenda();
+                                this.updateUI();
+                            }
+                            else if (response === 1) {
+                                this.agenda.resetHasShown();
+                            } // response === 2 => cancel
+                        });
+                    }
+                }
             });
+            // Mount everything
+            this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined);
+            this.dom.wrapper.prepend(this.toolbar.dom);
+            this.opt.parent.appendChild(this.dom.wrapper);
             // Begin loading
             this.loadPromise = this.load();
             // Perform initial update

@@ -1,10 +1,7 @@
 import { generateDayGutter } from "./day-gutter"
 import { generateScheduleBoard, generateScheduleWrapper } from "./schedule-board"
 import { generateTimeGutter } from "./time-gutter"
-import { generateToolbarStructure } from "./toolbar"
 import pkg from "../../package.json"
-import enterFullscreenIcon from '../icons/enter-fullscreen.svg'
-import exitFullscreenIcon from '../icons/exit-fullscreen.svg'
 import { dom } from "./util"
 
 export interface DOMStructure {
@@ -12,11 +9,6 @@ export interface DOMStructure {
   timeGutter: HTMLDivElement
   dayGutter: HTMLDivElement
   scheduleBoard: HTMLDivElement
-  // Toolbar interactive elements
-  filter: HTMLInputElement
-  personalAgendaToggle: HTMLInputElement
-  toIcalButton: HTMLButtonElement
-  clearButton: HTMLButtonElement
 }
 
 /**
@@ -34,13 +26,6 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   const scheduleWrapper = generateScheduleWrapper()
   const scheduleBoard = generateScheduleBoard()
 
-  const {
-    toolbar,
-    filter, personalAgendaToggle,
-    toIcalButton, fullscreenButton, clearButton
-  } = generateToolbarStructure()
-  wrapper.appendChild(toolbar)
-
   scheduleWrapper.appendChild(dayGutter)
   scheduleWrapper.appendChild(timeGutter)
   scheduleWrapper.appendChild(scheduleBoard)
@@ -49,36 +34,8 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   const footer = generateFooter()
   wrapper.appendChild(footer)
 
-  // Hook shortcuts
-  wrapper.addEventListener('keydown', event => {
-    const cmdOrCtrl = event.metaKey || event.ctrlKey
-
-    if (cmdOrCtrl && event.key === 'f') {
-      event.preventDefault()
-      event.stopPropagation()
-      filter.focus()
-    }
-  })
-
-  // Initial state preset for the fullscreen button
-  fullscreenButton.innerHTML = enterFullscreenIcon
-  fullscreenButton.title = 'Enter Fullscreen'
-
-  fullscreenButton.addEventListener('click', event => {
-    if (wrapper.classList.contains('fullscreen')) {
-      wrapper.classList.remove('fullscreen')
-      fullscreenButton.innerHTML = enterFullscreenIcon
-      fullscreenButton.title = 'Enter Fullscreen'
-    } else {
-      wrapper.classList.add('fullscreen')
-      fullscreenButton.innerHTML = exitFullscreenIcon
-      fullscreenButton.title = 'Exit Fullscreen'
-    }
-  })
-
   return {
-    wrapper, timeGutter, dayGutter, scheduleBoard,
-    filter, personalAgendaToggle, toIcalButton, clearButton
+    wrapper, timeGutter, dayGutter, scheduleBoard
   }
 }
 

@@ -14,6 +14,7 @@
   --border-color: #c4c4c4;
 
   --accent-color: #27538c;
+  --accent-color-contrast: white;
 
   --keynote-background: #fdeef3;
   --special-background: #effcff;
@@ -37,6 +38,7 @@
     --border-color: #5e5e5e;
 
     --accent-color: #9ec8ff;
+    --accent-color-contrast: #333;
 
     --keynote-background: #372626;
     --special-background: #20393e;
@@ -77,6 +79,12 @@ dialog.conferia-dialog, #conferia-wrapper {
 
     &:hover {
       background-color: var(--button-background-hover);
+    }
+
+    &.active {
+      /* "Pressed" or "Active" state */
+      background-color: var(--accent-color);
+      color: var(--accent-color-contrast);
     }
   }
 

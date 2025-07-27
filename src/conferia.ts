@@ -11,6 +11,7 @@ import { initiateIcalDownload } from "./util/ical"
 import { matchEvent } from "./util/fuzzy-match"
 import { eventHasConflict, roomsPerDay } from "./util/conflicts-and-columns"
 import { askUser } from "./dom/ask-user"
+import { Toolbar } from "./toolbar"
 
 export interface ConferiaOptions {
   /**
@@ -123,7 +124,9 @@ export class Conferia {
   private query: string
   private showOnlyPersonalAgenda: boolean
 
-  public agenda: Agenda
+  // Sub-classes for state management
+  public agenda: Agenda = new Agenda()
+  public toolbar: Toolbar
 
   public constructor (opt: ConferiaOptions) {
     this.query = ''
@@ -132,50 +135,44 @@ export class Conferia {
     this.columnScaleFactor = 1
     this.showOnlyPersonalAgenda = false
 
-    this.agenda = new Agenda()
+    this.toolbar = new Toolbar({
+      onFilter: (query) => {
+        this.query = query
+        this.updateUI()
+      },
+      onToggle: (which, state) => {
+        if (which === 'personal-agenda') {
+          this.showOnlyPersonalAgenda = state
+          this.updateUI()
+        } else if (which === 'fullscreen') {
+          this.dom.wrapper.classList.toggle('fullscreen', state)
+        }
+      },
+      onClick: (which) => {
+        if (which === 'ical') {
+          initiateIcalDownload(this)
+        } else if (which === 'clear') {
+          askUser(
+          'Clear data',
+          `Here you can delete the various data that the app stores in your
+          browser. Use this to quickly clear out your agenda, or reset the tips.`,
+          [ 'Clear personal agenda', 'Reset tips', 'Cancel' ]
+        ).then(response => {
+          if (response === 0) {
+            this.agenda.clearPersonalAgenda()
+            this.updateUI()
+          } else if (response === 1) {
+            this.agenda.resetHasShown()
+          } // response === 2 => cancel
+        })
+        }
+      }
+    })
 
     // Mount everything
     this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined)
+    this.dom.wrapper.prepend(this.toolbar.dom)
     this.opt.parent.appendChild(this.dom.wrapper)
-
-    // Attach event listeners
-    this.dom.filter.addEventListener('keyup', () => {
-      this.query = this.dom.filter.value
-      this.updateUI()
-    })
-
-    this.dom.personalAgendaToggle.addEventListener('change', () => {
-      this.showOnlyPersonalAgenda = this.dom.personalAgendaToggle.checked
-      this.updateUI()
-    })
-
-    this.dom.toIcalButton.addEventListener('click', () => {
-      initiateIcalDownload(this)
-    })
-
-    this.dom.clearButton.addEventListener('click', () => {
-      askUser(
-        'Clear data',
-        `Here you can delete the various data that the app stores in your
-        browser. Use this to quickly clear out your agenda, or reset the tips.`,
-        [
-          'Clear personal agenda',
-          'Reset tips',
-          'Cancel'
-        ]
-      ).then(response => {
-        if (response === 0) {
-          // Clear personal agenda
-          this.agenda.clearPersonalAgenda()
-          this.updateUI()
-        } else if (response === 1) {
-          // Reset tips
-          this.agenda.resetHasShown()
-        } else if (response === 2) {
-          // Cancel
-        }
-      })
-    })
 
     // Begin loading
     this.loadPromise = this.load()
