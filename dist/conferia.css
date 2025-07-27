@@ -75,7 +75,11 @@ dialog.conferia-dialog, #conferia-wrapper {
     background-color: var(--button-background);
     border: 1px solid var(--border-color);
     border-radius: var(--cf-border-radius);
-    padding: 4px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 30px;
+    height: 30px;
 
     &:hover {
       background-color: var(--button-background-hover);
@@ -151,8 +155,8 @@ dialog.conferia-dialog, #conferia-wrapper {
 
 #conferia-toolbar {
   display: flex;
-  padding: 10px;
-  gap: 10px;
+  padding: 5px;
+  gap: 5px;
   align-items: stretch;
 
   border: 1px solid var(--border-color);
