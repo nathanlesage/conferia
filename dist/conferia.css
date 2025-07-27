@@ -178,7 +178,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   background-color: var(--schedule-board-background);
   display: grid;
   grid-template-areas: "empty day-gutter" "time-gutter schedule";
-  grid-template-columns: 60px auto;
+  grid-template-columns: auto auto;
   grid-template-rows: auto auto;
   overflow: auto;
 
@@ -190,9 +190,9 @@ dialog.conferia-dialog, #conferia-wrapper {
 }
 
 #conferia-time-gutter {
-  width: 60px;
-  text-align: center;
+  width: 40px;
   font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
   background-color: var(--element-background);
   grid-area: time-gutter;
   position: sticky;
@@ -204,6 +204,7 @@ dialog.conferia-dialog, #conferia-wrapper {
     padding: 4px 10px;
     display: flex;
     align-items: flex-start;
+    justify-content: center;
 
     &:not(:last-child) {
       border-bottom: 1px solid var(--border-color);
@@ -212,7 +213,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 }
 
 #conferia-day-gutter {
-  height: 60px;
+  height: 30px;
   background-color: var(--element-background);
   font-size: 150%;
   grid-area: day-gutter;
