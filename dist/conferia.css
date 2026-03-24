@@ -52,6 +52,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   /* Define reasonable base styles for everything */
   font-size: 16px;
   line-height: 120%;
+  color: var(--font-color);
 
   * {
     outline-color: var(--accent-color);
