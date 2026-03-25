@@ -1,8 +1,6 @@
-import { DateTime } from "luxon"
 import { Agenda } from "../agenda"
 import { CSVRecord } from "../csv"
 import bookmarkIcon from '../icons/bookmark.svg'
-import { getTimeOffset } from "../util/time-helpers"
 import { dom } from "./util"
 
 function getAriaEventType (event: CSVRecord): string {
