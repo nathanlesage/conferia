@@ -214,7 +214,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 }
 
 #conferia-day-gutter {
-  height: 30px;
+  height: 40px;
   background-color: var(--element-background);
   font-size: 150%;
   grid-area: day-gutter;
