@@ -9205,6 +9205,8 @@ agenda.`, [
         // NOTE: DateTimes MUST be in UTC (also spares us from having to define weird
         // VTIMEZONE components).
         const dtNow = dt2rfc2445(DateTime.now());
+        // Include the author in the title if applicable (that is, for keynotes or single events)
+        const title = ('author' in record) ? `${record.title} (${record.author})` : record.title;
         return [
             'BEGIN:VEVENT',
             // Start and end
@@ -9213,7 +9215,7 @@ agenda.`, [
             `LOCATION:${record.location}`,
             // iCal requires DTSTAMP
             `DTSTAMP:${dtNow}`,
-            ...foldIcalLines(`SUMMARY:${record.title}`), // Summary = title
+            ...foldIcalLines(`SUMMARY:${title}`), // Summary = title
             ...icalDescriptionForRecord(record),
             `UID:${record.id}`,
             'END:VEVENT'

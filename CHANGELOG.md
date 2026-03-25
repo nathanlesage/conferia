@@ -1,3 +1,8 @@
+# Release 0.21.0
+
+* Minor code refactors.
+* Fixed keynote authors not appearing in iCal download (#2).
+
 # Release 0.20.0
 
 * If the user has no items on the personal agenda and toggles it, the no-events
