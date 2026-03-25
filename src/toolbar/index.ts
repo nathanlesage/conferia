@@ -15,23 +15,59 @@ export interface ToolbarCallbacks {
   onClick: (which: 'ical'|'clear') => void
 }
 
+/**
+ * Implements a toolbar component.
+ */
 export class Toolbar {
-  // The elements inside the toolbar
+  /**
+   * The toolbar wrapper element
+   */
   private toolbar: HTMLDivElement
+
+  /**
+   * The query filter element
+   */
   private filter: HTMLInputElement
+
+  /**
+   * The "Show only personal agenda" toggle
+   */
   private personalAgendaToggle: HTMLButtonElement
+
+  /**
+   * The "Download ical" button
+   */
   private toIcalButton: HTMLButtonElement
+
+  /**
+   * The "toggle fullscreen" button
+   */
   private fullscreenButton: HTMLButtonElement
+
+  /**
+   * The "Clear storage" button
+   */
   private clearButton: HTMLButtonElement
+
+  /**
+   * The "Show help" button
+   */
   private helpButton: HTMLButtonElement
 
-  // We have some toggles and other state we need to maintain here
+  /**
+   * Holds the toolbar state
+   */
   private state = {
     query: '',
     personalAgenda: false,
     fullscreen: false
   }
 
+  /**
+   * Instantiates a new Toolbar component. Only 1 per Conferia instance.
+   *
+   * @param   {ToolbarCallbacks}  callbacks  Various toolbar callbacks.
+   */
   constructor (private callbacks: ToolbarCallbacks) {
     // Generate the toolbar structure
     this.toolbar = makeToolbarWrapper()
@@ -50,8 +86,6 @@ export class Toolbar {
 
     // Attach event listeners
     this.setupEventListeners()
-
-    // Initial state preset for the fullscreen button
   }
 
   /**
@@ -63,6 +97,9 @@ export class Toolbar {
     return this.toolbar
   }
 
+  /**
+   * Sets up event listeners for the buttons and other elements on the toolbar.
+   */
   private setupEventListeners () {
     // Filtering
     this.filter.addEventListener('keyup', () => {

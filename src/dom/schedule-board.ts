@@ -3,6 +3,13 @@ import { CSVRecord } from "../csv"
 import bookmarkIcon from '../icons/bookmark.svg'
 import { dom } from "./util"
 
+/**
+ * Utility function to define the aria event type for the Dom
+ *
+ * @param   {CSVRecord}  event  The event record
+ *
+ * @return  {string}            The Aria label
+ */
 function getAriaEventType (event: CSVRecord): string {
   if (event.type === 'keynote') {
     return 'Keynote'
@@ -24,6 +31,9 @@ export function generateScheduleWrapper (): HTMLDivElement {
   return dom('div', undefined, { id: 'conferia-schedule-wrapper', role: 'presentation' })
 }
 
+/**
+ * Generate the schedule board DOM wrapper
+ */
 export function generateScheduleBoard (): HTMLDivElement {
   return dom('div', undefined, {
     id: 'conferia-schedule-board',
@@ -32,6 +42,13 @@ export function generateScheduleBoard (): HTMLDivElement {
   })
 }
 
+/**
+ * Update the schedule board's background size according to the day and time sizes.
+ *
+ * @param   {HTMLElement}  scheduleBoard  The schedule board
+ * @param   {number}       dayWidth       The width of a day in px
+ * @param   {number}       timeWidth      The height of a time slice in px
+ */
 export function updateScheduleBoard (scheduleBoard: HTMLElement, dayWidth: number, timeWidth: number) {
   scheduleBoard.style = `background-size: ${dayWidth}px ${timeWidth}px;
     background-image:
@@ -39,6 +56,13 @@ export function updateScheduleBoard (scheduleBoard: HTMLElement, dayWidth: numbe
     repeating-linear-gradient(0deg, transparent, transparent ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth}px);`
 }
 
+/**
+ * Draws vertical day dividers between each day to visually distinguish the days
+ *
+ * @param   {HTMLElement}  scheduleBoard  The schedule board
+ * @param   {number}       columnWidth    How wide the columns are in pixels
+ * @param   {string[][]}   colsPerDay     Indicates whether there are subcols
+ */
 export function drawVerticalDayDividers (scheduleBoard: HTMLElement, columnWidth: number, colsPerDay: string[][]) {
   const dividerWidth = 6
 
@@ -51,6 +75,14 @@ export function drawVerticalDayDividers (scheduleBoard: HTMLElement, columnWidth
   }
 }
 
+/**
+ * Generates a card for a provided event.
+ *
+ * @param   {CSVRecord}       event   The event to turn into a card
+ * @param   {Agenda}          agenda  The personal agenda controller
+ *
+ * @return  {HTMLDivElement}          The event card element
+ */
 export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivElement {
   const card = dom('div', ['event', event.type], {
     tabindex: '0',

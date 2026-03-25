@@ -5,6 +5,12 @@ import { Conferia } from "../conferia"
 
 const EOL = "\r\n" // iCal requires CRLF
 
+/**
+ * Shows a dialog box that asks the user what they want to download, and then
+ * proceeds to generate the corresponding iCal file.
+ *
+ * @param   {Conferia}  conferia  The Conferia instance
+ */
 export function initiateIcalDownload (conferia: Conferia) {
   askUser(
     'Add events to your calendar',
@@ -62,7 +68,11 @@ function downloadIcal (ical: string) {
 }
 
 /**
- * Do violence to ISO 8601 datetimes
+ * Do violence to ISO 8601 datetimes.
+ * 
+ * (This function takes a Luxon DateTime object, sets its zone to UTC, and then
+ * formats it into the 8601 variant that the iCal format, that is, RFC 2445,
+ * expects.)
  *
  * @param   {DateTime}  date  The datetime
  *
@@ -130,9 +140,9 @@ function recordToIcal (record: CSVRecord): string[] {
  * Generates a valid `DESCRIPTION:` component for a `VEVENT` entry. Takes care
  * of line folding.
  *
- * @param   {CSVRecord[]}  record  The record in question.
+ * @param   {CSVRecord}  record  The record in question.
  *
- * @return  {string[]}             The (properly parsed) lines of the DESCRIPTION.
+ * @return  {string[]}           The (properly parsed) lines of the DESCRIPTION.
  */
 function icalDescriptionForRecord (record: CSVRecord): string[] {
   // We have three possibilities:

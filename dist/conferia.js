@@ -8512,6 +8512,9 @@
     }
 
     const MINIMUM_TICK_HEIGHT = 25;
+    /**
+     * Generates a time gutter wrapper element
+     */
     function generateTimeGutter() {
         return dom('div', undefined, { id: 'conferia-time-gutter', role: 'presentation' });
     }
@@ -8548,9 +8551,21 @@
         }
     }
 
+    /**
+     * Generates the day gutter wrapper element
+     */
     function generateDayGutter() {
         return dom('div', undefined, { id: 'conferia-day-gutter', role: 'presentation' });
     }
+    /**
+     * Updates the gutter ticks within the day gutter element according to the state.
+     *
+     * @param   {HTMLElement}  dayGutter     The gutter element
+     * @param   {DateTime}     startDay      The start day
+     * @param   {number}       totalDays     Total number of days
+     * @param   {number}       colWidth      The total width per column
+     * @param   {string[]}     dayLocations  The locations per day (to calculate sub-columns)
+     */
     function updateGutterTicks(dayGutter, startDay, totalDays, colWidth, dayLocations) {
         dayGutter.innerHTML = '';
         for (let i = 0; i < totalDays; i++) {
@@ -8569,6 +8584,13 @@
 
     var bookmarkIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-bookmark\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path></svg>";
 
+    /**
+     * Utility function to define the aria event type for the Dom
+     *
+     * @param   {CSVRecord}  event  The event record
+     *
+     * @return  {string}            The Aria label
+     */
     function getAriaEventType(event) {
         if (event.type === 'keynote') {
             return 'Keynote';
@@ -8591,6 +8613,9 @@
     function generateScheduleWrapper() {
         return dom('div', undefined, { id: 'conferia-schedule-wrapper', role: 'presentation' });
     }
+    /**
+     * Generate the schedule board DOM wrapper
+     */
     function generateScheduleBoard() {
         return dom('div', undefined, {
             id: 'conferia-schedule-board',
@@ -8598,12 +8623,26 @@
             'aria-label': 'Agenda'
         });
     }
+    /**
+     * Update the schedule board's background size according to the day and time sizes.
+     *
+     * @param   {HTMLElement}  scheduleBoard  The schedule board
+     * @param   {number}       dayWidth       The width of a day in px
+     * @param   {number}       timeWidth      The height of a time slice in px
+     */
     function updateScheduleBoard(scheduleBoard, dayWidth, timeWidth) {
         scheduleBoard.style = `background-size: ${dayWidth}px ${timeWidth}px;
     background-image:
     repeating-linear-gradient(90deg, transparent, transparent ${dayWidth - 1}px, var(--schedule-board-grid) ${dayWidth - 1}px, var(--schedule-board-grid) ${dayWidth}px),
     repeating-linear-gradient(0deg, transparent, transparent ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth}px);`;
     }
+    /**
+     * Draws vertical day dividers between each day to visually distinguish the days
+     *
+     * @param   {HTMLElement}  scheduleBoard  The schedule board
+     * @param   {number}       columnWidth    How wide the columns are in pixels
+     * @param   {string[][]}   colsPerDay     Indicates whether there are subcols
+     */
     function drawVerticalDayDividers(scheduleBoard, columnWidth, colsPerDay) {
         const dividerWidth = 6;
         for (let day = 1; day < colsPerDay.length; day++) {
@@ -8614,6 +8653,14 @@
             scheduleBoard.appendChild(div);
         }
     }
+    /**
+     * Generates a card for a provided event.
+     *
+     * @param   {CSVRecord}       event   The event to turn into a card
+     * @param   {Agenda}          agenda  The personal agenda controller
+     *
+     * @return  {HTMLDivElement}          The event card element
+     */
     function generateEventCard(event, agenda) {
         const card = dom('div', ['event', event.type], {
             tabindex: '0',
@@ -8933,7 +8980,13 @@
         });
     }
 
+    /**
+     * The key in the local storage under which the agenda is saved.
+     */
     const AGENDA_ITEM_KEY = 'conferia-agenda';
+    /**
+     * Shows a dialog box that explains to the user how the agenda works.
+     */
     function showIntroForUser() {
         const introText = `You have added your first element to your personal agenda.
 Your personal agenda allows you to bookmark or star various events and view only
@@ -8945,10 +8998,17 @@ this agenda on a different device, it won't remember them. You can export and
 import your agenda to transfer it between devices.`;
         askUser('Your Personalized Agenda', introText, ['Ok']);
     }
+    /**
+     * Manages the user's personal agenda.
+     */
     class Agenda {
+        /**
+         * Creates a new Agenda object. NOTE: Should only be 1 per Conferia instance.
+         */
         constructor() {
             this.hasShownIntro = false;
             this.itemIDs = [];
+            // Retrieve the persisted personal agenda if applicable.
             const agenda = window.localStorage.getItem(AGENDA_ITEM_KEY);
             if (agenda !== null && agenda.trim() !== '') {
                 const parsed = JSON.parse(agenda);
@@ -8957,6 +9017,12 @@ import your agenda to transfer it between devices.`;
             }
             this.persistToStorage(); // If the item wasn't set yet
         }
+        /**
+         * Adds an item to the agenda. This function also shows the intro to the user
+         * if that hasn't happened yet.
+         *
+         * @param   {string}  id  The ID to add
+         */
         addItem(id) {
             if (!this.hasShownIntro) {
                 showIntroForUser();
@@ -8968,12 +9034,21 @@ import your agenda to transfer it between devices.`;
                 this.persistToStorage();
             }
         }
+        /**
+         * Removes an item from the personal agenda.
+         *
+         * @param   {string}  id  The ID to remove
+         */
         removeItem(id) {
             if (this.itemIDs.includes(id)) {
                 this.itemIDs.splice(this.itemIDs.indexOf(id), 1);
                 this.persistToStorage();
             }
         }
+        /**
+         * Clears the personal agenda entirely. This function also asks for
+         * confirmation.
+         */
         clearPersonalAgenda() {
             askUser('Clear Personal Agenda?', 'This action will reset your entire personal agenda. This is an irreversable action. Proceed?', ['Yes, clear personal agenda', 'Cancel']).then(response => {
                 if (response === 0) {
@@ -8983,13 +9058,29 @@ import your agenda to transfer it between devices.`;
                 }
             });
         }
+        /**
+         * Resets the "has shown intro" flag so that the next time the user adds an
+         * item to their agenda, they will see the intro again.
+         */
         resetHasShown() {
             this.hasShownIntro = false;
             this.persistToStorage();
         }
+        /**
+         * Returns true if the provided ID is part of the agenda.
+         *
+         * @param   {string}  id  The item ID to query
+         *
+         * @return  {boolean}      True if the item is on the agenda.
+         */
         hasItem(id) {
             return this.itemIDs.includes(id);
         }
+        /**
+         * Returns all item IDs currently part of the user's agenda.
+         *
+         * @return  {string[]}  The item IDs
+         */
         getItems() {
             return this.itemIDs;
         }
@@ -9007,6 +9098,12 @@ import your agenda to transfer it between devices.`;
     }
 
     const EOL = "\r\n"; // iCal requires CRLF
+    /**
+     * Shows a dialog box that asks the user what they want to download, and then
+     * proceeds to generate the corresponding iCal file.
+     *
+     * @param   {Conferia}  conferia  The Conferia instance
+     */
     function initiateIcalDownload(conferia) {
         askUser('Add events to your calendar', `Click one of the buttons below to download a set of this program's events
 in the iCal format. This will download an iCal file which you can add to your
@@ -9060,7 +9157,11 @@ agenda.`, [
         a.click();
     }
     /**
-     * Do violence to ISO 8601 datetimes
+     * Do violence to ISO 8601 datetimes.
+     *
+     * (This function takes a Luxon DateTime object, sets its zone to UTC, and then
+     * formats it into the 8601 variant that the iCal format, that is, RFC 2445,
+     * expects.)
      *
      * @param   {DateTime}  date  The datetime
      *
@@ -9122,9 +9223,9 @@ agenda.`, [
      * Generates a valid `DESCRIPTION:` component for a `VEVENT` entry. Takes care
      * of line folding.
      *
-     * @param   {CSVRecord[]}  record  The record in question.
+     * @param   {CSVRecord}  record  The record in question.
      *
-     * @return  {string[]}             The (properly parsed) lines of the DESCRIPTION.
+     * @return  {string[]}           The (properly parsed) lines of the DESCRIPTION.
      */
     function icalDescriptionForRecord(record) {
         // We have three possibilities:
@@ -9316,24 +9417,42 @@ agenda.`, [
 
     var calendarIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-calendar\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>";
 
-    // Utility functions to (re)generate various elements
+    /**
+     * Creates the toolbar wrapper element
+     */
     function makeToolbarWrapper() {
         return dom('div', undefined, { id: 'conferia-toolbar' });
     }
+    /**
+     * Creates a toolbar filter element
+     */
     function makeFilter() {
         return dom('input', undefined, { type: 'search', placeholder: 'Search…' });
     }
+    /**
+     * Creates the agenda toggle element
+     *
+     * @param   {boolean}  showAgenda  Whether to preset it as active
+     */
     function makeAgendaToggle(showAgenda) {
         const toggle = dom('button', undefined, { title: 'Only personal agenda' });
         toggle.innerHTML = bookmarkIcon;
         toggle.classList.toggle('active', showAgenda);
         return toggle;
     }
+    /**
+     * Creates the iCal button
+     */
     function makeIcalButton() {
         const toIcalButton = dom('button', undefined, { title: 'Add to calendar' });
         toIcalButton.innerHTML = calendarIcon;
         return toIcalButton;
     }
+    /**
+     * Creates the fullscreen button
+     *
+     * @param   {boolean}  isFs  Whether to preset it as active
+     */
     function makeFullscreenButton(isFs) {
         const fullscreenButton = dom('button');
         fullscreenButton.title = isFs ? 'Exit Fullscreen' : 'Enter Fullscreen';
@@ -9341,11 +9460,17 @@ agenda.`, [
         fullscreenButton.classList.toggle('active', isFs);
         return fullscreenButton;
     }
+    /**
+     * Creates the clear button element
+     */
     function makeClearButton() {
         const clearButton = dom('button', undefined, { title: 'Clear data…' });
         clearButton.innerHTML = slashIcon;
         return clearButton;
     }
+    /**
+     * Creates the help button
+     */
     function makeHelpButton() {
         const helpButton = dom('button', undefined, { title: 'Help' });
         helpButton.innerHTML = helpIcon;
@@ -9353,10 +9478,20 @@ agenda.`, [
     }
 
     // Toolbar related DOM structure generation
+    /**
+     * Implements a toolbar component.
+     */
     class Toolbar {
+        /**
+         * Instantiates a new Toolbar component. Only 1 per Conferia instance.
+         *
+         * @param   {ToolbarCallbacks}  callbacks  Various toolbar callbacks.
+         */
         constructor(callbacks) {
             this.callbacks = callbacks;
-            // We have some toggles and other state we need to maintain here
+            /**
+             * Holds the toolbar state
+             */
             this.state = {
                 query: '',
                 personalAgenda: false,
@@ -9374,7 +9509,6 @@ agenda.`, [
             this.toolbar.append(this.filter, this.personalAgendaToggle, this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton);
             // Attach event listeners
             this.setupEventListeners();
-            // Initial state preset for the fullscreen button
         }
         /**
          * Returns the Toolbar DOM element
@@ -9384,6 +9518,9 @@ agenda.`, [
         get dom() {
             return this.toolbar;
         }
+        /**
+         * Sets up event listeners for the buttons and other elements on the toolbar.
+         */
         setupEventListeners() {
             // Filtering
             this.filter.addEventListener('keyup', () => {
@@ -9431,9 +9568,19 @@ agenda.`, [
         }
     }
 
+    /**
+     * The main Conferia object.
+     */
     class Conferia {
+        /**
+         * Instantiate a new Conferia object.
+         *
+         * @param   {ConferiaOptions}  opt  The start options
+         */
         constructor(opt) {
-            // Sub-classes for state management
+            /**
+             * Manages the user's personal agenda.
+             */
             this.agenda = new Agenda();
             this.query = '';
             this.opt = opt;
@@ -9525,13 +9672,14 @@ agenda.`, [
             return records.filter(record => matchEvent(record, q));
         }
         /**
-         * This is the major function of this class. It completely (re)builds the
+         * This is the central function of this class. It completely (re)builds the
          * entire UI, based on any filters, etc.
          */
         updateUI() {
             var _a, _b, _c, _d, _e, _f, _g, _h;
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
+            // If there are no records to show, indicate this.
             if (records.length === 0) {
                 this.dom.scheduleWrapper.scrollTo({ top: 0, left: 0 });
                 this.dom.scheduleBoard.innerHTML = '';
@@ -9541,7 +9689,12 @@ agenda.`, [
                 noeventscard.classList.add('event', 'meta');
                 noeventscard.style.margin = ((_a = this.opt.eventCardPadding) !== null && _a !== void 0 ? _a : 10) + 'px';
                 noeventscard.style.height = '75%';
-                noeventscard.innerHTML = '<strong>No events to show.</strong>';
+                if (this.showOnlyPersonalAgenda) {
+                    noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>';
+                }
+                else {
+                    noeventscard.innerHTML = '<strong>No events to show.</strong>';
+                }
                 this.dom.scheduleBoard.appendChild(noeventscard);
                 return;
             }
@@ -9560,14 +9713,6 @@ agenda.`, [
             const shortestInterval = Math.max(300, getShortestInterval(dates));
             // How many days do we have in total?
             const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
-            // DEBUG START
-            const counter = records
-                .map(r => getTimeOffset(r.dateEnd, r.dateStart))
-                .reduce((prev, cur) => { cur in prev ? prev[cur] += 1 : prev[cur] = 1; return prev; }, {});
-            const vals = Object.entries(counter).map(([int, cnt]) => parseInt(int, 10) * cnt);
-            vals.reduce((prev, cur) => prev + cur, 0) / records.length;
-            // console.log({counter, mean})
-            // DEBUG END
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
             const MIN_HEIGHT = (_f = this.opt.minimumCardHeight) !== null && _f !== void 0 ? _f : 75;
@@ -9638,15 +9783,15 @@ agenda.`, [
         }
         /**
          * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1
-         * for default zoom, 1.1 for 110% zoom factor, or 0.9 for 90% zoom factor.)
+         * for default zoom, 1.1 for 110% zoom factor, or 0.9 for 90% zoom factor.).
+         * Minimum is 0.1 (10%) and maximum is 10.0 (1000%).
          *
          * @param   {number}  factor  The new factor
          */
         colZoom(factor) {
-            this.columnScaleFactor = factor;
-            if (this.columnScaleFactor < 1) {
-                this.columnScaleFactor = 1;
-            }
+            const max = 10.0;
+            const min = 0.1;
+            this.columnScaleFactor = Math.min(Math.max(factor, min), max);
             this.updateUI();
         }
         /**

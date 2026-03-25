@@ -4,6 +4,9 @@ import { dom } from "./util"
 
 const MINIMUM_TICK_HEIGHT = 25
 
+/**
+ * Generates a time gutter wrapper element
+ */
 export function generateTimeGutter (): HTMLDivElement {
   return dom('div', undefined, { id: 'conferia-time-gutter', role: 'presentation' })
 }
