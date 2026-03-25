@@ -71,10 +71,15 @@ export function roomsWithConflictsPerDay (records: CSVRecord[]): string[][] {
 export function eventHasConflict (record: CSVRecord, records: CSVRecord[]): boolean {
   const thisStart = record.dateStart
   const thisEnd = record.dateEnd
-  const listIncludesFocus = records.includes(record)
-  const overlappingRecords = records.filter(rec => {
+
+  return records.some(rec => {
+    if (record === rec) {
+      return false // No self-overlap
+    }
+
     const otherStart = rec.dateStart
     const otherEnd = rec.dateEnd
+
     if (thisStart >= otherStart && thisEnd <= otherEnd) {
       return true // Focus event is contained within the other event
     } else if (thisStart < otherStart && thisEnd > otherEnd) {
@@ -87,6 +92,4 @@ export function eventHasConflict (record: CSVRecord, records: CSVRecord[]): bool
 
     return false
   })
-
-  return listIncludesFocus ? overlappingRecords.length > 1 : overlappingRecords.length > 0
 }
