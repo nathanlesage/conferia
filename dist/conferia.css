@@ -228,7 +228,15 @@ dialog.conferia-dialog, #conferia-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    position: relative;
+
+    .content {
+      display: block;
+      font-weight: bold;
+      position: sticky;
+      left: 40px; /* Account for the time gutter */
+      right: 0;
+    }
 
     &:not(:last-child) {
       border-right: 1px solid var(--border-color);
