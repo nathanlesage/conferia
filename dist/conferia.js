@@ -9332,22 +9332,25 @@ agenda.`, [
     // This file contains a few helper functions that help us arrange the various
     // events on the schedule more appropriately.
     /**
-     * Figure out the rooms which need their own, dedicated rooms for each day. NOTE
-     * that this function **only** returns, for each day, those rooms where there
-     * are conflicts with other events.
+     * This function takes in a set of records and, for each day in the dataset,
+     * figures out which rooms are conflicting. A conflict is defined as two events
+     * happening at the same time in different rooms. The returned array will have
+     * one element for each day in the records, and each of these elements will
+     * contain a list of all rooms that conflict. If there are no conflicting rooms
+     * on a day, that array will be empty for the day.
      *
      * @param   {CSVRecord[]}  records  The records to display
      *
      * @return  {string[][]}            An array of strings in the form [day][room]
      */
-    function roomsPerDay(records) {
+    function roomsWithConflictsPerDay(records) {
         var _a, _b;
         const dates = records.map(r => [r.dateStart, r.dateEnd]);
         const now = DateTime.now();
         const earliestDay = (_a = getEarliestDay(dates.flat())) !== null && _a !== void 0 ? _a : now;
         const latestDay = (_b = getLatestDay(dates.flat())) !== null && _b !== void 0 ? _b : now.plus({ day: 1 });
         const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
-        const roomsPerDay = [];
+        const roomsWithConflictsPerDay = [];
         for (let i = 0; i < days; i++) {
             // First, get all events happening today
             const today = earliestDay.plus({ days: i }).startOf('day');
@@ -9369,9 +9372,9 @@ agenda.`, [
             // Finally, sort them so that each room will always be in the same location
             const allRooms = [...roomsWithConflictsToday];
             allRooms.sort();
-            roomsPerDay[i] = allRooms;
+            roomsWithConflictsPerDay[i] = allRooms;
         }
-        return roomsPerDay;
+        return roomsWithConflictsPerDay;
     }
     /**
      * Utility function that returns true if an event has a conflict with any other
@@ -9762,7 +9765,7 @@ agenda.`, [
             // info to the dayGutter updater so that it can add a second "heading row"
             // with the room designations at the corresponding places, AND we need to
             // offset the events based on that information.
-            const rpd = roomsPerDay(records);
+            const rpd = roomsWithConflictsPerDay(records);
             debug('Room conflicts per day: ', rpd);
             const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
             debug(`Using time grid interval of ${timeGridInterval} seconds.`);

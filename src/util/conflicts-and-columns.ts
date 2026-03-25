@@ -6,15 +6,18 @@ import { CSVRecord } from "../csv"
 import { getEarliestDay, getLatestDay } from "./time-helpers"
 
 /**
- * Figure out the rooms which need their own, dedicated rooms for each day. NOTE
- * that this function **only** returns, for each day, those rooms where there
- * are conflicts with other events.
+ * This function takes in a set of records and, for each day in the dataset,
+ * figures out which rooms are conflicting. A conflict is defined as two events
+ * happening at the same time in different rooms. The returned array will have
+ * one element for each day in the records, and each of these elements will
+ * contain a list of all rooms that conflict. If there are no conflicting rooms
+ * on a day, that array will be empty for the day.
  *
  * @param   {CSVRecord[]}  records  The records to display
  *
  * @return  {string[][]}            An array of strings in the form [day][room]
  */
-export function roomsPerDay (records: CSVRecord[]): string[][] {
+export function roomsWithConflictsPerDay (records: CSVRecord[]): string[][] {
   const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
 
   const now = DateTime.now()
@@ -24,7 +27,7 @@ export function roomsPerDay (records: CSVRecord[]): string[][] {
 
   const days = Math.ceil(latestDay.diff(earliestDay).as('days'))
 
-  const roomsPerDay: string[][] = []
+  const roomsWithConflictsPerDay: string[][] = []
   for (let i = 0; i < days; i++) {
     // First, get all events happening today
     const today = earliestDay.plus({ days: i }).startOf('day')
@@ -49,10 +52,10 @@ export function roomsPerDay (records: CSVRecord[]): string[][] {
     // Finally, sort them so that each room will always be in the same location
     const allRooms = [...roomsWithConflictsToday]
     allRooms.sort()
-    roomsPerDay[i] = allRooms
+    roomsWithConflictsPerDay[i] = allRooms
   }
 
-  return roomsPerDay
+  return roomsWithConflictsPerDay
 }
 
 /**

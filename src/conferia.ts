@@ -9,7 +9,7 @@ import { showEventDetailsModal } from "./dom/event-details-modal"
 import { Agenda } from "./agenda"
 import { initiateIcalDownload } from "./util/ical"
 import { matchEvent } from "./util/fuzzy-match"
-import { eventHasConflict, roomsPerDay } from "./util/conflicts-and-columns"
+import { eventHasConflict, roomsWithConflictsPerDay } from "./util/conflicts-and-columns"
 import { askUser } from "./dom/ask-user"
 import { Toolbar } from "./toolbar"
 import { debug, toggleDebug } from "./util/logger"
@@ -350,7 +350,7 @@ export class Conferia {
     // info to the dayGutter updater so that it can add a second "heading row"
     // with the room designations at the corresponding places, AND we need to
     // offset the events based on that information.
-    const rpd = roomsPerDay(records)
+    const rpd = roomsWithConflictsPerDay(records)
 
     debug('Room conflicts per day: ', rpd)
 
