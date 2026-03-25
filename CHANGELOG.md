@@ -1,5 +1,7 @@
 # Release 0.19.0
 
+* Only show the day tick background color for the actual column to avoid visual
+  clutter
 * Scroll to top when updating the UI with no records to show
 * Make day dividers span the entire height of the schedule board
 * The day indicator now always stays visible while scrolling left and right

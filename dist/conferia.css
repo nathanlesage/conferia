@@ -216,7 +216,6 @@ dialog.conferia-dialog, #conferia-wrapper {
 
 #conferia-day-gutter {
   height: var(--cf-gutter-size);
-  background-color: var(--element-background);
   font-size: 150%;
   grid-area: day-gutter;
   display: flex;
@@ -226,6 +225,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   box-shadow: 0px 5px 5px 0px var(--element-shadow-color);
 
   .tick.day {
+    background-color: var(--element-background);
     display: flex;
     align-items: center;
     justify-content: center;
