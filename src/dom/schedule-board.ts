@@ -41,17 +41,13 @@ export function updateScheduleBoard (scheduleBoard: HTMLElement, dayWidth: numbe
     repeating-linear-gradient(0deg, transparent, transparent ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth}px);`
 }
 
-export function drawVerticalDayDividers (startTime: DateTime, endTime: DateTime, scheduleBoard: HTMLElement, columnWidth: number, colsPerDay: string[][], pps: number) {
-  const secondsPerDay = getTimeOffset(endTime, startTime)
-  const dividerHeight = secondsPerDay * pps
+export function drawVerticalDayDividers (scheduleBoard: HTMLElement, columnWidth: number, colsPerDay: string[][]) {
   const dividerWidth = 6
 
   for (let day = 1; day < colsPerDay.length; day++) {
     const prevColumnsOffset = colsPerDay.slice(0, day).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0)
     const div = dom('div', 'cf-day-divider')
     div.style.width = `${dividerWidth}px`
-    div.style.height = `${dividerHeight}px`
-    div.style.top = '0px'
     div.style.left = `${prevColumnsOffset * columnWidth - dividerWidth / 2}px`
     scheduleBoard.appendChild(div)
   }

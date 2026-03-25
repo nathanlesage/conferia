@@ -8559,8 +8559,10 @@
             const nSubCols = dayLocations !== undefined ? Math.max(1, dayLocations[i].length) : 1;
             const thisDay = startDay.plus({ days: i });
             const dayTick = dom('div', 'tick day', { role: 'presentation' });
-            dayTick.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             dayTick.style.width = `${colWidth * nSubCols}px`;
+            const content = dom('span', 'content');
+            content.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            dayTick.appendChild(content);
             dayGutter.appendChild(dayTick);
         }
     }
@@ -8602,16 +8604,12 @@
     repeating-linear-gradient(90deg, transparent, transparent ${dayWidth - 1}px, var(--schedule-board-grid) ${dayWidth - 1}px, var(--schedule-board-grid) ${dayWidth}px),
     repeating-linear-gradient(0deg, transparent, transparent ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth - 1}px, var(--schedule-board-grid) ${timeWidth}px);`;
     }
-    function drawVerticalDayDividers(startTime, endTime, scheduleBoard, columnWidth, colsPerDay, pps) {
-        const secondsPerDay = getTimeOffset(endTime, startTime);
-        const dividerHeight = secondsPerDay * pps;
+    function drawVerticalDayDividers(scheduleBoard, columnWidth, colsPerDay) {
         const dividerWidth = 6;
         for (let day = 1; day < colsPerDay.length; day++) {
             const prevColumnsOffset = colsPerDay.slice(0, day).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0);
             const div = dom('div', 'cf-day-divider');
             div.style.width = `${dividerWidth}px`;
-            div.style.height = `${dividerHeight}px`;
-            div.style.top = '0px';
             div.style.left = `${prevColumnsOffset * columnWidth - dividerWidth / 2}px`;
             scheduleBoard.appendChild(div);
         }
@@ -9635,7 +9633,7 @@ agenda.`, [
             }
             // Final step: draw the vertical day-dividers so that the borders between
             // the days become more pronounced
-            drawVerticalDayDividers(earliestTime, latestTime, this.dom.scheduleBoard, COLUMN_WIDTH, rpd, pps);
+            drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd);
         }
         /**
          * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1

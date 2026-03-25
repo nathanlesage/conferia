@@ -251,6 +251,8 @@ dialog.conferia-dialog, #conferia-wrapper {
   .cf-day-divider {
     position: absolute;
     background-color: var(--accent-color);
+    height: 100%;
+    top: 0px;
   }
 
   .event {

@@ -366,7 +366,7 @@ export class Conferia {
 
     // Final step: draw the vertical day-dividers so that the borders between
     // the days become more pronounced
-    drawVerticalDayDividers(earliestTime, latestTime, this.dom.scheduleBoard, COLUMN_WIDTH, rpd, pps)
+    drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd)
   }
 
   /**
