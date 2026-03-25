@@ -9767,14 +9767,6 @@ agenda.`, [
                     const colspan = Math.max(rpd[dayOffset].length, 1);
                     card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`;
                 }
-                // Ensure that meta events (such as lunches and coffee breaks) overlap
-                // any events that cross through them. (Oftentimes, if there are longer
-                // events, there is usually a short break in between, but it is easier
-                // to make both events additive instead of splitting the longer events
-                // up into two separate smaller events in the Excel file.)
-                if (event.type === 'meta') {
-                    card.style.zIndex = '1';
-                }
                 this.dom.scheduleBoard.appendChild(card);
             }
             // Final step: draw the vertical day-dividers so that the borders between

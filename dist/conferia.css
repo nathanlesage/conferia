@@ -277,6 +277,12 @@ dialog.conferia-dialog, #conferia-wrapper {
 
     &.meta {
       background-color: var(--meta-background);
+      /* Ensure that meta events (such as lunches and coffee breaks) overlap any
+      events that cross through them. (Oftentimes, if there are longer events,
+      there is usually a short break in between, but it is easier to make both
+      events additive instead of splitting the longer events up into two
+      separate smaller events in the Excel file.) */
+      z-index: 1;
     }
 
     .event-header {
