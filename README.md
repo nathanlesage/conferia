@@ -121,6 +121,11 @@ that Carl Nordlund (IAS) has built for the NSA 2024 conference, and Laura
 Alessandretti (Copenhagen) has built for the IC2S2 2023 conference in
 Copenhagen. Thank you!
 
+## Conferences Using Conferia.js
+
+* [IC2S2 2025, Norrköping, Sweden](https://ic2s2-2025.org/)
+* [BeNeLux Geography 2026, Leuven, Belgium](https://www.benelux-geo.eu/)
+
 ## License
 
 Conferia.js &copy; 2025 Hendrik Erz. Conferia.js is licensed via the AGPL v3
