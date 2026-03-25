@@ -1,7 +1,12 @@
-# Release 0.19.0
+# Upcoming
 
+* If the user has no items on the personal agenda and toggles it, the no-events
+  card now indicates that.
 * Only show the day tick background color for the actual column to avoid visual
   clutter
+
+# Release 0.19.0
+
 * Scroll to top when updating the UI with no records to show
 * Make day dividers span the entire height of the schedule board
 * The day indicator now always stays visible while scrolling left and right

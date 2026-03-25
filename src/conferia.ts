@@ -115,19 +115,61 @@ export interface ConferiaOptions {
   debug?: boolean
 }
 
+/**
+ * The main Conferia object.
+ */
 export class Conferia {
+  /**
+   * The options passed to the constructor
+   */
   private readonly opt: ConferiaOptions
+
+  /**
+   * The loading promise. Used to ensure components only access the state when
+   * it's safe to do so.
+   */
   private loadPromise: Promise<void>
+
+  /**
+   * The parsed records from the schedule.
+   */
   private records: CSVRecord[]
+
+  /**
+   * A column scale factor. This can be set to control the width of the columns.
+   */
   private columnScaleFactor: number
+
+  /**
+   * Holds the generated DOM structure for the widget.
+   */
   private readonly dom: DOMStructure
+
+  /**
+   * Holds the current user search query.
+   */
   private query: string
+
+  /**
+   * Indicates whether the widget should only show the personal agenda.
+   */
   private showOnlyPersonalAgenda: boolean
 
-  // Sub-classes for state management
+  /**
+   * Manages the user's personal agenda.
+   */
   public agenda: Agenda = new Agenda()
+
+  /**
+   * Manages the toolbar
+   */
   public toolbar: Toolbar
 
+  /**
+   * Instantiate a new Conferia object.
+   *
+   * @param   {ConferiaOptions}  opt  The start options
+   */
   public constructor (opt: ConferiaOptions) {
     this.query = ''
     this.opt = opt
@@ -233,13 +275,14 @@ export class Conferia {
   }
 
   /**
-   * This is the major function of this class. It completely (re)builds the
+   * This is the central function of this class. It completely (re)builds the
    * entire UI, based on any filters, etc.
    */
   public updateUI () {
     // Before doing anything, retrieve the records we are supposed to show.
     const records = this.filterRecords()
 
+    // If there are no records to show, indicate this.
     if (records.length === 0) {
       this.dom.scheduleWrapper.scrollTo({ top: 0, left: 0 })
       this.dom.scheduleBoard.innerHTML = ''
@@ -250,7 +293,11 @@ export class Conferia {
       noeventscard.classList.add('event', 'meta')
       noeventscard.style.margin = (this.opt.eventCardPadding ?? 10) + 'px'
       noeventscard.style.height = '75%'
-      noeventscard.innerHTML = '<strong>No events to show.</strong>'
+      if (this.showOnlyPersonalAgenda) {
+        noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>'
+      } else {
+        noeventscard.innerHTML = '<strong>No events to show.</strong>'
+      }
       this.dom.scheduleBoard.appendChild(noeventscard)
       return
     }
@@ -272,18 +319,6 @@ export class Conferia {
     const shortestInterval = Math.max(300, getShortestInterval(dates))
     // How many days do we have in total?
     const days = Math.ceil(latestDay.diff(earliestDay).as('days'))
-
-    // DEBUG START
-
-    const counter = records
-      .map(r => getTimeOffset(r.dateEnd, r.dateStart))
-      .reduce<Record<string, number>>((prev, cur) => {cur in prev ? prev[cur] += 1 : prev[cur] = 1; return prev}, {})
-    
-    const vals = Object.entries(counter).map(([int, cnt]) => parseInt(int, 10) * cnt)
-    const mean = vals.reduce((prev, cur) => prev + cur, 0) / records.length
-    // console.log({counter, mean})
-
-    // DEBUG END
 
     // Calculate the "pixels per second," a measure to ensure the events have a
     // proper "minimum height."
@@ -372,15 +407,15 @@ export class Conferia {
 
   /**
    * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1
-   * for default zoom, 1.1 for 110% zoom factor, or 0.9 for 90% zoom factor.)
+   * for default zoom, 1.1 for 110% zoom factor, or 0.9 for 90% zoom factor.).
+   * Minimum is 0.1 (10%) and maximum is 10.0 (1000%).
    *
    * @param   {number}  factor  The new factor
    */
   public colZoom (factor: number) {
-    this.columnScaleFactor = factor
-    if (this.columnScaleFactor < 1) {
-      this.columnScaleFactor = 1
-    }
+    const max = 10.0
+    const min = 0.1
+    this.columnScaleFactor = Math.min(Math.max(factor, min), max)
     this.updateUI()
   }
 
