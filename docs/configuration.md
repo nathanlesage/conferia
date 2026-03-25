@@ -32,6 +32,19 @@ export interface ConferiaOptions {
   title?: string
 
   /**
+   * If you expect frequent updates to the schedule as the conference
+   * approaches, you may want to make the library auto-reload. By default, the
+   * library requires participants to manually reload to see any changes. If set
+   * to `true`, the library will reload the CSV file every 5 minutes. If you
+   * want more or less frequent reloads, you can also provide a number here (in
+   * seconds).
+   * Keep in mind that this feature is extremely data-intensive. To visualize
+   * this: With 300 participants, a CSV file of about 1 MB, and a reload
+   * schedule of 5 minutes, your server will transfer 3.6 GB (!) every hour.
+   */
+  autoReload?: boolean|number
+
+  /**
    * Specifies the IANA timezone for the entire event. This is optional, in
    * which case the timezone information in the data file take precedence, or
    * the timezone of the user. We recommend providing timezone information
@@ -108,7 +121,7 @@ export interface ConferiaOptions {
   rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
 
   /**
-   * If true, makes the library print out some debug info.
+   * If set to true, makes the library print out some debug info.
    */
   debug?: boolean
 }

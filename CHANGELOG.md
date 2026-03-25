@@ -1,5 +1,6 @@
 # Release 0.21.0
 
+* Allow configuring an autoreload of the schedule (#3).
 * Minor code refactors.
 * Fixed keynote authors not appearing in iCal download (#2).
 

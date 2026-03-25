@@ -9662,9 +9662,15 @@ agenda.`, [
             // Begin loading
             this.loadPromise = this.loadCSV();
             // Perform initial update
-            this.loadPromise.then(() => {
-                this.updateUI();
-            });
+            this.loadPromise.then(() => { this.updateUI(); });
+            // Activate auto-reload if applicable -- default is 5min/300s
+            if (this.opt.autoReload !== undefined && this.opt.autoReload !== false) {
+                const reloadSeconds = this.opt.autoReload === true ? 300 : this.opt.autoReload;
+                debug(`Activating autoreload every ${Math.round(reloadSeconds / 60 * 100) / 100} minutes`);
+                setInterval(() => {
+                    this.loadCSV().then(() => { this.updateUI(); });
+                }, reloadSeconds * 1000);
+            }
         }
         /**
          * Returns all records in the schedule
@@ -9840,10 +9846,11 @@ agenda.`, [
         loadCSV() {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
+                    debug(`Fetching schedule from ${this.opt.src}`);
                     const response = yield fetch(this.opt.src);
                     const data = yield response.text();
                     const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser);
-                    debug(`Parsed ${csv.length} records from file ${this.opt.src}.`);
+                    debug(`Parsed ${csv.length} records from file.`);
                     debug({ csv });
                     this.records = csv;
                 }

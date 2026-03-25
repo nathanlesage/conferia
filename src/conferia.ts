@@ -35,6 +35,19 @@ export interface ConferiaOptions {
   title?: string
 
   /**
+   * If you expect frequent updates to the schedule as the conference
+   * approaches, you may want to make the library auto-reload. By default, the
+   * library requires participants to manually reload to see any changes. If set
+   * to `true`, the library will reload the CSV file every 5 minutes. If you
+   * want more or less frequent reloads, you can also provide a number here (in
+   * seconds).
+   * Keep in mind that this feature is extremely data-intensive. To visualize
+   * this: With 300 participants, a CSV file of about 1 MB, and a reload
+   * schedule of 5 minutes, your server will transfer 3.6 GB (!) every hour.
+   */
+  autoReload?: boolean|number
+
+  /**
    * Specifies the IANA timezone for the entire event. This is optional, in
    * which case the timezone information in the data file take precedence, or
    * the timezone of the user. We recommend providing timezone information
@@ -227,9 +240,17 @@ export class Conferia {
     this.loadPromise = this.loadCSV()
 
     // Perform initial update
-    this.loadPromise.then(() => {
-      this.updateUI()
-    })
+    this.loadPromise.then(() => { this.updateUI() })
+
+    // Activate auto-reload if applicable -- default is 5min/300s
+    if (this.opt.autoReload !== undefined && this.opt.autoReload !== false) {
+      const reloadSeconds = this.opt.autoReload === true ? 300 : this.opt.autoReload
+
+      debug(`Activating autoreload every ${Math.round(reloadSeconds / 60 * 100) / 100} minutes`)
+      setInterval(() => {
+        this.loadCSV().then(() => { this.updateUI() })
+      }, reloadSeconds * 1000)
+    }
   }
 
   /**
@@ -440,11 +461,12 @@ export class Conferia {
    */
   private async loadCSV (): Promise<void> {
     try {
+      debug(`Fetching schedule from ${this.opt.src}`)
       const response = await fetch(this.opt.src)
       const data = await response.text()
       const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser)
   
-      debug(`Parsed ${csv.length} records from file ${this.opt.src}.`)
+      debug(`Parsed ${csv.length} records from file.`)
       debug({ csv })
   
       this.records = csv
