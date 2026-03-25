@@ -7,6 +7,9 @@ The agenda data file needs to be a CSV file following a specific schema. The CSV
 file contains one individual event per line. Not all the information is required
 for all types of events.
 
+> Tip: You can [download the demo test data](demo/test_data.csv) which allows
+> you to quickly set up the correct file structure.
+
 The CSV file needs to include these columns:
 
 * `date_start`: The start date, in ISO 8601-format (e.g., `2025-01-01T12:00:00`)
@@ -44,6 +47,20 @@ The CSV file needs to include these columns:
   offer hybrid sessions, you could add the Zoom link here. Notes will be shown
   in the event details below the chair.
 
-> Tip: The CSV file can contain more than these columns, which spares you from
-> having to remove superfluous columns. Also, sometimes columns don't have to be
-> filled in and can remain empty (e.g., locations for coffee breaks).
+## Tips
+
+From having used Conferia.js in production, here are a few tips to help you save
+more time and make your experience more pleasurable when working with the
+schedule CSV file:
+
+* Make use of colors in your spreadsheet. Since those won't be exported to CSV,
+  they won't mess with your formatting, but can make it easier for you to
+  navigate your schedule.
+* The library will automatically filter out empty lines. Make use of this to
+  space out groups of events to make identifying individual sessions easier.
+* You can add as many arbitrary columns as you want to. Conferia ignores any
+  column it doesn't recognize, so it is safe to store arbitrary data.
+* Make use of Conferia's callback functions in the constructor to adjust your
+  data in bulk. It can be faster to change a certain column in bulk using the
+  callback function rather than ensuring that it has the appropriate format in
+  the first place.
