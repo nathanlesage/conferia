@@ -12,6 +12,7 @@ import { matchEvent } from "./util/fuzzy-match"
 import { eventHasConflict, roomsPerDay } from "./util/conflicts-and-columns"
 import { askUser } from "./dom/ask-user"
 import { Toolbar } from "./toolbar"
+import { debug, toggleDebug } from "./util/logger"
 
 export interface ConferiaOptions {
   /**
@@ -110,7 +111,7 @@ export interface ConferiaOptions {
   rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
 
   /**
-   * If true, makes the library print out some debug info.
+   * If set to true, makes the library print out some debug info.
    */
   debug?: boolean
 }
@@ -177,12 +178,17 @@ export class Conferia {
     this.columnScaleFactor = 1
     this.showOnlyPersonalAgenda = false
 
+    toggleDebug(this.opt.debug === true)
+    debug('Debug logging enabled') // Will only show if debug is actually enabled
+
     this.toolbar = new Toolbar({
       onFilter: (query) => {
         this.query = query
+        debug(`Setting filter query to ${this.query}`)
         this.updateUI()
       },
       onToggle: (which, state) => {
+        debug(`Toggling ${which} to ${state}.`)
         if (which === 'personal-agenda') {
           this.showOnlyPersonalAgenda = state
           this.updateUI()
@@ -191,6 +197,7 @@ export class Conferia {
         }
       },
       onClick: (which) => {
+        debug(`On click: ${which}.`)
         if (which === 'ical') {
           initiateIcalDownload(this)
         } else if (which === 'clear') {
@@ -279,11 +286,13 @@ export class Conferia {
    * entire UI, based on any filters, etc.
    */
   public updateUI () {
+    debug('Updating UI.')
     // Before doing anything, retrieve the records we are supposed to show.
     const records = this.filterRecords()
 
     // If there are no records to show, indicate this.
     if (records.length === 0) {
+      debug('No records to show. Printing message.')
       this.dom.scheduleWrapper.scrollTo({ top: 0, left: 0 })
       this.dom.scheduleBoard.innerHTML = ''
       this.dom.timeGutter.innerHTML = ''
@@ -299,8 +308,10 @@ export class Conferia {
         noeventscard.innerHTML = '<strong>No events to show.</strong>'
       }
       this.dom.scheduleBoard.appendChild(noeventscard)
-      return
+      return // Short circuit
     }
+
+    debug(`There are ${records.length} events to show.`)
 
     // Then, figure out the axis limits and other information regarding the times.
     const dates: Array<[DateTime, DateTime]> = records.map(r => [r.dateStart, r.dateEnd])
@@ -314,16 +325,22 @@ export class Conferia {
     const earliestDay = getEarliestDay(dates.flat()) ?? now
     const latestDay = getLatestDay(dates.flat()) ?? now.plus({ day: 1 })
 
+    debug(`Events ranges from ${earliestTime.toFormat('HH:mm:ss')} to ${latestTime.toFormat('HH:mm:ss')}, and from ${earliestDay.toFormat('yyyy-LL-dd')} to ${latestDay.toFormat('yyyy-LL-dd')}`)
+
     // Second, the shortest event duration (which determines the vertical
     // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
     const shortestInterval = Math.max(300, getShortestInterval(dates))
     // How many days do we have in total?
     const days = Math.ceil(latestDay.diff(earliestDay).as('days'))
 
+    debug(`Shown events range across ${days} days.`)
+
     // Calculate the "pixels per second," a measure to ensure the events have a
     // proper "minimum height."
     const MIN_HEIGHT = this.opt.minimumCardHeight ?? 75
     const pps = MIN_HEIGHT / shortestInterval
+
+    debug(`Displaying on ${pps} pixels/second.`)
 
     // Now, determine the "raster" size (minimum size for a time interval in
     // width and height based on the shortest interval)
@@ -335,7 +352,11 @@ export class Conferia {
     // offset the events based on that information.
     const rpd = roomsPerDay(records)
 
+    debug('Room conflicts per day: ', rpd)
+
     const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
+
+    debug(`Using time grid interval of ${timeGridInterval} seconds.`)
 
     // Now, update the time and day gutters
     updateTimeGutter(this.dom.timeGutter, earliestTime, latestTime, pps, timeGridInterval)
@@ -423,10 +444,8 @@ export class Conferia {
       const data = await response.text()
       const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser)
   
-      if (this.opt.debug) {
-        console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`)
-        console.log({ csv })
-      }
+      debug(`Parsed ${csv.length} records from file ${this.opt.src}.`)
+      debug({ csv })
   
       this.records = csv
     } catch (err: any) {

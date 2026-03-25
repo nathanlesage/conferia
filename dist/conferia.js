@@ -9569,6 +9569,33 @@ agenda.`, [
     }
 
     /**
+     * Whether debug messages should be printed.
+     */
+    let enableDebug = false;
+    /**
+     * Toggle debug logging on or off.
+     *
+     * @param   {boolean}  state  Whether to turn it on or off.
+     */
+    function toggleDebug(state) {
+        enableDebug = state;
+    }
+    /**
+     * Convenience function for conditional logging. Use this function like you
+     * would `console.log` (the parameters are identical and will be passed through)
+     * but rest assured that logging will only occur if debug logging is enabled.
+     *
+     * @param   {any}    message         The message
+     * @param   {any[]}  optionalParams  Any optional parameters
+     */
+    function debug(message, ...optionalParams) {
+        if (!enableDebug) {
+            return;
+        }
+        console.log(message, ...optionalParams);
+    }
+
+    /**
      * The main Conferia object.
      */
     class Conferia {
@@ -9587,12 +9614,16 @@ agenda.`, [
             this.records = [];
             this.columnScaleFactor = 1;
             this.showOnlyPersonalAgenda = false;
+            toggleDebug(this.opt.debug === true);
+            debug('Debug logging enabled'); // Will only show if debug is actually enabled
             this.toolbar = new Toolbar({
                 onFilter: (query) => {
                     this.query = query;
+                    debug(`Setting filter query to ${this.query}`);
                     this.updateUI();
                 },
                 onToggle: (which, state) => {
+                    debug(`Toggling ${which} to ${state}.`);
                     if (which === 'personal-agenda') {
                         this.showOnlyPersonalAgenda = state;
                         this.updateUI();
@@ -9602,6 +9633,7 @@ agenda.`, [
                     }
                 },
                 onClick: (which) => {
+                    debug(`On click: ${which}.`);
                     if (which === 'ical') {
                         initiateIcalDownload(this);
                     }
@@ -9677,10 +9709,12 @@ agenda.`, [
          */
         updateUI() {
             var _a, _b, _c, _d, _e, _f, _g, _h;
+            debug('Updating UI.');
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
             // If there are no records to show, indicate this.
             if (records.length === 0) {
+                debug('No records to show. Printing message.');
                 this.dom.scheduleWrapper.scrollTo({ top: 0, left: 0 });
                 this.dom.scheduleBoard.innerHTML = '';
                 this.dom.timeGutter.innerHTML = '';
@@ -9696,8 +9730,9 @@ agenda.`, [
                     noeventscard.innerHTML = '<strong>No events to show.</strong>';
                 }
                 this.dom.scheduleBoard.appendChild(noeventscard);
-                return;
+                return; // Short circuit
             }
+            debug(`There are ${records.length} events to show.`);
             // Then, figure out the axis limits and other information regarding the times.
             const dates = records.map(r => [r.dateStart, r.dateEnd]);
             // First, the vertical (time) and horizontal (day) scale limits. Default to
@@ -9708,15 +9743,18 @@ agenda.`, [
             const latestTime = (_c = getLatestTime(dates.flat())) !== null && _c !== void 0 ? _c : now.plus({ hour: 1 });
             const earliestDay = (_d = getEarliestDay(dates.flat())) !== null && _d !== void 0 ? _d : now;
             const latestDay = (_e = getLatestDay(dates.flat())) !== null && _e !== void 0 ? _e : now.plus({ day: 1 });
+            debug(`Events ranges from ${earliestTime.toFormat('HH:mm:ss')} to ${latestTime.toFormat('HH:mm:ss')}, and from ${earliestDay.toFormat('yyyy-LL-dd')} to ${latestDay.toFormat('yyyy-LL-dd')}`);
             // Second, the shortest event duration (which determines the vertical
             // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
             const shortestInterval = Math.max(300, getShortestInterval(dates));
             // How many days do we have in total?
             const days = Math.ceil(latestDay.diff(earliestDay).as('days'));
+            debug(`Shown events range across ${days} days.`);
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
             const MIN_HEIGHT = (_f = this.opt.minimumCardHeight) !== null && _f !== void 0 ? _f : 75;
             const pps = MIN_HEIGHT / shortestInterval;
+            debug(`Displaying on ${pps} pixels/second.`);
             // Now, determine the "raster" size (minimum size for a time interval in
             // width and height based on the shortest interval)
             const COLUMN_WIDTH = 250 * this.columnScaleFactor;
@@ -9725,7 +9763,9 @@ agenda.`, [
             // with the room designations at the corresponding places, AND we need to
             // offset the events based on that information.
             const rpd = roomsPerDay(records);
+            debug('Room conflicts per day: ', rpd);
             const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
+            debug(`Using time grid interval of ${timeGridInterval} seconds.`);
             // Now, update the time and day gutters
             updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps, timeGridInterval);
             updateGutterTicks(this.dom.dayGutter, earliestDay, days, COLUMN_WIDTH, rpd);
@@ -9799,10 +9839,8 @@ agenda.`, [
                     const response = yield fetch(this.opt.src);
                     const data = yield response.text();
                     const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser);
-                    if (this.opt.debug) {
-                        console.log(`Parsed ${csv.length} records from file ${this.opt.src}.`);
-                        console.log({ csv });
-                    }
+                    debug(`Parsed ${csv.length} records from file ${this.opt.src}.`);
+                    debug({ csv });
                     this.records = csv;
                 }
                 catch (err) {
