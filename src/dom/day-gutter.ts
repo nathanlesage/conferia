@@ -13,8 +13,12 @@ export function updateGutterTicks (dayGutter: HTMLElement, startDay: DateTime, t
     const nSubCols = dayLocations !== undefined ? Math.max(1, dayLocations[i].length) : 1
     const thisDay = startDay.plus({ days: i })
     const dayTick = dom('div', 'tick day', { role: 'presentation' })
-    dayTick.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
     dayTick.style.width = `${colWidth * nSubCols}px`
+
+    const content = dom('span', 'content')
+    content.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    dayTick.appendChild(content)
+
     dayGutter.appendChild(dayTick)
   }
 }
