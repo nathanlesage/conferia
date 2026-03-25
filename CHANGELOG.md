@@ -1,5 +1,6 @@
 # Release 0.19.0
 
+* Scroll to top when updating the UI with no records to show
 * Make day dividers span the entire height of the schedule board
 * The day indicator now always stays visible while scrolling left and right
 * Fix day gutter height to match time gutter width

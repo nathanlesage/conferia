@@ -241,6 +241,7 @@ export class Conferia {
     const records = this.filterRecords()
 
     if (records.length === 0) {
+      this.dom.scheduleWrapper.scrollTo({ top: 0, left: 0 })
       this.dom.scheduleBoard.innerHTML = ''
       this.dom.timeGutter.innerHTML = ''
       this.dom.dayGutter.innerHTML = ''

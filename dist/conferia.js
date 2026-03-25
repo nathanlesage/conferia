@@ -8702,7 +8702,7 @@
         const footer = generateFooter();
         wrapper.appendChild(footer);
         return {
-            wrapper, timeGutter, dayGutter, scheduleBoard
+            wrapper, scheduleWrapper, timeGutter, dayGutter, scheduleBoard
         };
     }
     /**
@@ -9533,6 +9533,7 @@ agenda.`, [
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
             if (records.length === 0) {
+                this.dom.scheduleWrapper.scrollTo({ top: 0, left: 0 });
                 this.dom.scheduleBoard.innerHTML = '';
                 this.dom.timeGutter.innerHTML = '';
                 this.dom.dayGutter.innerHTML = '';
