@@ -2,6 +2,7 @@ import { DateTime } from "luxon"
 import { CSVRecord } from "../csv"
 import { askUser } from "../dom/ask-user"
 import { Conferia } from "../conferia"
+import { dom } from "../dom/util"
 
 const EOL = "\r\n" // iCal requires CRLF
 
@@ -55,10 +56,9 @@ agenda.`,
  */
 function downloadIcal (ical: string) {
   const file = new File([ical], 'calendar.ics', { type: 'text/calendar' })
-  const a = document.createElement('a')
+  const a = dom('a', undefined, { href: URL.createObjectURL(file), download: file.name })
+  
   a.style.display = 'none'
-  a.href = URL.createObjectURL(file)
-  a.download = file.name
   document.body.appendChild(a)
   a.addEventListener('mouseup', () => {
     URL.revokeObjectURL(a.href)
