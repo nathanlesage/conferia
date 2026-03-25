@@ -22,6 +22,7 @@
 
   /* Non-color variables */
   --cf-border-radius: 8px;
+  --cf-gutter-size: 40px; /* Size of the day and time gutters */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -179,8 +180,8 @@ dialog.conferia-dialog, #conferia-wrapper {
   background-color: var(--schedule-board-background);
   display: grid;
   grid-template-areas: "empty day-gutter" "time-gutter schedule";
-  grid-template-columns: auto auto;
-  grid-template-rows: auto auto;
+  grid-template-columns: var(--cf-gutter-size) auto;
+  grid-template-rows: var(--cf-gutter-size) auto;
   overflow: auto;
 
   /* Resize the icons a bit */
@@ -191,7 +192,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 }
 
 #conferia-time-gutter {
-  width: 40px;
+  width: var(--cf-gutter-size);
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
   background-color: var(--element-background);
@@ -214,7 +215,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 }
 
 #conferia-day-gutter {
-  height: 40px;
+  height: var(--cf-gutter-size);
   background-color: var(--element-background);
   font-size: 150%;
   grid-area: day-gutter;

@@ -6,6 +6,7 @@ import { dom } from "./util"
 
 export interface DOMStructure {
   wrapper: HTMLDivElement
+  scheduleWrapper: HTMLDivElement
   timeGutter: HTMLDivElement
   dayGutter: HTMLDivElement
   scheduleBoard: HTMLDivElement
@@ -35,7 +36,7 @@ export function generateDOMStructure (title?: string, maxHeight?: string): DOMSt
   wrapper.appendChild(footer)
 
   return {
-    wrapper, timeGutter, dayGutter, scheduleBoard
+    wrapper, scheduleWrapper, timeGutter, dayGutter, scheduleBoard
   }
 }
 
