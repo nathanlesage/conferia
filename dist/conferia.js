@@ -8724,7 +8724,7 @@
         return card;
     }
 
-    var version = "0.19.0";
+    var version = "0.20.0";
     var pkg = {
     	version: version};
 
