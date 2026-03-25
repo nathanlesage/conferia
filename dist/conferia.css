@@ -230,13 +230,16 @@ dialog.conferia-dialog, #conferia-wrapper {
     align-items: center;
     justify-content: center;
     position: relative;
+    padding: 0px 5px; /* Padding so that the content doesn't stick to the side. */
 
     .content {
       display: block;
       font-weight: bold;
       position: sticky;
-      left: 40px; /* Account for the time gutter */
-      right: 0;
+      /* Make the day description sticky so that it always stays on screen.
+      Account for the left time gutter size and add some padding. */
+      left: calc(var(--cf-gutter-size) + 5px);
+      right: 5px;
     }
 
     &:not(:last-child) {

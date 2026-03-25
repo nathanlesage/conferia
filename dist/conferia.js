@@ -9624,7 +9624,7 @@ agenda.`, [
             this.dom.wrapper.prepend(this.toolbar.dom);
             this.opt.parent.appendChild(this.dom.wrapper);
             // Begin loading
-            this.loadPromise = this.load();
+            this.loadPromise = this.loadCSV();
             // Perform initial update
             this.loadPromise.then(() => {
                 this.updateUI();
@@ -9787,13 +9787,13 @@ agenda.`, [
             this.updateUI();
         }
         /**
-         * Loads the library
+         * Loads the CSV file and parses it.
          *
          * @param   {ConferiaOptions}    opt  The options
          *
          * @return  {Promise<Conferia>}       The object
          */
-        load() {
+        loadCSV() {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
                     const response = yield fetch(this.opt.src);
@@ -9807,7 +9807,7 @@ agenda.`, [
                 }
                 catch (err) {
                     console.error(`Conferia could not load data: ${err.message}`);
-                    console.error(err.message);
+                    console.error(err);
                 }
             });
         }

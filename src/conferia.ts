@@ -217,7 +217,7 @@ export class Conferia {
     this.opt.parent.appendChild(this.dom.wrapper)
 
     // Begin loading
-    this.loadPromise = this.load()
+    this.loadPromise = this.loadCSV()
 
     // Perform initial update
     this.loadPromise.then(() => {
@@ -411,13 +411,13 @@ export class Conferia {
   }
 
   /**
-   * Loads the library
+   * Loads the CSV file and parses it.
    *
    * @param   {ConferiaOptions}    opt  The options
    * 
    * @return  {Promise<Conferia>}       The object
    */
-  private async load (): Promise<void> {
+  private async loadCSV (): Promise<void> {
     try {
       const response = await fetch(this.opt.src)
       const data = await response.text()
@@ -431,7 +431,7 @@ export class Conferia {
       this.records = csv
     } catch (err: any) {
       console.error(`Conferia could not load data: ${err.message}`)
-      console.error(err.message)
+      console.error(err)
     }
   }
 
