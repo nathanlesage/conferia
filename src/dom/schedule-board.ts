@@ -1,7 +1,13 @@
+import { DateTime } from "luxon"
 import { Agenda } from "../agenda"
 import { CSVRecord } from "../csv"
 import bookmarkIcon from '../icons/bookmark.svg'
 import { dom } from "./util"
+import { getTimeOffset, isTimeBefore } from "../util/time-helpers"
+
+// The width for special gridlines that we use to demarcate something (here: the
+// day dividers and the time indicator)
+const SPECIAL_GRIDLINE_WIDTH_PX = 6
 
 /**
  * Utility function to define the aria event type for the Dom
@@ -64,7 +70,7 @@ export function updateScheduleBoard (scheduleBoard: HTMLElement, dayWidth: numbe
  * @param   {string[][]}   colsPerDay     Indicates whether there are subcols
  */
 export function drawVerticalDayDividers (scheduleBoard: HTMLElement, columnWidth: number, colsPerDay: string[][]) {
-  const dividerWidth = 6
+  const dividerWidth = SPECIAL_GRIDLINE_WIDTH_PX
 
   for (let day = 1; day < colsPerDay.length; day++) {
     const prevColumnsOffset = colsPerDay.slice(0, day).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0)
@@ -73,6 +79,31 @@ export function drawVerticalDayDividers (scheduleBoard: HTMLElement, columnWidth
     div.style.left = `${prevColumnsOffset * columnWidth - dividerWidth / 2}px`
     scheduleBoard.appendChild(div)
   }
+}
+
+/**
+ * Draws a time-indicator on the schedule board, but only if the conference is
+ * currently happening.
+ *
+ * @param   {HTMLElement}  scheduleBoard  The schedule board to attach it to
+ * @param   {DateTime}     earliestTime   The earliest conference time
+ * @param   {DateTime}     latestTime     The latest conference time
+ * @param   {number}       pps            Calculated pixels per second
+ */
+export function drawTimeIndicator (scheduleBoard: HTMLElement, earliestTime: DateTime, latestTime: DateTime, pps: number) {
+  const now = DateTime.now()
+
+  if (!isTimeBefore(earliestTime, now) && !isTimeBefore(now, latestTime)) {
+    return // Currently we're outside of the visible time range
+  }
+
+  const indicatorWidth = SPECIAL_GRIDLINE_WIDTH_PX
+  const timeOffset = getTimeOffset(now, earliestTime)
+
+  const div = dom('div', 'cf-time-indicator')
+  div.style.height = `${indicatorWidth}px`
+  div.style.top = `${timeOffset * pps - indicatorWidth / 2}px`
+  scheduleBoard.appendChild(div)
 }
 
 /**

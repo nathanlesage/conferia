@@ -257,6 +257,16 @@ dialog.conferia-dialog, #conferia-wrapper {
     background-color: var(--accent-color);
     height: 100%;
     top: 0px;
+    pointer-events: none;
+  }
+
+  /* Indicates the current time */
+  .cf-time-indicator {
+    position: absolute;
+    background-color: #ff0505ab;
+    width: 100%;
+    left: 0px;
+    pointer-events: none;
   }
 
   .event {

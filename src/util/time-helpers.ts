@@ -1,4 +1,62 @@
 import { DateTime } from 'luxon'
+import { CSVRecord } from '../csv'
+
+/**
+ * Normalizes the provided DateTime in such a way that it copies the hour,
+ * minute, and second of it into a new DateTime that uses the default timezone.
+ * This way, you can make *times* comparable (as opposed to DateTimes), ignoring
+ * everything such as different time zones, different day of the year, etc.
+ *
+ * This function can be called on two separate DateTimes to check whether, e.g.,
+ * one would be on a later time of day. This is especially useful when dealing
+ * with the time grid (which, by definition, is timezoneless).
+ *
+ * Example (because that was a bug that I had to fix): I wanted to know whether
+ * the current, local time, was *after* one of the events of a schedule. This
+ * did not work, because the time of the record was set to Europe/Stockholm DST
+ * while the local browser time was set to Europe/Stockholm *non*-DST. By
+ * creating two identical DateTime objects in terms of timezone and day, we
+ * ensure that a comparison between 7:30 and 8:30 indeed returns that the latter
+ * is after the former (which would not be the case if the former is in DST and
+ * the latter is not, since DST is Europe/Stockholm-01:00).
+ *
+ * As always, remember that this is just an assumption, and this will actually
+ * break on the exact dates when there is a DST switch if one of the times lies
+ * before the switching hour. This switching usually occurs during the night, so
+ * (a) dear policymakers, don't ever place a switch during the day time and (b)
+ * dear conference organizers, please don't schedule events at 2/3am at night.
+ *
+ * @param   {DateTime}  time  The time to normalize
+ *
+ * @return  {DateTime}        The normalized DateTime with same HH:mm:ss but
+ *                            local timezone.
+ */
+function normalizeDateTime (time: DateTime): DateTime {
+  return DateTime.fromObject({
+    hour: time.hour, minute: time.minute, second: time.second
+  })
+}
+
+/**
+ * Pass all (!) events in the conference to this function to get to know whether
+ * the conference is happening right now.
+ *
+ * @param   {CSVRecord[]}  allRecords  All schedule events
+ *
+ * @return  {boolean}                  Whether the conference is happening now.
+ */
+export function isConferenceNow (allRecords: CSVRecord[]): boolean {
+  const now = DateTime.now()
+  const dates = allRecords.flatMap(r => [r.dateStart, r.dateEnd])
+  const earliestDay = getEarliestDay(dates)
+  const latestDay = getLatestDay(dates)
+
+  if (earliestDay === undefined || latestDay === undefined) {
+    throw new Error('Cannot calculate whether the conference is now: earliest or latest day were undefined!')
+  }
+
+  return now >= earliestDay && now <= latestDay
+}
 
 /**
  * Given an array of dates, returns the date that has the earliest time of day.
@@ -12,6 +70,11 @@ export function getEarliestTime (dates: DateTime[]): DateTime|undefined {
     return undefined
   }
 
+  // TODO: After my hassle with the time indicator, I strongly believe that this
+  // function can return wrong results because I don't normalize times here.
+  // This might become a Heisenbug in that it works 99% of the times… except
+  // when there is an unfortunate switch between daylight saving time during the
+  // conference.
   return dates.sort((a, b) => {
     if (a.hour !== b.hour) {
       return a.hour - b.hour
@@ -37,6 +100,7 @@ export function getLatestTime (dates: DateTime[]): DateTime|undefined {
     return undefined
   }
 
+  // TODO: See caveat in `getEarliestTime` above.
   return dates.sort((a, b) => {
     if (a.hour !== b.hour) {
       return a.hour - b.hour
@@ -104,9 +168,7 @@ export function getTimeOffset (time: DateTime, referenceTime: DateTime): number 
   // alone (at least not that I've found it), we need to strip every piece of
   // information from the dates, and instead make Luxon recreate a DateTime, but
   // only with diffs in hh:mm:ss.
-  time = DateTime.fromObject({ hour: time.hour, minute: time.minute, second: time.second })
-  referenceTime = DateTime.fromObject({ hour: referenceTime.hour, minute: referenceTime.minute, second: referenceTime.second })
-  return time.diff(referenceTime).as('seconds')
+  return normalizeDateTime(time).diff(normalizeDateTime(referenceTime)).as('seconds')
 }
 
 /**
@@ -121,4 +183,20 @@ export function getDayOffset (date: DateTime, referenceDate: DateTime): number {
   date = date.startOf('day')
   referenceDate = referenceDate.startOf('day')
   return date.diff(referenceDate).as('days')
+}
+
+/**
+ * Checks if the provided DateTime is before the reference purely in terms of
+ * the time of day, ignoring the date part. This means that this only considers
+ * a single, 24 hour time period, meaning that if time A is at five to midnight
+ * on the first day, and time B is at five past midnight on the second day, time
+ * B will still be considered "before" time A (yielding false).
+ *
+ * @param   {DateTime}  time           The first time
+ * @param   {DateTime}  referenceTime  The second time
+ *
+ * @return  {boolean}                  Whether time is before referenceTime
+ */
+export function isTimeBefore (time: DateTime, referenceTime: DateTime): boolean {
+  return normalizeDateTime(time) < normalizeDateTime(referenceTime)
 }

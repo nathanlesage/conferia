@@ -1,5 +1,12 @@
 # Release 0.21.0
 
+* Added a time indicator that shows the current time relative to the events
+  during the conference to visualize where in the conference the current time
+  is. This is indicated as a red bar across the schedule bar that slowly moves
+  with the time. This indicator only shows up when the conference is actually
+  happening to help participants quickly identify happening events.
+* When the conference is happening, the library will now re-draw the UI every
+  minute to update the position of the time indicator properly.
 * Allow configuring an autoreload of the schedule (#3).
 * Minor code refactors.
 * Fixed keynote authors not appearing in iCal download (#2).

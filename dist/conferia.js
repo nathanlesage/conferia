@@ -8366,6 +8366,59 @@
     }
 
     /**
+     * Normalizes the provided DateTime in such a way that it copies the hour,
+     * minute, and second of it into a new DateTime that uses the default timezone.
+     * This way, you can make *times* comparable (as opposed to DateTimes), ignoring
+     * everything such as different time zones, different day of the year, etc.
+     *
+     * This function can be called on two separate DateTimes to check whether, e.g.,
+     * one would be on a later time of day. This is especially useful when dealing
+     * with the time grid (which, by definition, is timezoneless).
+     *
+     * Example (because that was a bug that I had to fix): I wanted to know whether
+     * the current, local time, was *after* one of the events of a schedule. This
+     * did not work, because the time of the record was set to Europe/Stockholm DST
+     * while the local browser time was set to Europe/Stockholm *non*-DST. By
+     * creating two identical DateTime objects in terms of timezone and day, we
+     * ensure that a comparison between 7:30 and 8:30 indeed returns that the latter
+     * is after the former (which would not be the case if the former is in DST and
+     * the latter is not, since DST is Europe/Stockholm-01:00).
+     *
+     * As always, remember that this is just an assumption, and this will actually
+     * break on the exact dates when there is a DST switch if one of the times lies
+     * before the switching hour. This switching usually occurs during the night, so
+     * (a) dear policymakers, don't ever place a switch during the day time and (b)
+     * dear conference organizers, please don't schedule events at 2/3am at night.
+     *
+     * @param   {DateTime}  time  The time to normalize
+     *
+     * @return  {DateTime}        The normalized DateTime with same HH:mm:ss but
+     *                            local timezone.
+     */
+    function normalizeDateTime(time) {
+        return DateTime.fromObject({
+            hour: time.hour, minute: time.minute, second: time.second
+        });
+    }
+    /**
+     * Pass all (!) events in the conference to this function to get to know whether
+     * the conference is happening right now.
+     *
+     * @param   {CSVRecord[]}  allRecords  All schedule events
+     *
+     * @return  {boolean}                  Whether the conference is happening now.
+     */
+    function isConferenceNow(allRecords) {
+        const now = DateTime.now();
+        const dates = allRecords.flatMap(r => [r.dateStart, r.dateEnd]);
+        const earliestDay = getEarliestDay(dates);
+        const latestDay = getLatestDay(dates);
+        if (earliestDay === undefined || latestDay === undefined) {
+            throw new Error('Cannot calculate whether the conference is now: earliest or latest day were undefined!');
+        }
+        return now >= earliestDay && now <= latestDay;
+    }
+    /**
      * Given an array of dates, returns the date that has the earliest time of day.
      *
      * @param   {DateTime[]}  dates  A list of dates
@@ -8376,6 +8429,11 @@
         if (dates.length === 0) {
             return undefined;
         }
+        // TODO: After my hassle with the time indicator, I strongly believe that this
+        // function can return wrong results because I don't normalize times here.
+        // This might become a Heisenbug in that it works 99% of the times… except
+        // when there is an unfortunate switch between daylight saving time during the
+        // conference.
         return dates.sort((a, b) => {
             if (a.hour !== b.hour) {
                 return a.hour - b.hour;
@@ -8402,6 +8460,7 @@
         if (dates.length === 0) {
             return undefined;
         }
+        // TODO: See caveat in `getEarliestTime` above.
         return dates.sort((a, b) => {
             if (a.hour !== b.hour) {
                 return a.hour - b.hour;
@@ -8467,9 +8526,7 @@
         // alone (at least not that I've found it), we need to strip every piece of
         // information from the dates, and instead make Luxon recreate a DateTime, but
         // only with diffs in hh:mm:ss.
-        time = DateTime.fromObject({ hour: time.hour, minute: time.minute, second: time.second });
-        referenceTime = DateTime.fromObject({ hour: referenceTime.hour, minute: referenceTime.minute, second: referenceTime.second });
-        return time.diff(referenceTime).as('seconds');
+        return normalizeDateTime(time).diff(normalizeDateTime(referenceTime)).as('seconds');
     }
     /**
      * Returns the duration between referenceDate and date in number of days.
@@ -8483,6 +8540,21 @@
         date = date.startOf('day');
         referenceDate = referenceDate.startOf('day');
         return date.diff(referenceDate).as('days');
+    }
+    /**
+     * Checks if the provided DateTime is before the reference purely in terms of
+     * the time of day, ignoring the date part. This means that this only considers
+     * a single, 24 hour time period, meaning that if time A is at five to midnight
+     * on the first day, and time B is at five past midnight on the second day, time
+     * B will still be considered "before" time A (yielding false).
+     *
+     * @param   {DateTime}  time           The first time
+     * @param   {DateTime}  referenceTime  The second time
+     *
+     * @return  {boolean}                  Whether time is before referenceTime
+     */
+    function isTimeBefore(time, referenceTime) {
+        return normalizeDateTime(time) < normalizeDateTime(referenceTime);
     }
 
     /**
@@ -8584,6 +8656,9 @@
 
     var bookmarkIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-bookmark\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"></path></svg>";
 
+    // The width for special gridlines that we use to demarcate something (here: the
+    // day dividers and the time indicator)
+    const SPECIAL_GRIDLINE_WIDTH_PX = 6;
     /**
      * Utility function to define the aria event type for the Dom
      *
@@ -8644,7 +8719,7 @@
      * @param   {string[][]}   colsPerDay     Indicates whether there are subcols
      */
     function drawVerticalDayDividers(scheduleBoard, columnWidth, colsPerDay) {
-        const dividerWidth = 6;
+        const dividerWidth = SPECIAL_GRIDLINE_WIDTH_PX;
         for (let day = 1; day < colsPerDay.length; day++) {
             const prevColumnsOffset = colsPerDay.slice(0, day).reduce((prev, cur) => prev + Math.max(cur.length, 1), 0);
             const div = dom('div', 'cf-day-divider');
@@ -8652,6 +8727,27 @@
             div.style.left = `${prevColumnsOffset * columnWidth - dividerWidth / 2}px`;
             scheduleBoard.appendChild(div);
         }
+    }
+    /**
+     * Draws a time-indicator on the schedule board, but only if the conference is
+     * currently happening.
+     *
+     * @param   {HTMLElement}  scheduleBoard  The schedule board to attach it to
+     * @param   {DateTime}     earliestTime   The earliest conference time
+     * @param   {DateTime}     latestTime     The latest conference time
+     * @param   {number}       pps            Calculated pixels per second
+     */
+    function drawTimeIndicator(scheduleBoard, earliestTime, latestTime, pps) {
+        const now = DateTime.now();
+        if (!isTimeBefore(earliestTime, now) && !isTimeBefore(now, latestTime)) {
+            return; // Currently we're outside of the visible time range
+        }
+        const indicatorWidth = SPECIAL_GRIDLINE_WIDTH_PX;
+        const timeOffset = getTimeOffset(now, earliestTime);
+        const div = dom('div', 'cf-time-indicator');
+        div.style.height = `${indicatorWidth}px`;
+        div.style.top = `${timeOffset * pps - indicatorWidth / 2}px`;
+        scheduleBoard.appendChild(div);
     }
     /**
      * Generates a card for a provided event.
@@ -9671,6 +9767,14 @@ agenda.`, [
                     this.loadCSV().then(() => { this.updateUI(); });
                 }, reloadSeconds * 1000);
             }
+            // Finally, set up a listener that will start re-drawing the entire UI once
+            // per minute to have the time indicator move correctly, when the conference
+            // is currently happening
+            setInterval(() => {
+                if (isConferenceNow(this.records)) {
+                    this.updateUI();
+                }
+            }, 1000 * 60);
         }
         /**
          * Returns all records in the schedule
@@ -9819,9 +9923,15 @@ agenda.`, [
                 }
                 this.dom.scheduleBoard.appendChild(card);
             }
-            // Final step: draw the vertical day-dividers so that the borders between
-            // the days become more pronounced
+            // Final step: Draw indicators and additional structural elements to further
+            // improve the visuals of the schedule board.
+            // Day dividers are thick lines that make the distinction between days more
+            // pronounced since the schedule board background also indicates sub-columns
             drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd);
+            if (isConferenceNow(this.records)) {
+                // Finally, if applicable, add a time indicator at the current time.
+                drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps);
+            }
         }
         /**
          * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1

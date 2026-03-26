@@ -2,8 +2,8 @@ import { CSVRecord, parseCsv, SessionPresentationRecord } from "./csv"
 import { updateGutterTicks as updateTimeGutter } from "./dom/time-gutter"
 import { updateGutterTicks as updateDayGutter } from "./dom/day-gutter"
 import { DOMStructure, generateDOMStructure } from "./dom/wrapper"
-import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset } from "./util/time-helpers"
-import { drawVerticalDayDividers, generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
+import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset, isConferenceNow } from "./util/time-helpers"
+import { drawTimeIndicator, drawVerticalDayDividers, generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
 import { DateTime } from "luxon"
 import { showEventDetailsModal } from "./dom/event-details-modal"
 import { Agenda } from "./agenda"
@@ -251,6 +251,15 @@ export class Conferia {
         this.loadCSV().then(() => { this.updateUI() })
       }, reloadSeconds * 1000)
     }
+
+    // Finally, set up a listener that will start re-drawing the entire UI once
+    // per minute to have the time indicator move correctly, when the conference
+    // is currently happening
+    setInterval(() => {
+      if (isConferenceNow(this.records)) {
+        this.updateUI()
+      }
+    }, 1000 * 60)
   }
 
   /**
@@ -433,9 +442,17 @@ export class Conferia {
       this.dom.scheduleBoard.appendChild(card)
     }
 
-    // Final step: draw the vertical day-dividers so that the borders between
-    // the days become more pronounced
+    // Final step: Draw indicators and additional structural elements to further
+    // improve the visuals of the schedule board.
+
+    // Day dividers are thick lines that make the distinction between days more
+    // pronounced since the schedule board background also indicates sub-columns
     drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd)
+
+    if (isConferenceNow(this.records)) {
+      // Finally, if applicable, add a time indicator at the current time.
+      drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps)
+    }
   }
 
   /**
