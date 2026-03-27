@@ -8745,10 +8745,12 @@
      * Draws a time-indicator on the schedule board, but only if the conference is
      * currently happening.
      *
-     * @param   {HTMLElement}  scheduleBoard  The schedule board to attach it to
-     * @param   {DateTime}     earliestTime   The earliest conference time
-     * @param   {DateTime}     latestTime     The latest conference time
-     * @param   {number}       pps            Calculated pixels per second
+     * @param   {HTMLElement}     scheduleBoard  The schedule board to attach it to
+     * @param   {DateTime}        earliestTime   The earliest conference time
+     * @param   {DateTime}        latestTime     The latest conference time
+     * @param   {number}          pps            Calculated pixels per second
+     *
+     * @return  {HTMLDivElement}                 The created time indicator
      */
     function drawTimeIndicator(scheduleBoard, earliestTime, latestTime, pps) {
         const now = DateTime.now();
@@ -8761,6 +8763,7 @@
         div.style.height = `${indicatorWidth}px`;
         div.style.top = `${timeOffset * pps - indicatorWidth / 2}px`;
         scheduleBoard.appendChild(div);
+        return div;
     }
     /**
      * Generates a card for a provided event.
@@ -9675,7 +9678,8 @@ agenda.`, [
                 fullscreen: false,
                 viewMode: 'full',
                 compactDay: DateTime.now(),
-                records: []
+                records: [],
+                autoScroll: true
             };
         }
         /**
@@ -11455,7 +11459,7 @@ agenda.`, [
                         this.updateUI();
                         break;
                     default:
-                        debug(`Unimplemented state change event: ${which}`);
+                        debug(`Unhandled state change event: ${which}`);
                 }
             });
             this.toolbar.onClick(which => {
@@ -11507,9 +11511,18 @@ agenda.`, [
                     this.loadCSV().then(() => { this.updateUI(); });
                 }, reloadSeconds * 1000);
             }
+            // Upon user interaction either with their finger (touchmove) or a mouse
+            // (wheel), disable autoscrolling.
+            const stopAutoscroll = () => {
+                this.dom.scheduleWrapper.removeEventListener('touchmove', stopAutoscroll);
+                this.dom.scheduleWrapper.removeEventListener('wheel', stopAutoscroll);
+                this.state.set('autoScroll', false);
+            };
+            this.dom.scheduleWrapper.addEventListener('touchmove', stopAutoscroll);
+            this.dom.scheduleWrapper.addEventListener('wheel', stopAutoscroll);
             // Finally, set up a listener that will start re-drawing the entire UI once
             // per minute to have the time indicator move correctly, when the conference
-            // is currently happening
+            // is currently happening. Will do nothing if the conference is not live.
             setInterval(() => {
                 if (isConferenceNow(this.state.get('records'))) {
                     this.updateUI();
@@ -11676,8 +11689,32 @@ agenda.`, [
             drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd);
             if (isConferenceNow(this.state.get('records'))) {
                 // Finally, if applicable, add a time indicator at the current time.
-                drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps);
+                const indicatorElement = drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps);
+                if (this.state.get('autoScroll') && indicatorElement !== undefined) {
+                    this.scrollTimeIndicatorIntoView(indicatorElement);
+                }
             }
+        }
+        /**
+         * Given a time indicator element, this scrolls the time into view on the
+         * schedule board.
+         *
+         * @param   {HTMLDivElement}  indicatorElement  The indicator element
+         */
+        scrollTimeIndicatorIntoView(indicatorElement) {
+            // NOTE: We need to wrap this into an animation frame. This way, we can let
+            // the browser draw all elements first, after which it will invoke this
+            // callback. This way we ensure that the positions are all correctly
+            // calculated.
+            requestAnimationFrame(() => {
+                // NOTE: We must use the programmatically set style.top property since
+                // that is absolute with regard to the schedule board. The bounding client
+                // rect is absolute to the (scroll) wrapper, NOT to the schedule board.
+                const indicatorTop = parseInt(indicatorElement.style.top, 10);
+                const { height } = this.dom.scheduleWrapper.getBoundingClientRect();
+                const scrollTarget = indicatorTop - height / 2;
+                this.dom.scheduleWrapper.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+            });
         }
         /**
          * Sets the column zoom to the provided factor. Should be a ratio (e.g. 1

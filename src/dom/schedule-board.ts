@@ -85,12 +85,14 @@ export function drawVerticalDayDividers (scheduleBoard: HTMLElement, columnWidth
  * Draws a time-indicator on the schedule board, but only if the conference is
  * currently happening.
  *
- * @param   {HTMLElement}  scheduleBoard  The schedule board to attach it to
- * @param   {DateTime}     earliestTime   The earliest conference time
- * @param   {DateTime}     latestTime     The latest conference time
- * @param   {number}       pps            Calculated pixels per second
+ * @param   {HTMLElement}     scheduleBoard  The schedule board to attach it to
+ * @param   {DateTime}        earliestTime   The earliest conference time
+ * @param   {DateTime}        latestTime     The latest conference time
+ * @param   {number}          pps            Calculated pixels per second
+ *
+ * @return  {HTMLDivElement}                 The created time indicator
  */
-export function drawTimeIndicator (scheduleBoard: HTMLElement, earliestTime: DateTime, latestTime: DateTime, pps: number) {
+export function drawTimeIndicator (scheduleBoard: HTMLElement, earliestTime: DateTime, latestTime: DateTime, pps: number): HTMLDivElement|undefined {
   const now = DateTime.now()
 
   if (!isTimeBefore(earliestTime, now) && !isTimeBefore(now, latestTime)) {
@@ -104,6 +106,7 @@ export function drawTimeIndicator (scheduleBoard: HTMLElement, earliestTime: Dat
   div.style.height = `${indicatorWidth}px`
   div.style.top = `${timeOffset * pps - indicatorWidth / 2}px`
   scheduleBoard.appendChild(div)
+  return div
 }
 
 /**

@@ -239,7 +239,7 @@ export class Conferia {
           this.updateUI()
           break
         default:
-          debug(`Unimplemented state change event: ${which}`)
+          debug(`Unhandled state change event: ${which}`)
       }
     })
 
@@ -298,9 +298,19 @@ export class Conferia {
       }, reloadSeconds * 1000)
     }
 
+    // Upon user interaction either with their finger (touchmove) or a mouse
+    // (wheel), disable autoscrolling.
+    const stopAutoscroll = () => {
+      this.dom.scheduleWrapper.removeEventListener('touchmove', stopAutoscroll)
+      this.dom.scheduleWrapper.removeEventListener('wheel', stopAutoscroll)
+      this.state.set('autoScroll', false)
+    }
+    this.dom.scheduleWrapper.addEventListener('touchmove', stopAutoscroll)
+    this.dom.scheduleWrapper.addEventListener('wheel', stopAutoscroll)
+
     // Finally, set up a listener that will start re-drawing the entire UI once
     // per minute to have the time indicator move correctly, when the conference
-    // is currently happening
+    // is currently happening. Will do nothing if the conference is not live.
     setInterval(() => {
       if (isConferenceNow(this.state.get('records'))) {
         this.updateUI()
@@ -503,8 +513,33 @@ export class Conferia {
 
     if (isConferenceNow(this.state.get('records'))) {
       // Finally, if applicable, add a time indicator at the current time.
-      drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps)
+      const indicatorElement = drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps)
+      if (this.state.get('autoScroll') && indicatorElement !== undefined) {
+        this.scrollTimeIndicatorIntoView(indicatorElement)
+      }
     }
+  }
+
+  /**
+   * Given a time indicator element, this scrolls the time into view on the
+   * schedule board.
+   *
+   * @param   {HTMLDivElement}  indicatorElement  The indicator element
+   */
+  private scrollTimeIndicatorIntoView (indicatorElement: HTMLDivElement) {
+    // NOTE: We need to wrap this into an animation frame. This way, we can let
+    // the browser draw all elements first, after which it will invoke this
+    // callback. This way we ensure that the positions are all correctly
+    // calculated.
+    requestAnimationFrame(() => {
+      // NOTE: We must use the programmatically set style.top property since
+      // that is absolute with regard to the schedule board. The bounding client
+      // rect is absolute to the (scroll) wrapper, NOT to the schedule board.
+      const indicatorTop = parseInt(indicatorElement.style.top, 10)
+      const { height } = this.dom.scheduleWrapper.getBoundingClientRect()
+      const scrollTarget =  indicatorTop - height / 2
+      this.dom.scheduleWrapper.scrollTo({ top: scrollTarget, behavior: 'smooth' })
+    })
   }
 
   /**

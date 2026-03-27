@@ -6,6 +6,10 @@
   default, users on mobile devices will start in the single-day compact mode,
   while desktop users get the full view. Conference organizers can determine
   which mode the library should initialize in.
+* Feature: As long as the user does not interact with the schedule board, the
+  library will keep the current time always on screen as long as the conference
+  is currently happening. As soon as they scroll manually, auto-scrolling will
+  be disabled.
 * Added a spacer to separate the more used buttons from others (clear and help).
 * Fixed a bug that would not trigger the "clear data" action when the
   corresponding toolbar button was pressed.

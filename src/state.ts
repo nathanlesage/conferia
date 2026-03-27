@@ -31,6 +31,15 @@ interface State {
    * certain events, e.g., to show search results or only individual days.
    */
   records: CSVRecord[]
+  /**
+   * Internal property that is preset to "true", but will be programmatically
+   * set to "false" as soon as there is a user scroll. This can be used to
+   * ensure that, upon load, the library will automatically scroll the current
+   * time into view. In addition, this property can even be used to create a
+   * fully automated schedule display that updates automagically throughout the
+   * conference.
+   */
+  autoScroll: boolean
 }
 
 // Do some type trickery to enforce callbacks that are properly typed to only
@@ -59,7 +68,8 @@ export class ApplicationState {
       fullscreen: false,
       viewMode: 'full',
       compactDay: DateTime.now(),
-      records: []
+      records: [],
+      autoScroll: true
     }
   }
 
