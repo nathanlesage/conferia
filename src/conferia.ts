@@ -187,11 +187,20 @@ export class Conferia {
 
     // Hook up to state changes
     this.state.on('change', (which) => {
-      const uiUpdateEvents = ['onlyPersonalAgendaItems', 'query']
-      if (which === 'fullscreen') {
-        this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'))
-      } else if (uiUpdateEvents.includes(which)) {
-        this.updateUI()
+      switch (which) {
+        case 'fullscreen':
+          this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'))
+          break
+        case 'compactDay':
+          this.ensureCompactDayBounds()
+          // fall-through
+        case 'onlyPersonalAgendaItems':
+        case 'viewMode':
+        case 'query':
+          this.updateUI()
+          break
+        default:
+          debug(`Unimplemented state change event: ${which}`)
       }
     })
 
@@ -282,12 +291,19 @@ export class Conferia {
    */
   private filterRecords (): CSVRecord[] {
     const q = this.state.get('query').trim().toLowerCase()
-    console.log(q)
 
     let records = this.records
 
     if (this.state.get('onlyPersonalAgendaItems')) {
       records = records.filter(r => this.agenda.hasItem(r.id))
+    }
+
+    if (this.state.get('viewMode') === 'compact') {
+      // In compact mode, we should only show a single day.
+      const focusDay = this.state.get('compactDay')
+      const dayStart = focusDay.set({ hour: 0, minute: 0, second: 0 })
+      const dayEnd = focusDay.set({ hour: 23, minute: 59, second: 59 })
+      records = records.filter(r => r.dateStart >= dayStart && r.dateEnd <= dayEnd)
     }
 
     if (q === '') {
@@ -473,9 +489,36 @@ export class Conferia {
       debug({ csv })
   
       this.records = csv
+      this.ensureCompactDayBounds()
     } catch (err: any) {
       console.error(`Conferia could not load data: ${err.message}`)
       console.error(err)
+    }
+  }
+
+  /**
+   * This function ensures that the 'compactDay` setting always remains within
+   * the bounds of the whole conference. This function should run whenever the
+   * records have been changed, or the compact day has changed.
+   */
+  private ensureCompactDayBounds () {
+    // Whenever the records have been (re)loaded, ensure that the "compact
+    // mode" day is always within the conference dates.
+    const earliestDay = getEarliestDay(this.records)
+    const latestDay = getLatestDay(this.records)
+    const currentDate = this.state.get('compactDay')
+
+    if (earliestDay === undefined || latestDay === undefined) {
+      debug('Either earliest day or latest day were undefined. This should not happen.')
+      return
+    }
+
+    if (currentDate < earliestDay) {
+      debug('Current date is before the earliest conference day. Setting compactDay accordingly.')
+      this.state.set('compactDay', earliestDay)
+    } else if (currentDate > latestDay) {
+      debug('Current date is after the latest conference day. Setting compactDay accordingly.')
+      this.state.set('compactDay', latestDay)
     }
   }
 

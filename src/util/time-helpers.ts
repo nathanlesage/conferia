@@ -117,23 +117,43 @@ export function getLatestTime (dates: DateTime[]): DateTime|undefined {
 /**
  * Given a list of dates, returns the DateTime that is the earliest one.
  *
- * @param   {DateTime[]}  dates  A list of dates
+ * @param   {DateTime[]|CSVRecord[]}  records  A list of dates or CSV records
  *
- * @return  {DateTime}           The earliest date
+ * @return  {DateTime|undefined}               The earliest date
  */
-export function getEarliestDay (dates: DateTime[]): DateTime|undefined {
-  return DateTime.min(...dates)
+export function getEarliestDay (records: CSVRecord[]): DateTime|undefined
+export function getEarliestDay (dates: DateTime[]): DateTime|undefined
+export function getEarliestDay (items: DateTime[]|CSVRecord[]): DateTime|undefined {
+  if (items.length === 0) {
+    return undefined
+  }
+
+  if (items.every(i => i instanceof DateTime)) {
+    return DateTime.min(...items)
+  } else {
+    return DateTime.min(...items.flatMap(r => [r.dateStart, r.dateEnd]))
+  }
 }
 
 /**
  * Given a list of dates, returns the DateTime that is the latest one.
  *
- * @param   {DateTime[]}  dates  A list of dates
+ * @param   {DateTime[]|CSVRecord[]}  records  A list of dates or CSV records
  *
- * @return  {DateTime}           The latest date
+ * @return  {DateTime|undefined}               The latest date
  */
-export function getLatestDay (dates: DateTime[]): DateTime|undefined {
-  return DateTime.max(...dates)
+export function getLatestDay (records: CSVRecord[]): DateTime|undefined
+export function getLatestDay (dates: DateTime[]): DateTime|undefined
+export function getLatestDay (items: DateTime[]|CSVRecord[]): DateTime|undefined {
+  if (items.length === 0) {
+    return undefined
+  }
+
+  if (items.every(i => i instanceof DateTime)) {
+    return DateTime.max(...items)
+  } else {
+    return DateTime.max(...items.flatMap(r => [r.dateStart, r.dateEnd]))
+  }
 }
 
 /**

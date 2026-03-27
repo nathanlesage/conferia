@@ -2,6 +2,7 @@ import { dom } from '../dom/util'
 import { askUser } from '../dom/ask-user'
 import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle, makeSpacer, makeDaySelector } from './util'
 import { ApplicationState, appState } from '../state'
+import { debug } from '../util/logger'
 
 export type ButtonClickEvents = 'ical'|'clear'
 
@@ -63,8 +64,6 @@ export class Toolbar {
 
   /**
    * Instantiates a new Toolbar component. Only 1 per Conferia instance.
-   *
-   * @param   {ToolbarCallbacks}  callbacks  Various toolbar callbacks.
    */
   constructor () {
     this.callbacks = []
@@ -133,6 +132,17 @@ export class Toolbar {
   }
 
   /**
+   * Emits the provided event to all listeners.
+   *
+   * @param   {ButtonClickEvents}  which  The event
+   */
+  private emit (which: ButtonClickEvents) {
+    for (const cb of this.callbacks) {
+        cb(which)
+      }
+  }
+
+  /**
    * Sets up event listeners for the buttons and other elements on the toolbar.
    */
   private setupEventListeners () {
@@ -141,17 +151,9 @@ export class Toolbar {
       this.state.set('query', this.filter.value)
     })
 
-    this.clearButton.addEventListener('click', () => {
-      for (const cb of this.callbacks) {
-        cb('clear')
-      }
-    })
-
-    this.toIcalButton.addEventListener('click', () => {
-      for (const cb of this.callbacks) {
-        cb('ical')
-      }
-    })
+    // Simple clicks
+    this.clearButton.addEventListener('click', () => { this.emit('clear') })
+    this.toIcalButton.addEventListener('click', () => { this.emit('ical') })
 
     // We can handle the help button directly here, which keeps the main class
     // a bit leaner.
@@ -190,5 +192,22 @@ export class Toolbar {
     this.compactModeToggle.addEventListener('click', event => {
       this.state.set('viewMode', this.state.get('viewMode') === 'compact' ? 'full' : 'compact')
     })
+
+    // Finally, handle the compact mode navigation
+    const prev: HTMLButtonElement|null = this.compactDaySelector.querySelector('.previous-day')
+    const next: HTMLButtonElement|null = this.compactDaySelector.querySelector('.next-day')
+
+    if (prev !== null && next !== null) {
+      prev.addEventListener('click', () => {
+        const currentDay = this.state.get('compactDay')
+        this.state.set('compactDay', currentDay.minus({ days: 1 }))
+      })
+      next.addEventListener('click', () => {
+        const currentDay = this.state.get('compactDay')
+        this.state.set('compactDay', currentDay.plus({ days: 1 }))
+      })
+    } else {
+      debug(`Could not find the ${prev === null ? 'prev' : 'next'} day buttons for the compact navigator.`)
+    }
   }
 }

@@ -29,9 +29,9 @@ export function makeDaySelector (state: ApplicationState, selector?: HTMLDivElem
     selector = dom('div', 'day-selector')
     const day = dom('span', 'day-indicator')
     
-    const prev = dom('button', undefined, { title: 'Previous day' })
+    const prev = dom('button', 'previous-day', { title: 'Previous day' })
     prev.innerHTML = chevronLeftIcon
-    const next = dom('button', undefined, { title: 'Next day' })
+    const next = dom('button', 'next-day', { title: 'Next day' })
     next.innerHTML = chevronRightIcon
     
     selector.append(prev, day, next)

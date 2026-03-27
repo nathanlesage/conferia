@@ -1,5 +1,8 @@
 # Release 0.21.0
 
+* Feature: Added a new, "compact" view mode that, when enabled, will only show
+  events on a single day. If this mode is active, the toolbar now shows a new
+  day selector which users can use to navigate through the conference.
 * Added a spacer to separate the more used buttons from others (clear and help).
 * Fixed a bug that would not trigger the "clear data" action when the
   corresponding toolbar button was pressed.

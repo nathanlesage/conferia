@@ -8476,25 +8476,27 @@
             }
         }).reverse()[0];
     }
-    /**
-     * Given a list of dates, returns the DateTime that is the earliest one.
-     *
-     * @param   {DateTime[]}  dates  A list of dates
-     *
-     * @return  {DateTime}           The earliest date
-     */
-    function getEarliestDay(dates) {
-        return DateTime.min(...dates);
+    function getEarliestDay(items) {
+        if (items.length === 0) {
+            return undefined;
+        }
+        if (items.every(i => i instanceof DateTime)) {
+            return DateTime.min(...items);
+        }
+        else {
+            return DateTime.min(...items.flatMap(r => [r.dateStart, r.dateEnd]));
+        }
     }
-    /**
-     * Given a list of dates, returns the DateTime that is the latest one.
-     *
-     * @param   {DateTime[]}  dates  A list of dates
-     *
-     * @return  {DateTime}           The latest date
-     */
-    function getLatestDay(dates) {
-        return DateTime.max(...dates);
+    function getLatestDay(items) {
+        if (items.length === 0) {
+            return undefined;
+        }
+        if (items.every(i => i instanceof DateTime)) {
+            return DateTime.max(...items);
+        }
+        else {
+            return DateTime.max(...items.flatMap(r => [r.dateStart, r.dateEnd]));
+        }
     }
     /**
      * Given a list of startDate/endDate tuples, returns the shortest interval
@@ -9541,9 +9543,9 @@ agenda.`, [
         if (selector === undefined) {
             selector = dom('div', 'day-selector');
             const day = dom('span', 'day-indicator');
-            const prev = dom('button', undefined, { title: 'Previous day' });
+            const prev = dom('button', 'previous-day', { title: 'Previous day' });
             prev.innerHTML = chevronLeftIcon;
-            const next = dom('button', undefined, { title: 'Next day' });
+            const next = dom('button', 'next-day', { title: 'Next day' });
             next.innerHTML = chevronRightIcon;
             selector.append(prev, day, next);
         }
@@ -9711,13 +9713,38 @@ agenda.`, [
     }
 
     /**
+     * Whether debug messages should be printed.
+     */
+    let enableDebug = false;
+    /**
+     * Toggle debug logging on or off.
+     *
+     * @param   {boolean}  state  Whether to turn it on or off.
+     */
+    function toggleDebug(state) {
+        enableDebug = state;
+    }
+    /**
+     * Convenience function for conditional logging. Use this function like you
+     * would `console.log` (the parameters are identical and will be passed through)
+     * but rest assured that logging will only occur if debug logging is enabled.
+     *
+     * @param   {any}    message         The message
+     * @param   {any[]}  optionalParams  Any optional parameters
+     */
+    function debug(message, ...optionalParams) {
+        if (!enableDebug) {
+            return;
+        }
+        console.log(message, ...optionalParams);
+    }
+
+    /**
      * Implements a toolbar component.
      */
     class Toolbar {
         /**
          * Instantiates a new Toolbar component. Only 1 per Conferia instance.
-         *
-         * @param   {ToolbarCallbacks}  callbacks  Various toolbar callbacks.
          */
         constructor() {
             this.callbacks = [];
@@ -9777,6 +9804,16 @@ agenda.`, [
             this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact', this.compactModeToggle);
         }
         /**
+         * Emits the provided event to all listeners.
+         *
+         * @param   {ButtonClickEvents}  which  The event
+         */
+        emit(which) {
+            for (const cb of this.callbacks) {
+                cb(which);
+            }
+        }
+        /**
          * Sets up event listeners for the buttons and other elements on the toolbar.
          */
         setupEventListeners() {
@@ -9784,16 +9821,9 @@ agenda.`, [
             this.filter.addEventListener('keyup', () => {
                 this.state.set('query', this.filter.value);
             });
-            this.clearButton.addEventListener('click', () => {
-                for (const cb of this.callbacks) {
-                    cb('clear');
-                }
-            });
-            this.toIcalButton.addEventListener('click', () => {
-                for (const cb of this.callbacks) {
-                    cb('ical');
-                }
-            });
+            // Simple clicks
+            this.clearButton.addEventListener('click', () => { this.emit('clear'); });
+            this.toIcalButton.addEventListener('click', () => { this.emit('ical'); });
             // We can handle the help button directly here, which keeps the main class
             // a bit leaner.
             this.helpButton.addEventListener('click', () => {
@@ -9824,34 +9854,23 @@ agenda.`, [
             this.compactModeToggle.addEventListener('click', event => {
                 this.state.set('viewMode', this.state.get('viewMode') === 'compact' ? 'full' : 'compact');
             });
+            // Finally, handle the compact mode navigation
+            const prev = this.compactDaySelector.querySelector('.previous-day');
+            const next = this.compactDaySelector.querySelector('.next-day');
+            if (prev !== null && next !== null) {
+                prev.addEventListener('click', () => {
+                    const currentDay = this.state.get('compactDay');
+                    this.state.set('compactDay', currentDay.minus({ days: 1 }));
+                });
+                next.addEventListener('click', () => {
+                    const currentDay = this.state.get('compactDay');
+                    this.state.set('compactDay', currentDay.plus({ days: 1 }));
+                });
+            }
+            else {
+                debug(`Could not find the ${prev === null ? 'prev' : 'next'} day buttons for the compact navigator.`);
+            }
         }
-    }
-
-    /**
-     * Whether debug messages should be printed.
-     */
-    let enableDebug = false;
-    /**
-     * Toggle debug logging on or off.
-     *
-     * @param   {boolean}  state  Whether to turn it on or off.
-     */
-    function toggleDebug(state) {
-        enableDebug = state;
-    }
-    /**
-     * Convenience function for conditional logging. Use this function like you
-     * would `console.log` (the parameters are identical and will be passed through)
-     * but rest assured that logging will only occur if debug logging is enabled.
-     *
-     * @param   {any}    message         The message
-     * @param   {any[]}  optionalParams  Any optional parameters
-     */
-    function debug(message, ...optionalParams) {
-        if (!enableDebug) {
-            return;
-        }
-        console.log(message, ...optionalParams);
     }
 
     /**
@@ -9880,12 +9899,20 @@ agenda.`, [
             debug('Debug logging enabled'); // Will only show if debug is actually enabled
             // Hook up to state changes
             this.state.on('change', (which) => {
-                const uiUpdateEvents = ['onlyPersonalAgendaItems', 'query'];
-                if (which === 'fullscreen') {
-                    this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'));
-                }
-                else if (uiUpdateEvents.includes(which)) {
-                    this.updateUI();
+                switch (which) {
+                    case 'fullscreen':
+                        this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'));
+                        break;
+                    case 'compactDay':
+                        this.ensureCompactDayBounds();
+                    // fall-through
+                    case 'onlyPersonalAgendaItems':
+                    case 'viewMode':
+                    case 'query':
+                        this.updateUI();
+                        break;
+                    default:
+                        debug(`Unimplemented state change event: ${which}`);
                 }
             });
             this.toolbar.onClick(which => {
@@ -9913,11 +9940,7 @@ agenda.`, [
             // Begin loading
             this.loadPromise = this.loadCSV();
             // Perform initial update
-            this.loadPromise.then(() => {
-                // After the first update event, ensure that the day for the compact mode
-                // is no longer the current time, but the first or last day of the event.
-                this.updateUI();
-            });
+            this.loadPromise.then(() => { this.updateUI(); });
             // Activate auto-reload if applicable -- default is 5min/300s
             if (this.opt.autoReload !== undefined && this.opt.autoReload !== false) {
                 const reloadSeconds = this.opt.autoReload === true ? 300 : this.opt.autoReload;
@@ -9967,10 +9990,16 @@ agenda.`, [
          */
         filterRecords() {
             const q = this.state.get('query').trim().toLowerCase();
-            console.log(q);
             let records = this.records;
             if (this.state.get('onlyPersonalAgendaItems')) {
                 records = records.filter(r => this.agenda.hasItem(r.id));
+            }
+            if (this.state.get('viewMode') === 'compact') {
+                // In compact mode, we should only show a single day.
+                const focusDay = this.state.get('compactDay');
+                const dayStart = focusDay.set({ hour: 0, minute: 0, second: 0 });
+                const dayEnd = focusDay.set({ hour: 23, minute: 59, second: 59 });
+                records = records.filter(r => r.dateStart >= dayStart && r.dateEnd <= dayEnd);
             }
             if (q === '') {
                 return records;
@@ -10123,12 +10152,37 @@ agenda.`, [
                     debug(`Parsed ${csv.length} records from file.`);
                     debug({ csv });
                     this.records = csv;
+                    this.ensureCompactDayBounds();
                 }
                 catch (err) {
                     console.error(`Conferia could not load data: ${err.message}`);
                     console.error(err);
                 }
             });
+        }
+        /**
+         * This function ensures that the 'compactDay` setting always remains within
+         * the bounds of the whole conference. This function should run whenever the
+         * records have been changed, or the compact day has changed.
+         */
+        ensureCompactDayBounds() {
+            // Whenever the records have been (re)loaded, ensure that the "compact
+            // mode" day is always within the conference dates.
+            const earliestDay = getEarliestDay(this.records);
+            const latestDay = getLatestDay(this.records);
+            const currentDate = this.state.get('compactDay');
+            if (earliestDay === undefined || latestDay === undefined) {
+                debug('Either earliest day or latest day were undefined. This should not happen.');
+                return;
+            }
+            if (currentDate < earliestDay) {
+                debug('Current date is before the earliest conference day. Setting compactDay accordingly.');
+                this.state.set('compactDay', earliestDay);
+            }
+            else if (currentDate > latestDay) {
+                debug('Current date is after the latest conference day. Setting compactDay accordingly.');
+                this.state.set('compactDay', latestDay);
+            }
         }
         /**
          * Awaits the loading promise. If this function resolves, the library is
