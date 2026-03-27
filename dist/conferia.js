@@ -8841,11 +8841,10 @@
      * Generates the primary Conferia.js DOM structure.
      *
      * @param   {string}        title      The optional title
-     * @param   {string}        maxHeight  An optional max height string (e.g., `100vh`)
      *
      * @return  {DOMStructure}             The DOM structure
      */
-    function generateDOMStructure(title, maxHeight) {
+    function generateDOMStructure(title) {
         const wrapper = generateWrapper(title);
         const dayGutter = generateDayGutter();
         const timeGutter = generateTimeGutter();
@@ -9903,6 +9902,7 @@ agenda.`, [
          * @param   {ConferiaOptions}  opt  The start options
          */
         constructor(opt) {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
             /**
              * Manages the user's personal agenda.
              */
@@ -9912,7 +9912,20 @@ agenda.`, [
              */
             this.toolbar = new Toolbar();
             this.state = appState();
-            this.opt = opt;
+            this.opt = {
+                parent: opt.parent,
+                src: opt.src,
+                title: (_a = opt.title) !== null && _a !== void 0 ? _a : '',
+                autoReload: (_b = opt.autoReload) !== null && _b !== void 0 ? _b : false,
+                timeZone: (_c = opt.timeZone) !== null && _c !== void 0 ? _c : '',
+                eventCardPadding: (_d = opt.eventCardPadding) !== null && _d !== void 0 ? _d : 10,
+                timeGridSeconds: (_e = opt.timeGridSeconds) !== null && _e !== void 0 ? _e : -1,
+                minimumCardHeight: (_f = opt.minimumCardHeight) !== null && _f !== void 0 ? _f : 75,
+                // Default for the callbacks are identity functions
+                dateParser: (_g = opt.dateParser) !== null && _g !== void 0 ? _g : ((dateString) => dateString),
+                rowParser: (_h = opt.rowParser) !== null && _h !== void 0 ? _h : ((row, header, record) => record),
+                debug: (_j = opt.debug) !== null && _j !== void 0 ? _j : false
+            };
             this.columnScaleFactor = 1;
             toggleDebug(this.opt.debug === true);
             debug('Debug logging enabled'); // Will only show if debug is actually enabled
@@ -9953,7 +9966,7 @@ agenda.`, [
                 }
             });
             // Mount everything
-            this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined);
+            this.dom = generateDOMStructure(opt.title);
             this.dom.wrapper.prepend(this.toolbar.dom);
             this.opt.parent.appendChild(this.dom.wrapper);
             // Begin loading
@@ -10030,7 +10043,7 @@ agenda.`, [
          * entire UI, based on any filters, etc.
          */
         updateUI() {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
+            var _a, _b, _c, _d;
             debug('Updating UI.');
             // Before doing anything, retrieve the records we are supposed to show.
             const records = this.filterRecords();
@@ -10043,7 +10056,7 @@ agenda.`, [
                 this.dom.dayGutter.innerHTML = '';
                 const noeventscard = document.createElement('div');
                 noeventscard.classList.add('event', 'meta');
-                noeventscard.style.margin = ((_a = this.opt.eventCardPadding) !== null && _a !== void 0 ? _a : 10) + 'px';
+                noeventscard.style.margin = `${this.opt.eventCardPadding}px`;
                 noeventscard.style.height = '75%';
                 if (this.state.get('onlyPersonalAgendaItems')) {
                     noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>';
@@ -10061,10 +10074,10 @@ agenda.`, [
             // an hour around right now to display at least something. Later on we can
             // add an "error" card.
             const now = DateTime.now();
-            const earliestTime = (_b = getEarliestTime(dates.flat())) !== null && _b !== void 0 ? _b : now;
-            const latestTime = (_c = getLatestTime(dates.flat())) !== null && _c !== void 0 ? _c : now.plus({ hour: 1 });
-            const earliestDay = (_d = getEarliestDay(dates.flat())) !== null && _d !== void 0 ? _d : now;
-            const latestDay = (_e = getLatestDay(dates.flat())) !== null && _e !== void 0 ? _e : now.plus({ day: 1 });
+            const earliestTime = (_a = getEarliestTime(dates.flat())) !== null && _a !== void 0 ? _a : now;
+            const latestTime = (_b = getLatestTime(dates.flat())) !== null && _b !== void 0 ? _b : now.plus({ hour: 1 });
+            const earliestDay = (_c = getEarliestDay(dates.flat())) !== null && _c !== void 0 ? _c : now;
+            const latestDay = (_d = getLatestDay(dates.flat())) !== null && _d !== void 0 ? _d : now.plus({ day: 1 });
             debug(`Events ranges from ${earliestTime.toFormat('HH:mm:ss')} to ${latestTime.toFormat('HH:mm:ss')}, and from ${earliestDay.toFormat('yyyy-LL-dd')} to ${latestDay.toFormat('yyyy-LL-dd')}`);
             // Second, the shortest event duration (which determines the vertical
             // resolution). Minimum: 5 minutes (in case there are "zero-length" events)
@@ -10074,7 +10087,7 @@ agenda.`, [
             debug(`Shown events range across ${days} days.`);
             // Calculate the "pixels per second," a measure to ensure the events have a
             // proper "minimum height."
-            const MIN_HEIGHT = (_f = this.opt.minimumCardHeight) !== null && _f !== void 0 ? _f : 75;
+            const MIN_HEIGHT = this.opt.minimumCardHeight;
             const pps = MIN_HEIGHT / shortestInterval;
             debug(`Displaying on ${pps} pixels/second.`);
             // Now, determine the "raster" size (minimum size for a time interval in
@@ -10086,7 +10099,7 @@ agenda.`, [
             // offset the events based on that information.
             const rpd = roomsWithConflictsPerDay(records);
             debug('Room conflicts per day: ', rpd);
-            const timeGridInterval = (_g = this.opt.timeGridSeconds) !== null && _g !== void 0 ? _g : shortestInterval;
+            const timeGridInterval = this.opt.timeGridSeconds > -1 ? this.opt.timeGridSeconds : shortestInterval;
             debug(`Using time grid interval of ${timeGridInterval} seconds.`);
             // Now, update the time and day gutters
             updateGutterTicks$1(this.dom.timeGutter, earliestTime, latestTime, pps, timeGridInterval);
@@ -10112,22 +10125,21 @@ agenda.`, [
                     withinDayOffset = 0;
                 }
                 const eventDuration = getTimeOffset(event.dateEnd, event.dateStart);
-                const PADDING = (_h = this.opt.eventCardPadding) !== null && _h !== void 0 ? _h : 10;
                 // Ensure each event is *at least* shortestInterval high.
-                const height = Math.max(pps * shortestInterval, eventDuration * pps) - PADDING * 2;
-                card.style.top = `${timeOffset * pps + PADDING}px`;
+                const height = Math.max(pps * shortestInterval, eventDuration * pps) - this.opt.eventCardPadding * 2;
+                card.style.top = `${timeOffset * pps + this.opt.eventCardPadding}px`;
                 card.style.height = `${height}px`;
                 // left & width are more complex
-                card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`;
+                card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + this.opt.eventCardPadding}px`;
                 if (event.location && hasConflict) {
-                    card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`;
+                    card.style.width = `${COLUMN_WIDTH - this.opt.eventCardPadding * 2}px`;
                 }
                 else {
                     // No conflict with other events -> make it span th entire day column
                     // This line here is necessary since, if there are no conflicts, the
                     // rpd array will be empty.
                     const colspan = Math.max(rpd[dayOffset].length, 1);
-                    card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`;
+                    card.style.width = `${COLUMN_WIDTH * colspan - this.opt.eventCardPadding * 2}px`;
                 }
                 this.dom.scheduleBoard.appendChild(card);
             }
@@ -10167,7 +10179,8 @@ agenda.`, [
                     debug(`Fetching schedule from ${this.opt.src}`);
                     const response = yield fetch(this.opt.src);
                     const data = yield response.text();
-                    const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser);
+                    const tz = this.opt.timeZone !== '' ? this.opt.timeZone : undefined;
+                    const csv = parseCsv(data, tz, this.opt.dateParser, this.opt.rowParser);
                     debug(`Parsed ${csv.length} records from file.`);
                     debug({ csv });
                     this.state.set('records', csv);

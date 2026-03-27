@@ -16,11 +16,10 @@ export interface DOMStructure {
  * Generates the primary Conferia.js DOM structure.
  *
  * @param   {string}        title      The optional title
- * @param   {string}        maxHeight  An optional max height string (e.g., `100vh`)
  *
  * @return  {DOMStructure}             The DOM structure
  */
-export function generateDOMStructure (title?: string, maxHeight?: string): DOMStructure {
+export function generateDOMStructure (title?: string): DOMStructure {
   const wrapper = generateWrapper(title)
   const dayGutter = generateDayGutter()
   const timeGutter = generateTimeGutter()

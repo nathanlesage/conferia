@@ -58,12 +58,6 @@ export interface ConferiaOptions {
   timeZone?: string
 
   /**
-   * Specifies the maximum height of the entire wrapper. Defaults to 100% of the
-   * visible window height. Provide a number of pixels.
-   */
-  maxHeight?: number
-
-  /**
    * Specifies the padding on the calendar board (default: 10px).
    */
   eventCardPadding?: number
@@ -136,9 +130,11 @@ export interface ConferiaOptions {
 export class Conferia {
   private readonly state: ApplicationState
   /**
-   * The options passed to the constructor
+   * The options passed to the constructor. Here, we turn every optional option
+   * into a required one so that we can apply defaults at one point in the
+   * constructor.
    */
-  private readonly opt: ConferiaOptions
+  private readonly opt: Required<ConferiaOptions>
 
   /**
    * The loading promise. Used to ensure components only access the state when
@@ -173,7 +169,20 @@ export class Conferia {
    */
   public constructor (opt: ConferiaOptions) {
     this.state = appState()
-    this.opt = opt
+    this.opt = {
+      parent: opt.parent,
+      src: opt.src,
+      title: opt.title ?? '',
+      autoReload: opt.autoReload ?? false,
+      timeZone: opt.timeZone ?? '',
+      eventCardPadding: opt.eventCardPadding ?? 10,
+      timeGridSeconds: opt.timeGridSeconds ?? -1,
+      minimumCardHeight: opt.minimumCardHeight ?? 75,
+      // Default for the callbacks are identity functions
+      dateParser: opt.dateParser ?? ((dateString) => dateString),
+      rowParser: opt.rowParser ?? ((row, header, record) => record),
+      debug: opt.debug ?? false
+    }
     this.columnScaleFactor = 1
 
     toggleDebug(this.opt.debug === true)
@@ -220,7 +229,7 @@ export class Conferia {
     })
 
     // Mount everything
-    this.dom = generateDOMStructure(opt.title, opt.maxHeight ? `${opt.maxHeight}px` : undefined)
+    this.dom = generateDOMStructure(opt.title)
     this.dom.wrapper.prepend(this.toolbar.dom)
     this.opt.parent.appendChild(this.dom.wrapper)
 
@@ -326,7 +335,7 @@ export class Conferia {
 
       const noeventscard = document.createElement('div')
       noeventscard.classList.add('event', 'meta')
-      noeventscard.style.margin = (this.opt.eventCardPadding ?? 10) + 'px'
+      noeventscard.style.margin = `${this.opt.eventCardPadding}px`
       noeventscard.style.height = '75%'
       if (this.state.get('onlyPersonalAgendaItems')) {
         noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>'
@@ -363,7 +372,7 @@ export class Conferia {
 
     // Calculate the "pixels per second," a measure to ensure the events have a
     // proper "minimum height."
-    const MIN_HEIGHT = this.opt.minimumCardHeight ?? 75
+    const MIN_HEIGHT = this.opt.minimumCardHeight
     const pps = MIN_HEIGHT / shortestInterval
 
     debug(`Displaying on ${pps} pixels/second.`)
@@ -380,7 +389,7 @@ export class Conferia {
 
     debug('Room conflicts per day: ', rpd)
 
-    const timeGridInterval = this.opt.timeGridSeconds ?? shortestInterval
+    const timeGridInterval = this.opt.timeGridSeconds > -1 ? this.opt.timeGridSeconds : shortestInterval
 
     debug(`Using time grid interval of ${timeGridInterval} seconds.`)
 
@@ -415,24 +424,22 @@ export class Conferia {
       
       const eventDuration = getTimeOffset(event.dateEnd, event.dateStart)
 
-      const PADDING = this.opt.eventCardPadding ?? 10
-
       // Ensure each event is *at least* shortestInterval high.
-      const height = Math.max(pps * shortestInterval, eventDuration * pps) - PADDING * 2
+      const height = Math.max(pps * shortestInterval, eventDuration * pps) - this.opt.eventCardPadding * 2
 
-      card.style.top = `${timeOffset * pps + PADDING}px`
+      card.style.top = `${timeOffset * pps + this.opt.eventCardPadding}px`
       card.style.height = `${height}px`
 
       // left & width are more complex
-      card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + PADDING}px`
+      card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + this.opt.eventCardPadding}px`
       if (event.location && hasConflict) {
-        card.style.width = `${COLUMN_WIDTH - PADDING * 2}px`
+        card.style.width = `${COLUMN_WIDTH - this.opt.eventCardPadding * 2}px`
       } else {
         // No conflict with other events -> make it span th entire day column
         // This line here is necessary since, if there are no conflicts, the
         // rpd array will be empty.
         const colspan = Math.max(rpd[dayOffset].length, 1)
-        card.style.width = `${COLUMN_WIDTH * colspan - PADDING * 2}px`
+        card.style.width = `${COLUMN_WIDTH * colspan - this.opt.eventCardPadding * 2}px`
       }
 
       this.dom.scheduleBoard.appendChild(card)
@@ -477,7 +484,8 @@ export class Conferia {
       debug(`Fetching schedule from ${this.opt.src}`)
       const response = await fetch(this.opt.src)
       const data = await response.text()
-      const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser)
+      const tz = this.opt.timeZone !== '' ? this.opt.timeZone : undefined
+      const csv = parseCsv(data, tz, this.opt.dateParser, this.opt.rowParser)
   
       debug(`Parsed ${csv.length} records from file.`)
       debug({ csv })
