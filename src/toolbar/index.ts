@@ -3,6 +3,7 @@ import { askUser } from '../dom/ask-user'
 import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle, makeSpacer, makeDaySelector } from './util'
 import { ApplicationState, appState } from '../state'
 import { debug } from '../util/logger'
+import { getEarliestDay, getLatestDay, sameDates } from '../util/time-helpers'
 
 export type ButtonClickEvents = 'ical'|'clear'
 
@@ -199,12 +200,18 @@ export class Toolbar {
 
     if (prev !== null && next !== null) {
       prev.addEventListener('click', () => {
+        const earliestDay = getEarliestDay(this.state.get('records'))?.set({ hour: 0, minute: 0, second: 0 })
         const currentDay = this.state.get('compactDay')
-        this.state.set('compactDay', currentDay.minus({ days: 1 }))
+        if (earliestDay !== undefined && !sameDates(earliestDay, currentDay)) {
+          this.state.set('compactDay', currentDay.minus({ days: 1 }))
+        }
       })
       next.addEventListener('click', () => {
+        const latestDay = getLatestDay(this.state.get('records'))?.set({ hour: 23, minute: 59, second: 59 })
         const currentDay = this.state.get('compactDay')
-        this.state.set('compactDay', currentDay.plus({ days: 1 }))
+        if (latestDay !== undefined && !sameDates(latestDay, currentDay)) {
+          this.state.set('compactDay', currentDay.plus({ days: 1 }))
+        }
       })
     } else {
       debug(`Could not find the ${prev === null ? 'prev' : 'next'} day buttons for the compact navigator.`)

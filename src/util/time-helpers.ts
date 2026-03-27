@@ -220,3 +220,15 @@ export function getDayOffset (date: DateTime, referenceDate: DateTime): number {
 export function isTimeBefore (time: DateTime, referenceTime: DateTime): boolean {
   return normalizeDateTime(time) < normalizeDateTime(referenceTime)
 }
+
+/**
+ * Returns true if the two dates are equal, while ignoring the time stamp.
+ *
+ * @param   {DateTime}  dateA  The first datetime
+ * @param   {DateTime}  dateB  The second datetime
+ *
+ * @return  {boolean}          Whether year, month, and day agree.
+ */
+export function sameDates (dateA: DateTime, dateB: DateTime): boolean {
+  return dateA.year === dateB.year && dateA.day === dateB.day && dateA.month === dateB.month
+}

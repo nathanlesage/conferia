@@ -8558,6 +8558,17 @@
     function isTimeBefore(time, referenceTime) {
         return normalizeDateTime(time) < normalizeDateTime(referenceTime);
     }
+    /**
+     * Returns true if the two dates are equal, while ignoring the time stamp.
+     *
+     * @param   {DateTime}  dateA  The first datetime
+     * @param   {DateTime}  dateB  The second datetime
+     *
+     * @return  {boolean}          Whether year, month, and day agree.
+     */
+    function sameDates(dateA, dateB) {
+        return dateA.year === dateB.year && dateA.day === dateB.day && dateA.month === dateB.month;
+    }
 
     /**
      * Utility function that allows creation of DOM elements in a more ergonomic way
@@ -9664,7 +9675,8 @@ agenda.`, [
                 onlyPersonalAgendaItems: false,
                 fullscreen: false,
                 viewMode: 'full',
-                compactDay: DateTime.now()
+                compactDay: DateTime.now(),
+                records: []
             };
         }
         /**
@@ -9859,12 +9871,20 @@ agenda.`, [
             const next = this.compactDaySelector.querySelector('.next-day');
             if (prev !== null && next !== null) {
                 prev.addEventListener('click', () => {
+                    var _a;
+                    const earliestDay = (_a = getEarliestDay(this.state.get('records'))) === null || _a === void 0 ? void 0 : _a.set({ hour: 0, minute: 0, second: 0 });
                     const currentDay = this.state.get('compactDay');
-                    this.state.set('compactDay', currentDay.minus({ days: 1 }));
+                    if (earliestDay !== undefined && !sameDates(earliestDay, currentDay)) {
+                        this.state.set('compactDay', currentDay.minus({ days: 1 }));
+                    }
                 });
                 next.addEventListener('click', () => {
+                    var _a;
+                    const latestDay = (_a = getLatestDay(this.state.get('records'))) === null || _a === void 0 ? void 0 : _a.set({ hour: 23, minute: 59, second: 59 });
                     const currentDay = this.state.get('compactDay');
-                    this.state.set('compactDay', currentDay.plus({ days: 1 }));
+                    if (latestDay !== undefined && !sameDates(latestDay, currentDay)) {
+                        this.state.set('compactDay', currentDay.plus({ days: 1 }));
+                    }
                 });
             }
             else {
@@ -9893,7 +9913,6 @@ agenda.`, [
             this.toolbar = new Toolbar();
             this.state = appState();
             this.opt = opt;
-            this.records = [];
             this.columnScaleFactor = 1;
             toggleDebug(this.opt.debug === true);
             debug('Debug logging enabled'); // Will only show if debug is actually enabled
@@ -9953,7 +9972,7 @@ agenda.`, [
             // per minute to have the time indicator move correctly, when the conference
             // is currently happening
             setInterval(() => {
-                if (isConferenceNow(this.records)) {
+                if (isConferenceNow(this.state.get('records'))) {
                     this.updateUI();
                 }
             }, 1000 * 60);
@@ -9964,7 +9983,7 @@ agenda.`, [
          * @return  {CSVRecord[]}  All records
          */
         getRecords() {
-            return this.records;
+            return this.state.get('records');
         }
         /**
          * Returns all records in the schedule conditional on any filters currently
@@ -9981,7 +10000,7 @@ agenda.`, [
          * @return  {CSVRecord[]}  The user agenda records
          */
         getUserAgendaRecords() {
-            return this.records.filter(r => this.agenda.hasItem(r.id));
+            return this.state.get('records').filter(r => this.agenda.hasItem(r.id));
         }
         /**
          * Filters all available records based on various conditions.
@@ -9990,7 +10009,7 @@ agenda.`, [
          */
         filterRecords() {
             const q = this.state.get('query').trim().toLowerCase();
-            let records = this.records;
+            let records = [...this.state.get('records')];
             if (this.state.get('onlyPersonalAgendaItems')) {
                 records = records.filter(r => this.agenda.hasItem(r.id));
             }
@@ -10117,7 +10136,7 @@ agenda.`, [
             // Day dividers are thick lines that make the distinction between days more
             // pronounced since the schedule board background also indicates sub-columns
             drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd);
-            if (isConferenceNow(this.records)) {
+            if (isConferenceNow(this.state.get('records'))) {
                 // Finally, if applicable, add a time indicator at the current time.
                 drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps);
             }
@@ -10151,7 +10170,7 @@ agenda.`, [
                     const csv = parseCsv(data, this.opt.timeZone, this.opt.dateParser, this.opt.rowParser);
                     debug(`Parsed ${csv.length} records from file.`);
                     debug({ csv });
-                    this.records = csv;
+                    this.state.set('records', csv);
                     this.ensureCompactDayBounds();
                 }
                 catch (err) {
@@ -10168,8 +10187,9 @@ agenda.`, [
         ensureCompactDayBounds() {
             // Whenever the records have been (re)loaded, ensure that the "compact
             // mode" day is always within the conference dates.
-            const earliestDay = getEarliestDay(this.records);
-            const latestDay = getLatestDay(this.records);
+            const records = this.state.get('records');
+            const earliestDay = getEarliestDay(records);
+            const latestDay = getLatestDay(records);
             const currentDate = this.state.get('compactDay');
             if (earliestDay === undefined || latestDay === undefined) {
                 debug('Either earliest day or latest day were undefined. This should not happen.');
