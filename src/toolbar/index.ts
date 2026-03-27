@@ -32,7 +32,7 @@ export class Toolbar {
   /**
    * The "toggle fullscreen" button
    */
-  private fullscreenButton: HTMLButtonElement
+  private fullscreenToggle: HTMLButtonElement
 
   /**
    * The "Clear storage" button
@@ -69,7 +69,7 @@ export class Toolbar {
     this.filter = makeFilter()
     this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'))
     this.toIcalButton = makeIcalButton()
-    this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'))
+    this.fullscreenToggle = makeFullscreenToggle(this.state.get('fullscreen'))
     this.clearButton = makeClearButton()
     this.helpButton = makeHelpButton()
     this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact')
@@ -78,7 +78,7 @@ export class Toolbar {
     this.toolbar.append(
       this.compactModeToggle,
       this.filter, this.personalAgendaToggle,
-      this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton
+      this.toIcalButton, this.fullscreenToggle, this.clearButton, this.helpButton
     )
 
     // Attach event listeners
@@ -114,7 +114,7 @@ export class Toolbar {
   private updateToolbarState () {
     this.filter.value = this.state.get('query')
     this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'), this.personalAgendaToggle)
-    this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenButton)
+    this.fullscreenToggle = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenToggle)
     this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact', this.compactModeToggle)
   }
 
@@ -169,7 +169,7 @@ export class Toolbar {
       this.state.set('onlyPersonalAgendaItems', !this.state.get('onlyPersonalAgendaItems'))
     })
 
-    this.fullscreenButton.addEventListener('click', event => {
+    this.fullscreenToggle.addEventListener('click', event => {
       this.state.set('fullscreen', !this.state.get('fullscreen'))
     })
 
