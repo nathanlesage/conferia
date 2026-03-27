@@ -35,6 +35,16 @@ plugins:
 minima:
   hide_site_feed_link: true
 
+# NOTE: Will change to nav_pages in minima 3.0
+header_pages: 
+  - index.md
+  - demo/index.md
+  - users-guide/index.md
+  - organizers-guide/index.md
+  - organizers-guide/configuration.md
+  - organizers-guide/csv-format.md
+  - organizers-guide/api.md
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to

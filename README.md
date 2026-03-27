@@ -4,6 +4,8 @@
 > straight-forward plug-and-play solution in only three steps.
 > [View an interactive demo](https://nathanlesage.github.io/conferia/demo/)
 
+![Conferia showcase](docs/assets/images/conferia_showcase.png)
+
 Towards the end of the planning stage, organizers of academic conferences
 usually run against one very fundamental problem: We now have this large Excel
 spreadsheet with dozens of the sessions and keynotes, filled in and ready to go,

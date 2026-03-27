@@ -102,6 +102,14 @@ div.highlighter-rouge {
     color: white;
   }
 
+  table {
+  color: inherit;
+
+    tr:nth-child(2n), th {
+      background-color: #555;
+    }
+  }
+
   pre { border-color: transparent; }
 
   /* Dark mode overrides */
@@ -122,6 +130,22 @@ body {
   margin: 0;
   max-width: 100vw;
   max-height: 100vh;
+}
+
+header.site-header {
+  height: auto;
+  min-height: auto;
+}
+
+dl {
+  dt {
+    font-weight: bold;
+  }
+
+  dd {
+    font-size: 14px;
+    margin-left: 20px;
+  }
 }
 
 blockquote {

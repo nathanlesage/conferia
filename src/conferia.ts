@@ -148,7 +148,7 @@ export interface ConferiaOptions {
  * The main Conferia object.
  */
 export class Conferia {
-  private readonly state: ApplicationState
+  public readonly state: ApplicationState
   /**
    * The options passed to the constructor. Here, we turn every optional option
    * into a required one so that we can apply defaults at one point in the
@@ -175,12 +175,12 @@ export class Conferia {
   /**
    * Manages the user's personal agenda.
    */
-  public agenda: Agenda = new Agenda()
+  public readonly agenda: Agenda = new Agenda()
 
   /**
    * Manages the toolbar
    */
-  public toolbar: Toolbar = new Toolbar()
+  private readonly toolbar: Toolbar = new Toolbar()
 
   /**
    * Instantiate a new Conferia object.

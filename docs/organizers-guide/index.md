@@ -11,6 +11,13 @@ conference website.
 In case adopting it is difficult for you, feel free to open an issue on GitHub.
 We cannot promise to accommodate your request, but are happy to consider it.
 
+We provide a quickstart below. For more in-depth information, see the
+corresponding pages:
+
+* [Configuration Reference](configuration)
+* [CSV Format Reference](csv-format)
+* [Conferia API Reference](api)
+
 ## Quickstart
 
 On a very basic level, adopting Conferia.js requires just two steps:
@@ -66,7 +73,7 @@ prepare an Excel spreadsheet (or Google Docs -- whichever floats your boat), and
 pre-set it with the necessary columns. Then, you can already fill in information
 such as keynotes, lunch breaks, or the conference dinner date.
 
-Refer to the [CSV format reference](csv-format.md) to see exactly which columns
+Refer to the [CSV format reference](csv-format) to see exactly which columns
 are required.
 
 Be prepared that filling in this information will take some time. (It may also
@@ -84,28 +91,27 @@ that it can properly parse your agenda in advance.
 ### 2. Preparing a Location for Your Schedule
 
 While the spreadsheet is being prepared, begin scouting for a good location for
-the schedule. If you can, set up a dummy page already at this stage. If the page
-is publicly accessible, feel free to add a message, e.g., "The schedule will
-follow soon," to prepare your participants that the schedule will go live here.
+the schedule. This can either be a "program" page on your conference website
+where Conferia will be placed as a small widget, or a dedicated page where
+Conferia can take up the entire page.
 
-Make sure the following conditions are true:
+Whichever you decide, ensure you can perform the following two steps:
 
-1. You can edit the page's HTML code, specifically, you have access to the `<head>`
-2. You can upload a CSV file to your website and view it in your browser (or be prompted to download it)
-
-If your page is not publicly accessible, it may be wise to already load in the
-not-yet-ready spreadsheet to test that everything works and looks as expected.
+1. You can edit the prospective page's HTML code, specifically, you have access
+   to the `<head>`
+2. You can upload a CSV file to your website and view it in your browser (or be
+   prompted to download it)
 
 ### 3. Adopting Conferia.js
 
-Once you have a good location and a final CSV file, it is time to set up
-Conferia.js. To do so, first upload the CSV file to your website. Ideally, it
-will be available under the same domain as the schedule, because otherwise your
-visitors may run into so-called CORS errors.
+Once you have a good location and a CSV file, it is time to set up Conferia.js.
+To do so, first upload the CSV file to your website. Ideally, it will be
+available under the same domain as the schedule, because otherwise your visitors
+may run into so-called CORS errors.
 
 Then, add the corresponding code to your page, and provide the path to your
 CSV file. Adapt the various configuration options as necessary. Refer to the
-[configuration guide](configuration.md) for a complete list of configuration
+[configuration guide](configuration) for a complete list of configuration
 options.
 
 ```html
@@ -131,7 +137,7 @@ events.
 ## Customizing Conferia.js
 
 Configuring the schedule is possible via a set of configuration options. Please
-refer to the [configuration guide](configuration.md) to see a full list of
+refer to the [configuration guide](configuration) to see a full list of
 configuration options and their meaning.
 
 In this section, we only highlight a few more important and complex options that
@@ -192,9 +198,9 @@ format, or if you face difficulties outputting proper dates into the CSV file.
 
 This function receives a raw date string, coming directly from your CSV file,
 and should return an ISO 8601-compliant datetime string. As its second argument,
-it will return the Luxon `DateTime` constructor which gives you more flexibility
-than JavaScript's built-in `Date` object (particularly since it will assume the
-user's local timezone, instead of the correct one, when parsing data).
+it will receive the Luxon `DateTime` constructor which gives you more
+flexibility than JavaScript's built-in `Date` object (particularly since it will
+assume the user's local timezone, instead of the correct one, when parsing data).
 
 > **Note**: If you carelessly use JavaScript's Date function, you may run into
 > issues since the ISO 8601-string returned by the date's `toISOString` function
@@ -249,17 +255,16 @@ note that you can provide whatever additional fields in your CSV file; Conferia
 only requires the ones we explain below. Additional fields are permitted and
 simply ignored by the library.
 
-However, you may want to use this to your advantage to amend any information of
-the events with additional columns from the CSV file, or even to simply modify
-the auto-generated parsed record that Conferia generates.
+You can use this to your advantage to amend any information of the events with
+additional columns from the CSV file, or even to simply modify the auto-
+generated parsed record that Conferia generates.
 
 If provided, the function will be called for each parsed CSV line and receives
 three arguments:
 
 * `row`: This is a string array containing the split, raw cells of the row.
 * `header`: This is a string array containing the header row of the CSV file.
-  You can use this to properly find the index of the correct column in your
-  data.
+  You can use this to find the index of the correct column in your data.
 * `record`: This is either an instance of `CSVRecord`, or
   `SessionPresentationRecord`, which represents the `row`s contents already
   parsed by the library. You can modify this record as you desire (but make
@@ -286,7 +291,7 @@ rowParser (row, header, record) {
     return record
   }
 
-  // Use the `header` to retrieve the correct column
+  // Use the `header` to find the correct column
   const openReviewIdx = header.indexOf('openreview_id')
   if (openReviewIdx < 0) {
     console.warn('`openreview_id` Column not found in CSV')
@@ -302,9 +307,9 @@ rowParser (row, header, record) {
 }
 ```
 
-> Note that this means that the `rowParser` function will **not** be called for
-> any of the actual `session` records, since those are created after parsing the
-> CSV file from the individual `session_presentation` records.
+> Note that the `rowParser` function will **not** be called for any of the
+> actual `session` records, since those are created after parsing the CSV file
+> from the individual `session_presentation` records.
 
 ## A Note on Times and Timezones
 

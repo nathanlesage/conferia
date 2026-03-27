@@ -11,7 +11,7 @@ For more details and help for the more complex options, please refer to the
 [organizer's guide](organizers-guide.md).
 
 ```typescript
-export interface ConferiaOptions {
+interface ConferiaOptions {
   /**
    * Where in the DOM should the schedule live?
    */
@@ -54,12 +54,6 @@ export interface ConferiaOptions {
   timeZone?: string
 
   /**
-   * Specifies the maximum height of the entire wrapper. Defaults to 100% of the
-   * visible window height. Provide a number of pixels.
-   */
-  maxHeight?: number
-
-  /**
    * Specifies the padding on the calendar board (default: 10px).
    */
   eventCardPadding?: number
@@ -85,6 +79,25 @@ export interface ConferiaOptions {
    * will be 36 times this amount of pixels high (3 hours divided by 5 minutes).
    */
   minimumCardHeight?: number
+
+  /**
+   * This setting allows you to specify which view mode the application should
+   * start in. The library supports two view modes: `full` (show all days in a
+   * horizontal grid) or `compact` (only a single day at a time). The
+   * application defaults to a "device-based" heuristic. NOTE: Users can always
+   * switch manually using the toolbar button.
+   * 
+   * Supported options are:
+   *
+   * * `full`: Always initialize the schedule in "full" mode, regardless of time
+   *   or device.
+   * * `compact`: Always initialize the schedule in "compact" mode.
+   * * `time-based`: Show the `full` schedule outside of conference dates, but
+   *   switch to `compact` while the conference is running.
+   * * `device-based`: Show the `full` schedule on desktop, and the `compact`
+   *   schedule on mobile devices (the default).
+   */
+  initialViewMode?: 'full'|'compact'|'time-based'|'device-based'
 
   /**
    * An optional function that you can use to correct the dates in your CSV

@@ -2,13 +2,18 @@
 layout: home
 ---
 
-Conferia.js is a drop-in solution that connects the needs of conference
-organizers and participants. For organizers, it aims to make it easy to create
-an interactive agenda with little overhead. This is especially crucial since
-organizing a conference usually involves many working hours, especially once the
-abstracts are accepted and the agenda setting begins. Conferia.js stays out of
-the way by only requiring a data file that conference organizers usually need to
-create anyhow.
+> Conferia.js is a drop-in solution that connects the needs of conference
+> organizers and participants. Simply take a spreadsheet with your conference
+> agenda, and let Conferia turn it into an interactive agenda for your
+> participants.
+
+![Conferia Showcase](assets/images/conferia_showcase.png)
+
+Conferia aims to make it easy to create an interactive agenda with little
+overhead. This is especially crucial since organizing a conference usually
+involves many working hours even aside from creating the schedule. Conferia.js
+stays out of your way by only requiring a data file that conference organizers
+usually need to create anyhow.
 
 At the same time, Conferia.js makes it easy and straight-forward for
 participants to parse and understand the conference schedule. Conferia.js comes
@@ -20,25 +25,25 @@ an exciting presentation.
 
 This documentation includes three documents:
 
-* [An interactive demo with test data to try the tool out.](demo/index.md)
-* [A comprehensive setup guide for conference organizers.](organizers-guide.md)
-* [A user's guide for participants and users of the app.](users-guide.md)
+* [An interactive demo with test data to try the tool.](demo)
+* [A comprehensive setup guide for conference organizers.](organizers-guide)
+* [A user's guide for participants and users of the app.](users-guide)
 
-If you spot a bug, please
+If you spot an issue, please
 [create a bug report](https://github.com/nathanlesage/conferia/issues) on GitHub
 to make the app better for everyone.
 
 ## Why Conferia.js?
 
-Academic conferences are fun. At least they are while you're there, after your
-presentation, while you're enjoying your time at the conference dinner. But in
-order for a conference to be fun, someone needs to organize it.
+Academic conferences are fun. At least as a participant, after your presentation,
+while you're enjoying your time at the conference dinner. But in order for a
+conference to be fun, someone needs to organize it.
 
 If you have ever organized a conference, you will know how exhausting it can be.
-Essentially, you need to manage a team of people, most of which have little to
-no experience with event management, in order to ensure that a bigger group of
-people have a good time. You need to organize abstract submissions, create a
-website, set up registration, book rooms, organize keynote speakers, and more.
+You need to manage a team of people, most of which have little to no experience
+with event management, in order to ensure that a bigger group of people has a
+good time. You need to organize abstract submissions, create a website, set up
+registration, book rooms, organize keynote speakers, and more.
 
 One of the last things conference organizers do before the event starts is
 finalize the agenda. This is where things become difficult. Organizers naturally
@@ -62,7 +67,7 @@ to deal with the problem of agenda creation:
    such a solution.
 3. Develop a custom solution. This can sometimes be seen in Computer Science and
    adjacent fields, where people possess the necessary knowledge to come up with
-   some small interactive agenda tool. However, this is almost never possible
+   some small interactive agenda tool. However, this is almost never feasible
    due to the complexity and time-constraints.
 
 Conferia.js is the answer to all of these ails. It satisfies both the time and

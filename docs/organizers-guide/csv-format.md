@@ -47,6 +47,28 @@ The CSV file needs to include these columns:
   offer hybrid sessions, you could add the Zoom link here. Notes will be shown
   in the event details below the chair.
 
+## Example
+
+The following shows the demo data as a table, which gives you a visual
+impression of how the data could look like:
+
+|date_start         |date_end           |type                |title               |abstract                     |author              |location|session   |session_order|chair      |
+|-------------------|-------------------|--------------------|--------------------|-----------------------------|--------------------|--------|----------|-------------|-----------|
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 1 Title|Abstract for presentation 1  |Author One          |TP22    |Parallel 1|1            |Author One |
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 2 Title|Abstract for presentation 2  |Author Two          |TP22    |Parallel 1|2            |Author One |
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 3 Title|Abstract for presentation 3  |Author Three        |TP22    |Parallel 1|3            |Author One |
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 4 Title|Abstract for presentation 4  |Author Four         |TP22    |Parallel 1|4            |Author One |
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 5 Title|Abstract for presentation 5  |Author Five         |TP23    |Parallel 2|1            |Author Five|
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 6 Title|Abstract for presentation 6  |Author Six          |TP23    |Parallel 2|2            |Author Five|
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 7 Title|Abstract for presentation 7  |Author Seven        |TP23    |Parallel 2|3            |Author Five|
+|2025-01-01T12:00:00|2025-01-01T13:00:00|session_presentation|Presentation 8 Title|Abstract for presentation 8  |Author Eight        |TP23    |Parallel 2|4            |Author Five|
+|2025-01-01T11:30:00|2025-01-01T12:00:00|special             |Opening remarks     |These are the opening remarks|Conference Committee|TP21    |          |             |           |
+|2025-01-02T15:55:00|2025-01-02T16:00:00|special             |Closing remarks     |These are the closing remarks|Conference Committee|TP21    |          |             |           |
+|2025-01-01T13:00:00|2025-01-01T13:30:00|meta                |Coffee break        |                             |                    |        |          |             |           |
+|2025-01-02T13:00:00|2025-01-02T13:30:00|meta                |Coffee break        |                             |                    |        |          |             |           |
+|2025-01-01T13:30:00|2025-01-01T15:00:00|keynote             |Keynote Title       |Abstract for keynote         |Keynote Author      |TP24    |          |             |           |
+|2025-01-02T13:30:00|2025-01-02T15:00:00|keynote             |Second Keynote      |Abstract for second keynote  |Keynote Two Author  |TP24    |          |             |           |
+
 ## Tips
 
 From having used Conferia.js in production, here are a few tips to help you save
