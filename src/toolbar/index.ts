@@ -1,6 +1,6 @@
 import { dom } from '../dom/util'
 import { askUser } from '../dom/ask-user'
-import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle } from './util'
+import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle, makeSpacer } from './util'
 import { ApplicationState, appState } from '../state'
 
 export type ButtonClickEvents = 'ical'|'clear'
@@ -74,11 +74,18 @@ export class Toolbar {
     this.helpButton = makeHelpButton()
     this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact')
 
-    // Append the elements in order
+    // Append the elements in order. The layout is as follows:
+    // [mode] [daySelector?] [filter] [agenda] [ical] [fullscreen] [spacer] [clear] [help]
     this.toolbar.append(
+      // Mode controls
       this.compactModeToggle,
-      this.filter, this.personalAgendaToggle,
-      this.toIcalButton, this.fullscreenToggle, this.clearButton, this.helpButton
+      // Filter
+      this.filter,
+      // Buttons
+      this.personalAgendaToggle, this.toIcalButton, this.fullscreenToggle,
+      makeSpacer(),
+      // Less used buttons
+      this.clearButton, this.helpButton
     )
 
     // Attach event listeners

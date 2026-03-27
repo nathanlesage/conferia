@@ -9,6 +9,13 @@ import maximizeIcon from '../icons/maximize-2.svg'
 import { dom } from '../dom/util'
 
 /**
+ * Makes a toolbar spacer
+ */
+export function makeSpacer () {
+  return dom('div', 'toolbar-spacer')
+}
+
+/**
  * Creates the toolbar wrapper element
  */
 export function makeToolbarWrapper () {

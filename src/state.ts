@@ -1,11 +1,30 @@
+import { DateTime } from "luxon"
+
 let stateSingleton: ApplicationState|undefined
 
 // Types the application state.
 interface State {
+  /**
+   * The current query string to filter events
+   */
   query: string
+  /**
+   * Should the app only show items on the personal agenda?
+   */
   onlyPersonalAgendaItems: boolean
+  /**
+   * Should the application be in fullscreen mode?
+   */
   fullscreen: boolean
+  /**
+   * Stores the view mode. Full = all days in horizontal layout, compact = only
+   * one day.
+   */
   viewMode: 'full'|'compact'
+  /**
+   * If the viewMode is set to compact, only show this day.
+   */
+  compactDay: DateTime
 }
 
 // Do some type trickery to enforce callbacks that are properly typed to only
@@ -32,7 +51,8 @@ export class ApplicationState {
       query: '',
       onlyPersonalAgendaItems: false,
       fullscreen: false,
-      viewMode: 'full'
+      viewMode: 'full',
+      compactDay: DateTime.now()
     }
   }
 

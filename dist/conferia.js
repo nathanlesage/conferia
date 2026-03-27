@@ -9522,6 +9522,12 @@ agenda.`, [
     var maximizeIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize-2\"><polyline points=\"15 3 21 3 21 9\"></polyline><polyline points=\"9 21 3 21 3 15\"></polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line></svg>";
 
     /**
+     * Makes a toolbar spacer
+     */
+    function makeSpacer() {
+        return dom('div', 'toolbar-spacer');
+    }
+    /**
      * Creates the toolbar wrapper element
      */
     function makeToolbarWrapper() {
@@ -9626,7 +9632,8 @@ agenda.`, [
                 query: '',
                 onlyPersonalAgendaItems: false,
                 fullscreen: false,
-                viewMode: 'full'
+                viewMode: 'full',
+                compactDay: DateTime.now()
             };
         }
         /**
@@ -9691,12 +9698,21 @@ agenda.`, [
             this.filter = makeFilter();
             this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'));
             this.toIcalButton = makeIcalButton();
-            this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'));
+            this.fullscreenToggle = makeFullscreenToggle(this.state.get('fullscreen'));
             this.clearButton = makeClearButton();
             this.helpButton = makeHelpButton();
             this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact');
-            // Append the elements in order
-            this.toolbar.append(this.compactModeToggle, this.filter, this.personalAgendaToggle, this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton);
+            // Append the elements in order. The layout is as follows:
+            // [mode] [daySelector?] [filter] [agenda] [ical] [fullscreen] [spacer] [clear] [help]
+            this.toolbar.append(
+            // Mode controls
+            this.compactModeToggle, 
+            // Filter
+            this.filter, 
+            // Buttons
+            this.personalAgendaToggle, this.toIcalButton, this.fullscreenToggle, makeSpacer(), 
+            // Less used buttons
+            this.clearButton, this.helpButton);
             // Attach event listeners
             this.setupEventListeners();
             // Whenever the application state changes, update the toolbar.
@@ -9726,7 +9742,7 @@ agenda.`, [
         updateToolbarState() {
             this.filter.value = this.state.get('query');
             this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'), this.personalAgendaToggle);
-            this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenButton);
+            this.fullscreenToggle = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenToggle);
             this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact', this.compactModeToggle);
         }
         /**
@@ -9771,7 +9787,7 @@ agenda.`, [
             this.personalAgendaToggle.addEventListener('click', event => {
                 this.state.set('onlyPersonalAgendaItems', !this.state.get('onlyPersonalAgendaItems'));
             });
-            this.fullscreenButton.addEventListener('click', event => {
+            this.fullscreenToggle.addEventListener('click', event => {
                 this.state.set('fullscreen', !this.state.get('fullscreen'));
             });
             this.compactModeToggle.addEventListener('click', event => {

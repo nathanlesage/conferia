@@ -171,6 +171,10 @@ dialog.conferia-dialog, #conferia-wrapper {
     align-items: center;
     gap: 5px;
   }
+
+  .toolbar-spacer {
+    flex-grow: 1;
+  }
 }
 
 #conferia-schedule-wrapper {

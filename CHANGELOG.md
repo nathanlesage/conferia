@@ -1,5 +1,6 @@
 # Release 0.21.0
 
+* Added a spacer to separate the more used buttons from others (clear and help).
 * Fixed a bug that would not trigger the "clear data" action when the
   corresponding toolbar button was pressed.
 * Added a time indicator that shows the current time relative to the events
