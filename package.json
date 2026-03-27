@@ -18,6 +18,7 @@
     "@types/hash-sum": "^1.0.2",
     "@types/luxon": "^3.4.2",
     "@types/papaparse": "^5.3.15",
+    "@types/ua-parser-js": "^0.7.39",
     "open": "^10.1.2",
     "rollup": "^4.37.0",
     "rollup-plugin-dev": "^2.0.3",
@@ -27,6 +28,7 @@
   },
   "dependencies": {
     "hash-sum": "^2.0.0",
-    "luxon": "^3.6.0"
+    "luxon": "^3.6.0",
+    "ua-parser-js": "^2.0.9"
   }
 }

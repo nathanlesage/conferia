@@ -14,6 +14,7 @@ import { askUser } from "./dom/ask-user"
 import { Toolbar } from "./toolbar"
 import { debug, toggleDebug } from "./util/logger"
 import { ApplicationState, appState } from "./state"
+import { UAParser } from "ua-parser-js"
 
 export interface ConferiaOptions {
   /**
@@ -83,6 +84,25 @@ export interface ConferiaOptions {
    * will be 36 times this amount of pixels high (3 hours divided by 5 minutes).
    */
   minimumCardHeight?: number
+
+  /**
+   * This setting allows you to specify which view mode the application should
+   * start in. The library supports two view modes: `full` (show all days in a
+   * horizontal grid) or `compact` (only a single day at a time). The
+   * application defaults to a "device-based" heuristic. NOTE: Users can always
+   * switch manually using the toolbar button.
+   * 
+   * Supported options are:
+   *
+   * * `full`: Always initialize the schedule in "full" mode, regardless of time
+   *   or device.
+   * * `compact`: Always initialize the schedule in "compact" mode.
+   * * `time-based`: Show the `full` schedule outside of conference dates, but
+   *   switch to `compact` while the conference is running.
+   * * `device-based`: Show the `full` schedule on desktop, and the `compact`
+   *   schedule on mobile devices (the default).
+   */
+  initialViewMode?: 'full'|'compact'|'time-based'|'device-based'
 
   /**
    * An optional function that you can use to correct the dates in your CSV
@@ -176,6 +196,7 @@ export class Conferia {
       autoReload: opt.autoReload ?? false,
       timeZone: opt.timeZone ?? '',
       eventCardPadding: opt.eventCardPadding ?? 10,
+      initialViewMode: opt.initialViewMode ?? 'device-based',
       timeGridSeconds: opt.timeGridSeconds ?? -1,
       minimumCardHeight: opt.minimumCardHeight ?? 75,
       // Default for the callbacks are identity functions
@@ -184,6 +205,21 @@ export class Conferia {
       debug: opt.debug ?? false
     }
     this.columnScaleFactor = 1
+
+    // Switch view mode based on config
+    if (this.opt.initialViewMode === 'compact') {
+      this.state.set('viewMode', 'compact')
+    } else if (this.opt.initialViewMode === 'full') {
+      this.state.set('viewMode', 'full')
+    } else if (this.opt.initialViewMode === 'time-based') {
+      // NOTE: This must happen after the initial load, see below.
+    } else if (this.opt.initialViewMode === 'device-based') {
+      if (UAParser(navigator.userAgent).device.type === 'mobile') {
+        this.state.set('viewMode', 'compact')
+      } else {
+        this.state.set('viewMode', 'full')
+      }
+    }
 
     toggleDebug(this.opt.debug === true)
     debug('Debug logging enabled') // Will only show if debug is actually enabled
@@ -237,7 +273,20 @@ export class Conferia {
     this.loadPromise = this.loadCSV()
 
     // Perform initial update
-    this.loadPromise.then(() => { this.updateUI() })
+    this.loadPromise.then(() => {
+      if (this.opt.initialViewMode === 'time-based') {
+        // NOTE: This must happen after the initial load
+        if (isConferenceNow(this.state.get('records'))) {
+          this.state.set('viewMode', 'compact')
+        } else {
+          this.state.set('viewMode', 'full')
+        }
+      } else {
+        // We wrap this in an "else" because the state setter will already
+        // reload the UI via the callback above. This avoids a double-reload.
+        this.updateUI()
+      }
+    })
 
     // Activate auto-reload if applicable -- default is 5min/300s
     if (this.opt.autoReload !== undefined && this.opt.autoReload !== false) {

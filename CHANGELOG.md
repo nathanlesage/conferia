@@ -2,7 +2,10 @@
 
 * Feature: Added a new, "compact" view mode that, when enabled, will only show
   events on a single day. If this mode is active, the toolbar now shows a new
-  day selector which users can use to navigate through the conference.
+  day selector which users can use to navigate through the conference. By
+  default, users on mobile devices will start in the single-day compact mode,
+  while desktop users get the full view. Conference organizers can determine
+  which mode the library should initialize in.
 * Added a spacer to separate the more used buttons from others (clear and help).
 * Fixed a bug that would not trigger the "clear data" action when the
   corresponding toolbar button was pressed.
