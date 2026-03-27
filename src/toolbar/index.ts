@@ -1,6 +1,6 @@
 import { dom } from '../dom/util'
 import { askUser } from '../dom/ask-user'
-import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle, makeSpacer } from './util'
+import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle, makeSpacer, makeDaySelector } from './util'
 import { ApplicationState, appState } from '../state'
 
 export type ButtonClickEvents = 'ical'|'clear'
@@ -50,6 +50,11 @@ export class Toolbar {
   private compactModeToggle: HTMLButtonElement
 
   /**
+   * An element to move through individual days if the compact mode is on.
+   */
+  private compactDaySelector: HTMLDivElement
+
+  /**
    * Holds the toolbar state
    */
   private state: ApplicationState
@@ -73,12 +78,13 @@ export class Toolbar {
     this.clearButton = makeClearButton()
     this.helpButton = makeHelpButton()
     this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact')
+    this.compactDaySelector = makeDaySelector(this.state)
 
     // Append the elements in order. The layout is as follows:
     // [mode] [daySelector?] [filter] [agenda] [ical] [fullscreen] [spacer] [clear] [help]
     this.toolbar.append(
       // Mode controls
-      this.compactModeToggle,
+      this.compactModeToggle, this.compactDaySelector,
       // Filter
       this.filter,
       // Buttons
@@ -119,6 +125,7 @@ export class Toolbar {
    * Updates the toolbar buttons and toggles based on the application state.
    */
   private updateToolbarState () {
+    this.compactDaySelector = makeDaySelector(this.state, this.compactDaySelector)
     this.filter.value = this.state.get('query')
     this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'), this.personalAgendaToggle)
     this.fullscreenToggle = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenToggle)

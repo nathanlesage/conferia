@@ -9521,11 +9521,40 @@ agenda.`, [
 
     var maximizeIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize-2\"><polyline points=\"15 3 21 3 21 9\"></polyline><polyline points=\"9 21 3 21 3 15\"></polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line></svg>";
 
+    var chevronLeftIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-chevron-left\"><polyline points=\"15 18 9 12 15 6\"></polyline></svg>";
+
+    var chevronRightIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-chevron-right\"><polyline points=\"9 18 15 12 9 6\"></polyline></svg>";
+
     /**
      * Makes a toolbar spacer
      */
     function makeSpacer() {
         return dom('div', 'toolbar-spacer');
+    }
+    /**
+     * Generates a day selector item.
+     *
+     * @param  {ApplicationState}  state     The application state
+     * @param  {HTMLDivElement}    selector  A previously generated selector
+     */
+    function makeDaySelector(state, selector) {
+        if (selector === undefined) {
+            selector = dom('div', 'day-selector');
+            const day = dom('span', 'day-indicator');
+            const prev = dom('button', undefined, { title: 'Previous day' });
+            prev.innerHTML = chevronLeftIcon;
+            const next = dom('button', undefined, { title: 'Next day' });
+            next.innerHTML = chevronRightIcon;
+            selector.append(prev, day, next);
+        }
+        // Conditionally show this element in compact mode
+        selector.style.display = state.get('viewMode') === 'compact' ? '' : 'none';
+        // Update the day indicator
+        const day = selector.querySelector('.day-indicator');
+        if (day !== null) {
+            day.textContent = state.get('compactDay').toLocaleString({ month: 'short', day: 'numeric' });
+        }
+        return selector;
     }
     /**
      * Creates the toolbar wrapper element
@@ -9702,11 +9731,12 @@ agenda.`, [
             this.clearButton = makeClearButton();
             this.helpButton = makeHelpButton();
             this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact');
+            this.compactDaySelector = makeDaySelector(this.state);
             // Append the elements in order. The layout is as follows:
             // [mode] [daySelector?] [filter] [agenda] [ical] [fullscreen] [spacer] [clear] [help]
             this.toolbar.append(
             // Mode controls
-            this.compactModeToggle, 
+            this.compactModeToggle, this.compactDaySelector, 
             // Filter
             this.filter, 
             // Buttons
@@ -9740,6 +9770,7 @@ agenda.`, [
          * Updates the toolbar buttons and toggles based on the application state.
          */
         updateToolbarState() {
+            this.compactDaySelector = makeDaySelector(this.state, this.compactDaySelector);
             this.filter.value = this.state.get('query');
             this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'), this.personalAgendaToggle);
             this.fullscreenToggle = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenToggle);
@@ -9882,7 +9913,11 @@ agenda.`, [
             // Begin loading
             this.loadPromise = this.loadCSV();
             // Perform initial update
-            this.loadPromise.then(() => { this.updateUI(); });
+            this.loadPromise.then(() => {
+                // After the first update event, ensure that the day for the compact mode
+                // is no longer the current time, but the first or last day of the event.
+                this.updateUI();
+            });
             // Activate auto-reload if applicable -- default is 5min/300s
             if (this.opt.autoReload !== undefined && this.opt.autoReload !== false) {
                 const reloadSeconds = this.opt.autoReload === true ? 300 : this.opt.autoReload;

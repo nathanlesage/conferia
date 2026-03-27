@@ -6,13 +6,47 @@ import enterFullscreenIcon from '../icons/enter-fullscreen.svg'
 import exitFullscreenIcon from '../icons/exit-fullscreen.svg'
 import minimizeIcon from '../icons/minimize-2.svg'
 import maximizeIcon from '../icons/maximize-2.svg'
+import chevronLeftIcon from '../icons/chevron-left.svg'
+import chevronRightIcon from '../icons/chevron-right.svg'
 import { dom } from '../dom/util'
+import { ApplicationState } from '../state'
 
 /**
  * Makes a toolbar spacer
  */
 export function makeSpacer () {
   return dom('div', 'toolbar-spacer')
+}
+
+/**
+ * Generates a day selector item.
+ *
+ * @param  {ApplicationState}  state     The application state
+ * @param  {HTMLDivElement}    selector  A previously generated selector
+ */
+export function makeDaySelector (state: ApplicationState, selector?: HTMLDivElement) {
+  if (selector === undefined) {
+    selector = dom('div', 'day-selector')
+    const day = dom('span', 'day-indicator')
+    
+    const prev = dom('button', undefined, { title: 'Previous day' })
+    prev.innerHTML = chevronLeftIcon
+    const next = dom('button', undefined, { title: 'Next day' })
+    next.innerHTML = chevronRightIcon
+    
+    selector.append(prev, day, next)
+  }
+
+  // Conditionally show this element in compact mode
+  selector.style.display = state.get('viewMode') === 'compact' ? '' : 'none'
+
+  // Update the day indicator
+  const day = selector.querySelector('.day-indicator')
+  if (day !== null) {
+    day.textContent = state.get('compactDay').toLocaleString({ month: 'short', day: 'numeric' })
+  }
+
+  return selector
 }
 
 /**

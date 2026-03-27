@@ -175,6 +175,28 @@ dialog.conferia-dialog, #conferia-wrapper {
   .toolbar-spacer {
     flex-grow: 1;
   }
+
+  div.day-selector {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--button-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--cf-border-radius);
+    height: 30px;
+    overflow: hidden;
+
+    .day-indicator {
+      font-size: 80%;
+    }
+
+    button {
+      border: none;
+      height: 28px;
+      border-radius: 0px;
+    }
+  }
 }
 
 #conferia-schedule-wrapper {
