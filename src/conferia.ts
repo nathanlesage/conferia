@@ -147,11 +147,6 @@ export class Conferia {
   private loadPromise: Promise<void>
 
   /**
-   * The parsed records from the schedule.
-   */
-  private records: CSVRecord[]
-
-  /**
    * A column scale factor. This can be set to control the width of the columns.
    */
   private columnScaleFactor: number
@@ -179,7 +174,6 @@ export class Conferia {
   public constructor (opt: ConferiaOptions) {
     this.state = appState()
     this.opt = opt
-    this.records = []
     this.columnScaleFactor = 1
 
     toggleDebug(this.opt.debug === true)
@@ -250,7 +244,7 @@ export class Conferia {
     // per minute to have the time indicator move correctly, when the conference
     // is currently happening
     setInterval(() => {
-      if (isConferenceNow(this.records)) {
+      if (isConferenceNow(this.state.get('records'))) {
         this.updateUI()
       }
     }, 1000 * 60)
@@ -262,7 +256,7 @@ export class Conferia {
    * @return  {CSVRecord[]}  All records
    */
   public getRecords (): CSVRecord[] {
-    return this.records
+    return this.state.get('records')
   }
 
   /**
@@ -281,7 +275,7 @@ export class Conferia {
    * @return  {CSVRecord[]}  The user agenda records
    */
   public getUserAgendaRecords (): CSVRecord[] {
-    return this.records.filter(r => this.agenda.hasItem(r.id))
+    return this.state.get('records').filter(r => this.agenda.hasItem(r.id))
   }
 
   /**
@@ -292,7 +286,7 @@ export class Conferia {
   private filterRecords (): CSVRecord[] {
     const q = this.state.get('query').trim().toLowerCase()
 
-    let records = this.records
+    let records = [...this.state.get('records')]
 
     if (this.state.get('onlyPersonalAgendaItems')) {
       records = records.filter(r => this.agenda.hasItem(r.id))
@@ -451,7 +445,7 @@ export class Conferia {
     // pronounced since the schedule board background also indicates sub-columns
     drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd)
 
-    if (isConferenceNow(this.records)) {
+    if (isConferenceNow(this.state.get('records'))) {
       // Finally, if applicable, add a time indicator at the current time.
       drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps)
     }
@@ -488,7 +482,7 @@ export class Conferia {
       debug(`Parsed ${csv.length} records from file.`)
       debug({ csv })
   
-      this.records = csv
+      this.state.set('records', csv)
       this.ensureCompactDayBounds()
     } catch (err: any) {
       console.error(`Conferia could not load data: ${err.message}`)
@@ -504,8 +498,9 @@ export class Conferia {
   private ensureCompactDayBounds () {
     // Whenever the records have been (re)loaded, ensure that the "compact
     // mode" day is always within the conference dates.
-    const earliestDay = getEarliestDay(this.records)
-    const latestDay = getLatestDay(this.records)
+    const records = this.state.get('records')
+    const earliestDay = getEarliestDay(records)
+    const latestDay = getLatestDay(records)
     const currentDate = this.state.get('compactDay')
 
     if (earliestDay === undefined || latestDay === undefined) {

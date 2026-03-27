@@ -1,4 +1,5 @@
 import { DateTime } from "luxon"
+import { CSVRecord } from "./csv"
 
 let stateSingleton: ApplicationState|undefined
 
@@ -25,6 +26,11 @@ interface State {
    * If the viewMode is set to compact, only show this day.
    */
   compactDay: DateTime
+  /**
+   * Holds all records in the schedule. From this, callers can filter out
+   * certain events, e.g., to show search results or only individual days.
+   */
+  records: CSVRecord[]
 }
 
 // Do some type trickery to enforce callbacks that are properly typed to only
@@ -52,7 +58,8 @@ export class ApplicationState {
       onlyPersonalAgendaItems: false,
       fullscreen: false,
       viewMode: 'full',
-      compactDay: DateTime.now()
+      compactDay: DateTime.now(),
+      records: []
     }
   }
 
