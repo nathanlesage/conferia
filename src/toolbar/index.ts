@@ -1,16 +1,19 @@
-// Toolbar related DOM structure generation
-import enterFullscreenIcon from '../icons/enter-fullscreen.svg'
-import exitFullscreenIcon from '../icons/exit-fullscreen.svg'
-
 import { dom } from '../dom/util'
 import { askUser } from '../dom/ask-user'
-import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenButton, makeClearButton, makeHelpButton } from './util'
+import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle } from './util'
+
+interface ToolbarState {
+  query: string
+  personalAgenda: boolean
+  fullscreen: boolean
+  viewMode: 'full'|'compact'
+}
 
 export interface ToolbarCallbacks {
   // Fires when the filter input changes
   onFilter: (query: string) => void
   // Fires when any of the toggles changes
-  onToggle: (which: 'personal-agenda'|'fullscreen', state: boolean) => void
+  onToggle: (which: 'personal-agenda'|'fullscreen'|'viewMode', state: boolean) => void
   // Fires when any of the buttons are clicked
   onClick: (which: 'ical'|'clear') => void
 }
@@ -55,12 +58,18 @@ export class Toolbar {
   private helpButton: HTMLButtonElement
 
   /**
+   * Toggles between all days and single day
+   */
+  private compactModeToggle: HTMLButtonElement
+
+  /**
    * Holds the toolbar state
    */
-  private state = {
+  private state: ToolbarState = {
     query: '',
     personalAgenda: false,
-    fullscreen: false
+    fullscreen: false,
+    viewMode: 'full'
   }
 
   /**
@@ -74,12 +83,14 @@ export class Toolbar {
     this.filter = makeFilter()
     this.personalAgendaToggle = makeAgendaToggle(this.state.personalAgenda)
     this.toIcalButton = makeIcalButton()
-    this.fullscreenButton = makeFullscreenButton(this.state.fullscreen)
+    this.fullscreenButton = makeFullscreenToggle(this.state.fullscreen)
     this.clearButton = makeClearButton()
     this.helpButton = makeHelpButton()
+    this.compactModeToggle = makeCompactToggle(this.state.viewMode === 'compact')
 
     // Append the elements in order
     this.toolbar.append(
+      this.compactModeToggle,
       this.filter, this.personalAgendaToggle,
       this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton
     )
@@ -105,14 +116,6 @@ export class Toolbar {
     this.filter.addEventListener('keyup', () => {
       this.state.query = this.filter.value
       this.callbacks.onFilter(this.state.query)
-    })
-
-    // Toggle personal agenda
-    this.personalAgendaToggle.addEventListener('click', () => {
-      this.state.personalAgenda = !this.state.personalAgenda
-      this.personalAgendaToggle.classList.toggle('active', this.state.personalAgenda)
-      // TODO: Aria toggle label ('pressed'? or something -- same with all toggles)
-      this.callbacks.onToggle('personal-agenda', this.state.personalAgenda)
     })
 
     this.toIcalButton.addEventListener('click', () => {
@@ -144,14 +147,26 @@ export class Toolbar {
       })
     })
 
+    // Handle the toggles
+    this.personalAgendaToggle.addEventListener('click', event => {
+      this.state.personalAgenda = !this.state.personalAgenda
+      const agenda = this.state.personalAgenda
+      this.personalAgendaToggle = makeAgendaToggle(agenda, this.personalAgendaToggle)
+      this.callbacks.onToggle('personal-agenda', agenda)
+    })
+
     this.fullscreenButton.addEventListener('click', event => {
       this.state.fullscreen = !this.state.fullscreen
       const fs = this.state.fullscreen
-
-      this.fullscreenButton.title = fs ? 'Exit Fullscreen' : 'Enter Fullscreen'
-      this.fullscreenButton.innerHTML = fs ? exitFullscreenIcon : enterFullscreenIcon
-      this.fullscreenButton.classList.toggle('active',fs)
+      this.fullscreenButton = makeFullscreenToggle(fs, this.fullscreenButton)
       this.callbacks.onToggle('fullscreen', this.state.fullscreen)
+    })
+
+    this.compactModeToggle.addEventListener('click', event => {
+      this.state.viewMode = this.state.viewMode === 'compact' ? 'full' : 'compact'
+      const compact = this.state.viewMode === 'compact'
+      this.compactModeToggle = makeCompactToggle(compact, this.compactModeToggle)
+      this.callbacks.onToggle('viewMode', compact)
     })
   }
 }

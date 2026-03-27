@@ -9507,15 +9507,19 @@ agenda.`, [
         });
     }
 
-    var enterFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path></svg>";
-
-    var exitFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-minimize\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path></svg>";
-
     var slashIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-slash\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"4.93\" y1=\"4.93\" x2=\"19.07\" y2=\"19.07\"></line></svg>";
 
     var helpIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-help-circle\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\"></line></svg>";
 
     var calendarIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-calendar\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\" ry=\"2\"></rect><line x1=\"16\" y1=\"2\" x2=\"16\" y2=\"6\"></line><line x1=\"8\" y1=\"2\" x2=\"8\" y2=\"6\"></line><line x1=\"3\" y1=\"10\" x2=\"21\" y2=\"10\"></line></svg>";
+
+    var enterFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize\"><path d=\"M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3\"></path></svg>";
+
+    var exitFullscreenIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-minimize\"><path d=\"M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3\"></path></svg>";
+
+    var minimizeIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-minimize-2\"><polyline points=\"4 14 10 14 10 20\"></polyline><polyline points=\"20 10 14 10 14 4\"></polyline><line x1=\"14\" y1=\"10\" x2=\"21\" y2=\"3\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line></svg>";
+
+    var maximizeIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"feather feather-maximize-2\"><polyline points=\"15 3 21 3 21 9\"></polyline><polyline points=\"9 21 3 21 3 15\"></polyline><line x1=\"21\" y1=\"3\" x2=\"14\" y2=\"10\"></line><line x1=\"3\" y1=\"21\" x2=\"10\" y2=\"14\"></line></svg>";
 
     /**
      * Creates the toolbar wrapper element
@@ -9530,35 +9534,12 @@ agenda.`, [
         return dom('input', undefined, { type: 'search', placeholder: 'Search…' });
     }
     /**
-     * Creates the agenda toggle element
-     *
-     * @param   {boolean}  showAgenda  Whether to preset it as active
-     */
-    function makeAgendaToggle(showAgenda) {
-        const toggle = dom('button', undefined, { title: 'Only personal agenda' });
-        toggle.innerHTML = bookmarkIcon;
-        toggle.classList.toggle('active', showAgenda);
-        return toggle;
-    }
-    /**
      * Creates the iCal button
      */
     function makeIcalButton() {
         const toIcalButton = dom('button', undefined, { title: 'Add to calendar' });
         toIcalButton.innerHTML = calendarIcon;
         return toIcalButton;
-    }
-    /**
-     * Creates the fullscreen button
-     *
-     * @param   {boolean}  isFs  Whether to preset it as active
-     */
-    function makeFullscreenButton(isFs) {
-        const fullscreenButton = dom('button');
-        fullscreenButton.title = isFs ? 'Exit Fullscreen' : 'Enter Fullscreen';
-        fullscreenButton.innerHTML = isFs ? exitFullscreenIcon : enterFullscreenIcon;
-        fullscreenButton.classList.toggle('active', isFs);
-        return fullscreenButton;
     }
     /**
      * Creates the clear button element
@@ -9576,8 +9557,59 @@ agenda.`, [
         helpButton.innerHTML = helpIcon;
         return helpButton;
     }
+    /**
+     * Creates the agenda toggle element. Pass a previously generated button as the
+     * second argument to update it.
+     *
+     * @param  {boolean}            showAgenda  Whether to preset it as active
+     * @param  {HTMLButtonElement}  button      The previously generated button
+     */
+    function makeAgendaToggle(showAgenda, button) {
+        if (button === undefined) {
+            button = dom('button');
+        }
+        button.title = 'Only personal agenda';
+        button.innerHTML = bookmarkIcon;
+        button.classList.toggle('active', showAgenda);
+        return button;
+    }
+    /**
+     * Creates the fullscreen button. Pass a previously generated button as the
+     * second argument to update it.
+     *
+     * @param   {boolean}            isFs    Whether to preset it as active
+     * @param   {HTMLButtonElement}  button  The previously generated button
+     *
+     * @return  {HTMLButtonElement}          The button
+     */
+    function makeFullscreenToggle(isFs, button) {
+        if (button === undefined) {
+            button = dom('button');
+        }
+        button.title = isFs ? 'Exit Fullscreen' : 'Enter Fullscreen';
+        button.innerHTML = isFs ? exitFullscreenIcon : enterFullscreenIcon;
+        button.classList.toggle('active', isFs);
+        return button;
+    }
+    /**
+     * Generates a compact toggle. Pass a previously generated button as the second
+     * argument to update it.
+     *
+     * @param   {boolean}            compact  Whether the button is active
+     * @param   {HTMLButtonElement}  button   The previous button element
+     *
+     * @return  {HTMLButtonElement}                      The button
+     */
+    function makeCompactToggle(compact, button) {
+        if (button === undefined) {
+            button = dom('button');
+        }
+        button.title = compact ? 'Show all days' : 'Show single day';
+        button.innerHTML = compact ? maximizeIcon : minimizeIcon;
+        button.classList.toggle('active', compact);
+        return button;
+    }
 
-    // Toolbar related DOM structure generation
     /**
      * Implements a toolbar component.
      */
@@ -9595,18 +9627,20 @@ agenda.`, [
             this.state = {
                 query: '',
                 personalAgenda: false,
-                fullscreen: false
+                fullscreen: false,
+                viewMode: 'full'
             };
             // Generate the toolbar structure
             this.toolbar = makeToolbarWrapper();
             this.filter = makeFilter();
             this.personalAgendaToggle = makeAgendaToggle(this.state.personalAgenda);
             this.toIcalButton = makeIcalButton();
-            this.fullscreenButton = makeFullscreenButton(this.state.fullscreen);
+            this.fullscreenButton = makeFullscreenToggle(this.state.fullscreen);
             this.clearButton = makeClearButton();
             this.helpButton = makeHelpButton();
+            this.compactModeToggle = makeCompactToggle(this.state.viewMode === 'compact');
             // Append the elements in order
-            this.toolbar.append(this.filter, this.personalAgendaToggle, this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton);
+            this.toolbar.append(this.compactModeToggle, this.filter, this.personalAgendaToggle, this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton);
             // Attach event listeners
             this.setupEventListeners();
         }
@@ -9626,13 +9660,6 @@ agenda.`, [
             this.filter.addEventListener('keyup', () => {
                 this.state.query = this.filter.value;
                 this.callbacks.onFilter(this.state.query);
-            });
-            // Toggle personal agenda
-            this.personalAgendaToggle.addEventListener('click', () => {
-                this.state.personalAgenda = !this.state.personalAgenda;
-                this.personalAgendaToggle.classList.toggle('active', this.state.personalAgenda);
-                // TODO: Aria toggle label ('pressed'? or something -- same with all toggles)
-                this.callbacks.onToggle('personal-agenda', this.state.personalAgenda);
             });
             this.toIcalButton.addEventListener('click', () => {
                 this.callbacks.onClick('ical');
@@ -9657,13 +9684,24 @@ agenda.`, [
                     }
                 });
             });
+            // Handle the toggles
+            this.personalAgendaToggle.addEventListener('click', event => {
+                this.state.personalAgenda = !this.state.personalAgenda;
+                const agenda = this.state.personalAgenda;
+                this.personalAgendaToggle = makeAgendaToggle(agenda, this.personalAgendaToggle);
+                this.callbacks.onToggle('personal-agenda', agenda);
+            });
             this.fullscreenButton.addEventListener('click', event => {
                 this.state.fullscreen = !this.state.fullscreen;
                 const fs = this.state.fullscreen;
-                this.fullscreenButton.title = fs ? 'Exit Fullscreen' : 'Enter Fullscreen';
-                this.fullscreenButton.innerHTML = fs ? exitFullscreenIcon : enterFullscreenIcon;
-                this.fullscreenButton.classList.toggle('active', fs);
+                this.fullscreenButton = makeFullscreenToggle(fs, this.fullscreenButton);
                 this.callbacks.onToggle('fullscreen', this.state.fullscreen);
+            });
+            this.compactModeToggle.addEventListener('click', event => {
+                this.state.viewMode = this.state.viewMode === 'compact' ? 'full' : 'compact';
+                const compact = this.state.viewMode === 'compact';
+                this.compactModeToggle = makeCompactToggle(compact, this.compactModeToggle);
+                this.callbacks.onToggle('viewMode', compact);
             });
         }
     }
