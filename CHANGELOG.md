@@ -1,5 +1,7 @@
 # Release 0.21.0
 
+* Fixed a bug that would not trigger the "clear data" action when the
+  corresponding toolbar button was pressed.
 * Added a time indicator that shows the current time relative to the events
   during the conference to visualize where in the conference the current time
   is. This is indicated as a red bar across the schedule bar that slowly moves

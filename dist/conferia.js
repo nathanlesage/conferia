@@ -9610,6 +9610,70 @@ agenda.`, [
         return button;
     }
 
+    let stateSingleton;
+    /**
+     * The application state class. Do not instantiate this, this should be a
+     * singleton to enforce a single application state. Only exported for the types.
+     */
+    class ApplicationState {
+        /**
+         * Creates a new application state with default settings. NOTE: Do not
+         * instantiate this! Instead, call `appState`!
+         */
+        constructor() {
+            this.callbacks = [];
+            this.state = {
+                query: '',
+                onlyPersonalAgendaItems: false,
+                fullscreen: false,
+                viewMode: 'full'
+            };
+        }
+        /**
+         * Retrieves a setting from the state.
+         *
+         * @param   {T}         which  The setting to retrieve
+         *
+         * @return  {State[T]}         The setting's value
+         */
+        get(which) {
+            return this.state[which];
+        }
+        /**
+         * Sets the provided setting to the given value.
+         *
+         * @param  {T}         which  The setting to change
+         * @param  {State[T]}  value  The new value for the setting
+         */
+        set(which, value) {
+            this.state[which] = value;
+            for (const cb of this.callbacks) {
+                cb(which, value);
+            }
+        }
+        /**
+         * Listens to events from the application state.
+         *
+         * @param  {'change'}          event     Listen to 'change' events
+         * @param  {AppStateCallback}  callback  A callback that receives the setting
+         *                                       that was changed, and its new value.
+         */
+        on(event, callback) {
+            this.callbacks.push(callback);
+        }
+    }
+    /**
+     * Retrieves the application state singleton
+     *
+     * @return  {ApplicationState}  The singleton
+     */
+    function appState() {
+        if (stateSingleton === undefined) {
+            stateSingleton = new ApplicationState();
+        }
+        return stateSingleton;
+    }
+
     /**
      * Implements a toolbar component.
      */
@@ -9619,30 +9683,26 @@ agenda.`, [
          *
          * @param   {ToolbarCallbacks}  callbacks  Various toolbar callbacks.
          */
-        constructor(callbacks) {
-            this.callbacks = callbacks;
-            /**
-             * Holds the toolbar state
-             */
-            this.state = {
-                query: '',
-                personalAgenda: false,
-                fullscreen: false,
-                viewMode: 'full'
-            };
+        constructor() {
+            this.callbacks = [];
+            this.state = appState();
             // Generate the toolbar structure
             this.toolbar = makeToolbarWrapper();
             this.filter = makeFilter();
-            this.personalAgendaToggle = makeAgendaToggle(this.state.personalAgenda);
+            this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'));
             this.toIcalButton = makeIcalButton();
-            this.fullscreenButton = makeFullscreenToggle(this.state.fullscreen);
+            this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'));
             this.clearButton = makeClearButton();
             this.helpButton = makeHelpButton();
-            this.compactModeToggle = makeCompactToggle(this.state.viewMode === 'compact');
+            this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact');
             // Append the elements in order
             this.toolbar.append(this.compactModeToggle, this.filter, this.personalAgendaToggle, this.toIcalButton, this.fullscreenButton, this.clearButton, this.helpButton);
             // Attach event listeners
             this.setupEventListeners();
+            // Whenever the application state changes, update the toolbar.
+            this.state.on('change', () => {
+                this.updateToolbarState();
+            });
         }
         /**
          * Returns the Toolbar DOM element
@@ -9653,16 +9713,39 @@ agenda.`, [
             return this.toolbar;
         }
         /**
+         * Registers a callback to fire when the user clicks a button.
+         *
+         * @param   {Function}  callback  The callback
+         */
+        onClick(callback) {
+            this.callbacks.push(callback);
+        }
+        /**
+         * Updates the toolbar buttons and toggles based on the application state.
+         */
+        updateToolbarState() {
+            this.filter.value = this.state.get('query');
+            this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'), this.personalAgendaToggle);
+            this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenButton);
+            this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact', this.compactModeToggle);
+        }
+        /**
          * Sets up event listeners for the buttons and other elements on the toolbar.
          */
         setupEventListeners() {
             // Filtering
             this.filter.addEventListener('keyup', () => {
-                this.state.query = this.filter.value;
-                this.callbacks.onFilter(this.state.query);
+                this.state.set('query', this.filter.value);
+            });
+            this.clearButton.addEventListener('click', () => {
+                for (const cb of this.callbacks) {
+                    cb('clear');
+                }
             });
             this.toIcalButton.addEventListener('click', () => {
-                this.callbacks.onClick('ical');
+                for (const cb of this.callbacks) {
+                    cb('ical');
+                }
             });
             // We can handle the help button directly here, which keeps the main class
             // a bit leaner.
@@ -9686,22 +9769,13 @@ agenda.`, [
             });
             // Handle the toggles
             this.personalAgendaToggle.addEventListener('click', event => {
-                this.state.personalAgenda = !this.state.personalAgenda;
-                const agenda = this.state.personalAgenda;
-                this.personalAgendaToggle = makeAgendaToggle(agenda, this.personalAgendaToggle);
-                this.callbacks.onToggle('personal-agenda', agenda);
+                this.state.set('onlyPersonalAgendaItems', !this.state.get('onlyPersonalAgendaItems'));
             });
             this.fullscreenButton.addEventListener('click', event => {
-                this.state.fullscreen = !this.state.fullscreen;
-                const fs = this.state.fullscreen;
-                this.fullscreenButton = makeFullscreenToggle(fs, this.fullscreenButton);
-                this.callbacks.onToggle('fullscreen', this.state.fullscreen);
+                this.state.set('fullscreen', !this.state.get('fullscreen'));
             });
             this.compactModeToggle.addEventListener('click', event => {
-                this.state.viewMode = this.state.viewMode === 'compact' ? 'full' : 'compact';
-                const compact = this.state.viewMode === 'compact';
-                this.compactModeToggle = makeCompactToggle(compact, this.compactModeToggle);
-                this.callbacks.onToggle('viewMode', compact);
+                this.state.set('viewMode', this.state.get('viewMode') === 'compact' ? 'full' : 'compact');
             });
         }
     }
@@ -9747,46 +9821,42 @@ agenda.`, [
              * Manages the user's personal agenda.
              */
             this.agenda = new Agenda();
-            this.query = '';
+            /**
+             * Manages the toolbar
+             */
+            this.toolbar = new Toolbar();
+            this.state = appState();
             this.opt = opt;
             this.records = [];
             this.columnScaleFactor = 1;
-            this.showOnlyPersonalAgenda = false;
             toggleDebug(this.opt.debug === true);
             debug('Debug logging enabled'); // Will only show if debug is actually enabled
-            this.toolbar = new Toolbar({
-                onFilter: (query) => {
-                    this.query = query;
-                    debug(`Setting filter query to ${this.query}`);
+            // Hook up to state changes
+            this.state.on('change', (which) => {
+                const uiUpdateEvents = ['onlyPersonalAgendaItems', 'query'];
+                if (which === 'fullscreen') {
+                    this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'));
+                }
+                else if (uiUpdateEvents.includes(which)) {
                     this.updateUI();
-                },
-                onToggle: (which, state) => {
-                    debug(`Toggling ${which} to ${state}.`);
-                    if (which === 'personal-agenda') {
-                        this.showOnlyPersonalAgenda = state;
-                        this.updateUI();
-                    }
-                    else if (which === 'fullscreen') {
-                        this.dom.wrapper.classList.toggle('fullscreen', state);
-                    }
-                },
-                onClick: (which) => {
-                    debug(`On click: ${which}.`);
-                    if (which === 'ical') {
-                        initiateIcalDownload(this);
-                    }
-                    else if (which === 'clear') {
-                        askUser('Clear data', `Here you can delete the various data that the app stores in your
-          browser. Use this to quickly clear out your agenda, or reset the tips.`, ['Clear personal agenda', 'Reset tips', 'Cancel']).then(response => {
-                            if (response === 0) {
-                                this.agenda.clearPersonalAgenda();
-                                this.updateUI();
-                            }
-                            else if (response === 1) {
-                                this.agenda.resetHasShown();
-                            } // response === 2 => cancel
-                        });
-                    }
+                }
+            });
+            this.toolbar.onClick(which => {
+                debug(`On click: ${which}.`);
+                if (which === 'ical') {
+                    initiateIcalDownload(this);
+                }
+                else if (which === 'clear') {
+                    askUser('Clear data', `Here you can delete the various data that the app stores in your
+        browser. Use this to quickly clear out your agenda, or reset the tips.`, ['Clear personal agenda', 'Reset tips', 'Cancel']).then(response => {
+                        if (response === 0) {
+                            this.agenda.clearPersonalAgenda();
+                            this.updateUI();
+                        }
+                        else if (response === 1) {
+                            this.agenda.resetHasShown();
+                        } // response === 2 => cancel
+                    });
                 }
             });
             // Mount everything
@@ -9845,9 +9915,10 @@ agenda.`, [
          * @return  {CSVRecord[]}  The filtered set of events.
          */
         filterRecords() {
-            const q = this.query.trim().toLowerCase();
+            const q = this.state.get('query').trim().toLowerCase();
+            console.log(q);
             let records = this.records;
-            if (this.showOnlyPersonalAgenda) {
+            if (this.state.get('onlyPersonalAgendaItems')) {
                 records = records.filter(r => this.agenda.hasItem(r.id));
             }
             if (q === '') {
@@ -9875,7 +9946,7 @@ agenda.`, [
                 noeventscard.classList.add('event', 'meta');
                 noeventscard.style.margin = ((_a = this.opt.eventCardPadding) !== null && _a !== void 0 ? _a : 10) + 'px';
                 noeventscard.style.height = '75%';
-                if (this.showOnlyPersonalAgenda) {
+                if (this.state.get('onlyPersonalAgendaItems')) {
                     noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>';
                 }
                 else {

@@ -1,22 +1,9 @@
 import { dom } from '../dom/util'
 import { askUser } from '../dom/ask-user'
 import { makeToolbarWrapper, makeFilter, makeAgendaToggle, makeIcalButton, makeFullscreenToggle, makeClearButton, makeHelpButton, makeCompactToggle } from './util'
+import { ApplicationState, appState } from '../state'
 
-interface ToolbarState {
-  query: string
-  personalAgenda: boolean
-  fullscreen: boolean
-  viewMode: 'full'|'compact'
-}
-
-export interface ToolbarCallbacks {
-  // Fires when the filter input changes
-  onFilter: (query: string) => void
-  // Fires when any of the toggles changes
-  onToggle: (which: 'personal-agenda'|'fullscreen'|'viewMode', state: boolean) => void
-  // Fires when any of the buttons are clicked
-  onClick: (which: 'ical'|'clear') => void
-}
+export type ButtonClickEvents = 'ical'|'clear'
 
 /**
  * Implements a toolbar component.
@@ -65,28 +52,27 @@ export class Toolbar {
   /**
    * Holds the toolbar state
    */
-  private state: ToolbarState = {
-    query: '',
-    personalAgenda: false,
-    fullscreen: false,
-    viewMode: 'full'
-  }
+  private state: ApplicationState
+
+  private readonly callbacks: Array<(which: ButtonClickEvents) => void>
 
   /**
    * Instantiates a new Toolbar component. Only 1 per Conferia instance.
    *
    * @param   {ToolbarCallbacks}  callbacks  Various toolbar callbacks.
    */
-  constructor (private callbacks: ToolbarCallbacks) {
+  constructor () {
+    this.callbacks = []
+    this.state = appState()
     // Generate the toolbar structure
     this.toolbar = makeToolbarWrapper()
     this.filter = makeFilter()
-    this.personalAgendaToggle = makeAgendaToggle(this.state.personalAgenda)
+    this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'))
     this.toIcalButton = makeIcalButton()
-    this.fullscreenButton = makeFullscreenToggle(this.state.fullscreen)
+    this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'))
     this.clearButton = makeClearButton()
     this.helpButton = makeHelpButton()
-    this.compactModeToggle = makeCompactToggle(this.state.viewMode === 'compact')
+    this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact')
 
     // Append the elements in order
     this.toolbar.append(
@@ -97,6 +83,11 @@ export class Toolbar {
 
     // Attach event listeners
     this.setupEventListeners()
+
+    // Whenever the application state changes, update the toolbar.
+    this.state.on('change', () => {
+      this.updateToolbarState()
+    })
   }
 
   /**
@@ -109,17 +100,43 @@ export class Toolbar {
   }
 
   /**
+   * Registers a callback to fire when the user clicks a button.
+   *
+   * @param   {Function}  callback  The callback
+   */
+  public onClick (callback: (which: ButtonClickEvents) => void) {
+    this.callbacks.push(callback)
+  }
+
+  /**
+   * Updates the toolbar buttons and toggles based on the application state.
+   */
+  private updateToolbarState () {
+    this.filter.value = this.state.get('query')
+    this.personalAgendaToggle = makeAgendaToggle(this.state.get('onlyPersonalAgendaItems'), this.personalAgendaToggle)
+    this.fullscreenButton = makeFullscreenToggle(this.state.get('fullscreen'), this.fullscreenButton)
+    this.compactModeToggle = makeCompactToggle(this.state.get('viewMode') === 'compact', this.compactModeToggle)
+  }
+
+  /**
    * Sets up event listeners for the buttons and other elements on the toolbar.
    */
   private setupEventListeners () {
     // Filtering
     this.filter.addEventListener('keyup', () => {
-      this.state.query = this.filter.value
-      this.callbacks.onFilter(this.state.query)
+      this.state.set('query', this.filter.value)
+    })
+
+    this.clearButton.addEventListener('click', () => {
+      for (const cb of this.callbacks) {
+        cb('clear')
+      }
     })
 
     this.toIcalButton.addEventListener('click', () => {
-      this.callbacks.onClick('ical')
+      for (const cb of this.callbacks) {
+        cb('ical')
+      }
     })
 
     // We can handle the help button directly here, which keeps the main class
@@ -149,24 +166,15 @@ export class Toolbar {
 
     // Handle the toggles
     this.personalAgendaToggle.addEventListener('click', event => {
-      this.state.personalAgenda = !this.state.personalAgenda
-      const agenda = this.state.personalAgenda
-      this.personalAgendaToggle = makeAgendaToggle(agenda, this.personalAgendaToggle)
-      this.callbacks.onToggle('personal-agenda', agenda)
+      this.state.set('onlyPersonalAgendaItems', !this.state.get('onlyPersonalAgendaItems'))
     })
 
     this.fullscreenButton.addEventListener('click', event => {
-      this.state.fullscreen = !this.state.fullscreen
-      const fs = this.state.fullscreen
-      this.fullscreenButton = makeFullscreenToggle(fs, this.fullscreenButton)
-      this.callbacks.onToggle('fullscreen', this.state.fullscreen)
+      this.state.set('fullscreen', !this.state.get('fullscreen'))
     })
 
     this.compactModeToggle.addEventListener('click', event => {
-      this.state.viewMode = this.state.viewMode === 'compact' ? 'full' : 'compact'
-      const compact = this.state.viewMode === 'compact'
-      this.compactModeToggle = makeCompactToggle(compact, this.compactModeToggle)
-      this.callbacks.onToggle('viewMode', compact)
+      this.state.set('viewMode', this.state.get('viewMode') === 'compact' ? 'full' : 'compact')
     })
   }
 }

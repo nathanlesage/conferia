@@ -13,6 +13,7 @@ import { eventHasConflict, roomsWithConflictsPerDay } from "./util/conflicts-and
 import { askUser } from "./dom/ask-user"
 import { Toolbar } from "./toolbar"
 import { debug, toggleDebug } from "./util/logger"
+import { ApplicationState, appState } from "./state"
 
 export interface ConferiaOptions {
   /**
@@ -133,6 +134,7 @@ export interface ConferiaOptions {
  * The main Conferia object.
  */
 export class Conferia {
+  private readonly state: ApplicationState
   /**
    * The options passed to the constructor
    */
@@ -160,16 +162,6 @@ export class Conferia {
   private readonly dom: DOMStructure
 
   /**
-   * Holds the current user search query.
-   */
-  private query: string
-
-  /**
-   * Indicates whether the widget should only show the personal agenda.
-   */
-  private showOnlyPersonalAgenda: boolean
-
-  /**
    * Manages the user's personal agenda.
    */
   public agenda: Agenda = new Agenda()
@@ -177,7 +169,7 @@ export class Conferia {
   /**
    * Manages the toolbar
    */
-  public toolbar: Toolbar
+  public toolbar: Toolbar = new Toolbar()
 
   /**
    * Instantiate a new Conferia object.
@@ -185,49 +177,42 @@ export class Conferia {
    * @param   {ConferiaOptions}  opt  The start options
    */
   public constructor (opt: ConferiaOptions) {
-    this.query = ''
+    this.state = appState()
     this.opt = opt
     this.records = []
     this.columnScaleFactor = 1
-    this.showOnlyPersonalAgenda = false
 
     toggleDebug(this.opt.debug === true)
     debug('Debug logging enabled') // Will only show if debug is actually enabled
 
-    this.toolbar = new Toolbar({
-      onFilter: (query) => {
-        this.query = query
-        debug(`Setting filter query to ${this.query}`)
+    // Hook up to state changes
+    this.state.on('change', (which) => {
+      const uiUpdateEvents = ['onlyPersonalAgendaItems', 'query']
+      if (which === 'fullscreen') {
+        this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'))
+      } else if (uiUpdateEvents.includes(which)) {
         this.updateUI()
-      },
-      onToggle: (which, state) => {
-        debug(`Toggling ${which} to ${state}.`)
-        if (which === 'personal-agenda') {
-          this.showOnlyPersonalAgenda = state
+      }
+    })
+
+    this.toolbar.onClick(which => {
+      debug(`On click: ${which}.`)
+      if (which === 'ical') {
+        initiateIcalDownload(this)
+      } else if (which === 'clear') {
+        askUser(
+        'Clear data',
+        `Here you can delete the various data that the app stores in your
+        browser. Use this to quickly clear out your agenda, or reset the tips.`,
+        [ 'Clear personal agenda', 'Reset tips', 'Cancel' ]
+      ).then(response => {
+        if (response === 0) {
+          this.agenda.clearPersonalAgenda()
           this.updateUI()
-        } else if (which === 'fullscreen') {
-          this.dom.wrapper.classList.toggle('fullscreen', state)
-        }
-      },
-      onClick: (which) => {
-        debug(`On click: ${which}.`)
-        if (which === 'ical') {
-          initiateIcalDownload(this)
-        } else if (which === 'clear') {
-          askUser(
-          'Clear data',
-          `Here you can delete the various data that the app stores in your
-          browser. Use this to quickly clear out your agenda, or reset the tips.`,
-          [ 'Clear personal agenda', 'Reset tips', 'Cancel' ]
-        ).then(response => {
-          if (response === 0) {
-            this.agenda.clearPersonalAgenda()
-            this.updateUI()
-          } else if (response === 1) {
-            this.agenda.resetHasShown()
-          } // response === 2 => cancel
-        })
-        }
+        } else if (response === 1) {
+          this.agenda.resetHasShown()
+        } // response === 2 => cancel
+      })
       }
     })
 
@@ -296,11 +281,12 @@ export class Conferia {
    * @return  {CSVRecord[]}  The filtered set of events.
    */
   private filterRecords (): CSVRecord[] {
-    const q = this.query.trim().toLowerCase()
+    const q = this.state.get('query').trim().toLowerCase()
+    console.log(q)
 
     let records = this.records
 
-    if (this.showOnlyPersonalAgenda) {
+    if (this.state.get('onlyPersonalAgendaItems')) {
       records = records.filter(r => this.agenda.hasItem(r.id))
     }
 
@@ -332,7 +318,7 @@ export class Conferia {
       noeventscard.classList.add('event', 'meta')
       noeventscard.style.margin = (this.opt.eventCardPadding ?? 10) + 'px'
       noeventscard.style.height = '75%'
-      if (this.showOnlyPersonalAgenda) {
+      if (this.state.get('onlyPersonalAgendaItems')) {
         noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>'
       } else {
         noeventscard.innerHTML = '<strong>No events to show.</strong>'
