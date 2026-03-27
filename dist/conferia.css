@@ -157,6 +157,7 @@ dialog.conferia-dialog, #conferia-wrapper {
 
 #conferia-toolbar {
   display: flex;
+  flex-wrap: wrap;
   padding: 5px;
   gap: 5px;
   align-items: stretch;
