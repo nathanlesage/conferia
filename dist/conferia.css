@@ -210,6 +210,7 @@ dialog.conferia-dialog, #conferia-wrapper {
   grid-template-columns: var(--cf-gutter-size) auto;
   grid-template-rows: var(--cf-gutter-size) auto;
   overflow: auto;
+  flex-grow: 1; /* Make the schedule as large as possible */
 
   /* Resize the icons a bit */
   svg.feather {

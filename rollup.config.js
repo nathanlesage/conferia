@@ -6,9 +6,12 @@ import commonjs from '@rollup/plugin-commonjs'
 import svg from 'rollup-plugin-svg'
 import json from '@rollup/plugin-json'
 import open from 'open'
+import terser from '@rollup/plugin-terser'
 
 const DEV_SERVER_HOST = '127.0.0.1'
 const DEV_SERVER_PORT = '8080'
+
+const isProduction = process.env.NODE_ENV === 'production'
 
 export default defineConfig({
   input: 'src/main.ts',
@@ -32,6 +35,7 @@ export default defineConfig({
         open(`http://${DEV_SERVER_HOST}:${DEV_SERVER_PORT}/index.htm`)
       }
     }), // Dev server support
-    svg() // Import SVG files (icons) into the bundle
+    svg(), // Import SVG files (icons) into the bundle
+    isProduction && terser()
   ]
 })
