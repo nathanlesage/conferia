@@ -13,22 +13,51 @@ export interface DOMStructure {
 }
 
 /**
+ * Generates a header structure that can be inserted on the page.
+ *
+ * @param   {string}         title  The title
+ * @param   {string}         intro  The intro
+ *
+ * @return  {HTMLElement[]}         The generated DOM elements
+ */
+export function generateHeader (title?: string, intro?: string): HTMLElement[] {
+  const elems: HTMLElement[] = []
+
+  if (title !== undefined && title.trim() !== '') {
+    const h1 = dom('h1')
+    h1.textContent = title.trim()
+    elems.push(h1)
+  }
+
+  if (intro !== undefined && intro.trim() !== '') {
+    const p = dom('p')
+    p.textContent = intro.trim()
+    elems.push(p)
+  }
+
+  return elems
+}
+
+/**
  * Generates the primary Conferia.js DOM structure.
  *
- * @param   {string}        title      The optional title
+ * @param   {HTMLDivElement}  toolbar  The toolbar DOM, which is generated elsewhere
  *
  * @return  {DOMStructure}             The DOM structure
  */
-export function generateDOMStructure (title?: string): DOMStructure {
-  const wrapper = generateWrapper(title)
+export function generateDOMStructure (toolbar: HTMLDivElement): DOMStructure {
+  const wrapper = dom('div', undefined, { id: 'conferia-wrapper', role: 'presentation' })
+
   const dayGutter = generateDayGutter()
   const timeGutter = generateTimeGutter()
-  const scheduleWrapper = generateScheduleWrapper()
   const scheduleBoard = generateScheduleBoard()
 
+  const scheduleWrapper = generateScheduleWrapper()
   scheduleWrapper.appendChild(dayGutter)
   scheduleWrapper.appendChild(timeGutter)
   scheduleWrapper.appendChild(scheduleBoard)
+
+  wrapper.appendChild(toolbar)
   wrapper.appendChild(scheduleWrapper)
 
   const footer = generateFooter()
@@ -37,29 +66,6 @@ export function generateDOMStructure (title?: string): DOMStructure {
   return {
     wrapper, scheduleWrapper, timeGutter, dayGutter, scheduleBoard
   }
-}
-
-/**
- * Generates the outer wrapper
- *
- * @param   {string}          title      The optional title
- * @param   {string}          maxHeight  The optional max Height property
- *
- * @return  {HTMLDivElement}             The wrapper DIV
- */
-function generateWrapper (title?: string, maxHeight?: string): HTMLDivElement {
-  const div = dom('div', undefined, { id: 'conferia-wrapper', role: 'presentation' })
-  if (maxHeight !== undefined) {
-    div.style.maxHeight = maxHeight
-  }
-
-  if (title !== undefined) {
-    const h1 = dom('h1')
-    h1.textContent = title
-    div.appendChild(h1)
-  }
-
-  return div
 }
 
 /**

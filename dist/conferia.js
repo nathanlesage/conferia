@@ -8841,44 +8841,50 @@
     	version: version};
 
     /**
+     * Generates a header structure that can be inserted on the page.
+     *
+     * @param   {string}         title  The title
+     * @param   {string}         intro  The intro
+     *
+     * @return  {HTMLElement[]}         The generated DOM elements
+     */
+    function generateHeader(title, intro) {
+        const elems = [];
+        if (title !== undefined && title.trim() !== '') {
+            const h1 = dom('h1');
+            h1.textContent = title.trim();
+            elems.push(h1);
+        }
+        if (intro !== undefined && intro.trim() !== '') {
+            const p = dom('p');
+            p.textContent = intro.trim();
+            elems.push(p);
+        }
+        return elems;
+    }
+    /**
      * Generates the primary Conferia.js DOM structure.
      *
-     * @param   {string}        title      The optional title
+     * @param   {HTMLDivElement}  toolbar  The toolbar DOM, which is generated elsewhere
      *
      * @return  {DOMStructure}             The DOM structure
      */
-    function generateDOMStructure(title) {
-        const wrapper = generateWrapper(title);
+    function generateDOMStructure(toolbar) {
+        const wrapper = dom('div', undefined, { id: 'conferia-wrapper', role: 'presentation' });
         const dayGutter = generateDayGutter();
         const timeGutter = generateTimeGutter();
-        const scheduleWrapper = generateScheduleWrapper();
         const scheduleBoard = generateScheduleBoard();
+        const scheduleWrapper = generateScheduleWrapper();
         scheduleWrapper.appendChild(dayGutter);
         scheduleWrapper.appendChild(timeGutter);
         scheduleWrapper.appendChild(scheduleBoard);
+        wrapper.appendChild(toolbar);
         wrapper.appendChild(scheduleWrapper);
         const footer = generateFooter();
         wrapper.appendChild(footer);
         return {
             wrapper, scheduleWrapper, timeGutter, dayGutter, scheduleBoard
         };
-    }
-    /**
-     * Generates the outer wrapper
-     *
-     * @param   {string}          title      The optional title
-     * @param   {string}          maxHeight  The optional max Height property
-     *
-     * @return  {HTMLDivElement}             The wrapper DIV
-     */
-    function generateWrapper(title, maxHeight) {
-        const div = dom('div', undefined, { id: 'conferia-wrapper', role: 'presentation' });
-        if (title !== undefined) {
-            const h1 = dom('h1');
-            h1.textContent = title;
-            div.appendChild(h1);
-        }
-        return div;
     }
     /**
      * Generates the Conferia.js footer
@@ -11400,7 +11406,7 @@ agenda.`, [
          * @param   {ConferiaOptions}  opt  The start options
          */
         constructor(opt) {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             /**
              * Manages the user's personal agenda.
              */
@@ -11414,16 +11420,17 @@ agenda.`, [
                 parent: opt.parent,
                 src: opt.src,
                 title: (_a = opt.title) !== null && _a !== void 0 ? _a : '',
-                autoReload: (_b = opt.autoReload) !== null && _b !== void 0 ? _b : false,
-                timeZone: (_c = opt.timeZone) !== null && _c !== void 0 ? _c : '',
-                eventCardPadding: (_d = opt.eventCardPadding) !== null && _d !== void 0 ? _d : 10,
-                initialViewMode: (_e = opt.initialViewMode) !== null && _e !== void 0 ? _e : 'device-based',
-                timeGridSeconds: (_f = opt.timeGridSeconds) !== null && _f !== void 0 ? _f : -1,
-                minimumCardHeight: (_g = opt.minimumCardHeight) !== null && _g !== void 0 ? _g : 75,
+                intro: (_b = opt.intro) !== null && _b !== void 0 ? _b : '',
+                autoReload: (_c = opt.autoReload) !== null && _c !== void 0 ? _c : false,
+                timeZone: (_d = opt.timeZone) !== null && _d !== void 0 ? _d : '',
+                eventCardPadding: (_e = opt.eventCardPadding) !== null && _e !== void 0 ? _e : 10,
+                initialViewMode: (_f = opt.initialViewMode) !== null && _f !== void 0 ? _f : 'device-based',
+                timeGridSeconds: (_g = opt.timeGridSeconds) !== null && _g !== void 0 ? _g : -1,
+                minimumCardHeight: (_h = opt.minimumCardHeight) !== null && _h !== void 0 ? _h : 75,
                 // Default for the callbacks are identity functions
-                dateParser: (_h = opt.dateParser) !== null && _h !== void 0 ? _h : ((dateString) => dateString),
-                rowParser: (_j = opt.rowParser) !== null && _j !== void 0 ? _j : ((row, header, record) => record),
-                debug: (_k = opt.debug) !== null && _k !== void 0 ? _k : false
+                dateParser: (_j = opt.dateParser) !== null && _j !== void 0 ? _j : ((dateString) => dateString),
+                rowParser: (_k = opt.rowParser) !== null && _k !== void 0 ? _k : ((row, header, record) => record),
+                debug: (_l = opt.debug) !== null && _l !== void 0 ? _l : false
             };
             this.columnScaleFactor = 1;
             // Switch view mode based on config
@@ -11480,9 +11487,14 @@ agenda.`, [
                     });
                 }
             });
-            // Mount everything
-            this.dom = generateDOMStructure(opt.title);
-            this.dom.wrapper.prepend(this.toolbar.dom);
+            this.dom = generateDOMStructure(this.toolbar.dom);
+            // If optional header information is present, mount some info before
+            // mounting the actual widget.
+            if (this.opt.title.trim() !== '' || this.opt.intro.trim() !== '') {
+                const elems = generateHeader(this.opt.title, this.opt.intro);
+                this.opt.parent.append(...elems);
+            }
+            // Now, mount the actual Conferia widget
             this.opt.parent.appendChild(this.dom.wrapper);
             // Begin loading
             this.loadPromise = this.loadCSV();

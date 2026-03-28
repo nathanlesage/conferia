@@ -1,7 +1,7 @@
 import { CSVRecord, parseCsv, SessionPresentationRecord } from "./csv"
 import { updateGutterTicks as updateTimeGutter } from "./dom/time-gutter"
 import { updateGutterTicks as updateDayGutter } from "./dom/day-gutter"
-import { DOMStructure, generateDOMStructure } from "./dom/wrapper"
+import { DOMStructure, generateDOMStructure, generateHeader } from "./dom/wrapper"
 import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset, isConferenceNow } from "./util/time-helpers"
 import { drawTimeIndicator, drawVerticalDayDividers, generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
 import { DateTime } from "luxon"
@@ -35,6 +35,12 @@ export interface ConferiaOptions {
    * schedule live on its dedicated page).
    */
   title?: string
+
+  /**
+   * An optional intro text to be rendered above the title (useful if you have
+   * the schedule live on its dedicated page).
+   */
+  intro?: string
 
   /**
    * If you expect frequent updates to the schedule as the conference
@@ -193,6 +199,7 @@ export class Conferia {
       parent: opt.parent,
       src: opt.src,
       title: opt.title ?? '',
+      intro: opt.intro ?? '',
       autoReload: opt.autoReload ?? false,
       timeZone: opt.timeZone ?? '',
       eventCardPadding: opt.eventCardPadding ?? 10,
@@ -264,9 +271,16 @@ export class Conferia {
       }
     })
 
-    // Mount everything
-    this.dom = generateDOMStructure(opt.title)
-    this.dom.wrapper.prepend(this.toolbar.dom)
+    this.dom = generateDOMStructure(this.toolbar.dom)
+
+    // If optional header information is present, mount some info before
+    // mounting the actual widget.
+    if (this.opt.title.trim() !== '' || this.opt.intro.trim() !== '') {
+      const elems = generateHeader(this.opt.title, this.opt.intro)
+      this.opt.parent.append(...elems)
+    }
+
+    // Now, mount the actual Conferia widget
     this.opt.parent.appendChild(this.dom.wrapper)
 
     // Begin loading

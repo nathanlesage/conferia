@@ -1,3 +1,12 @@
+# Release 0.22.0
+
+* Feature: Allow organizers to add some `intro` information to better describe
+  their conference
+* Fixed mounting position of title and intro information. If any of these are
+  present they will now be correctly mounted before the entire Conferia widget
+  itself, ensuring they can be hidden when the widget is in full screen, and are
+  not interfering with the rest of the DOM structure.
+
 # Release 0.21.0
 
 * Feature: Added a new, "compact" view mode that, when enabled, will only show

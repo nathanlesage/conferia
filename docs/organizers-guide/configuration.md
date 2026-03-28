@@ -32,6 +32,12 @@ interface ConferiaOptions {
   title?: string
 
   /**
+   * An optional intro text to be rendered above the title (useful if you have
+   * the schedule live on its dedicated page).
+   */
+  intro?: string
+
+  /**
    * If you expect frequent updates to the schedule as the conference
    * approaches, you may want to make the library auto-reload. By default, the
    * library requires participants to manually reload to see any changes. If set
