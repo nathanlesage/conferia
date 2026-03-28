@@ -1,3 +1,11 @@
+# Release 0.23.0
+
+* Updated all dependencies
+* Changed the target to ES2023 to get access to newer APIs. This means that
+  Conferia now requires a browser that implements at least the 2023 standard of
+  JavaScript (previously: 2015). All major browsers have supported this standard
+  since July 2023. See more at https://www.w3schools.com/js/js_2023.asp.
+
 # Release 0.22.0
 
 * Feature: Allow organizers to add some `intro` information to better describe

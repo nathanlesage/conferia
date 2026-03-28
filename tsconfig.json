@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2015",
+    "target": "es2023",
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmitOnError": true,
-    "lib": ["es5", "dom"],
     "allowJs": true,
     "sourceMap": true,
     "strict": true,  

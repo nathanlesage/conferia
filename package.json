@@ -11,20 +11,19 @@
   "author": "Hendrik Erz <hendrik@zettlr.com>",
   "license": "AGPL-3.0-only",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-commonjs": "29.0.x",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-typescript": "^12.1.2",
+    "@rollup/plugin-typescript": "12.3.x",
     "@types/hash-sum": "^1.0.2",
-    "@types/luxon": "^3.4.2",
-    "@types/papaparse": "^5.3.15",
+    "@types/luxon": "3.7.x",
     "@types/ua-parser-js": "^0.7.39",
-    "open": "^10.1.2",
-    "rollup": "^4.37.0",
-    "rollup-plugin-dev": "^2.0.3",
+    "open": "11.0.x",
+    "rollup": "4.60.x",
+    "rollup-plugin-dev": "2.1.x",
     "rollup-plugin-svg": "^2.0.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.8.2"
+    "typescript": "6.0.x"
   },
   "dependencies": {
     "hash-sum": "^2.0.0",
