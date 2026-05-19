@@ -60,13 +60,13 @@ You can find all necessary information to get set up in the
 ## CSV Format
 
 For a quick reference guide on the required CSV format, please refer to the
-[CSV format guide](https://nathanlesage.github.io/conferia/csv-format/).
+[CSV format guide](https://nathanlesage.github.io/conferia/organizers-guide/csv-format.html).
 
 ## Configuration
 
 When instantiating the Conferia.js-library, you can pass configuration options
 that determine the way the library behaves. You can find more information in the
-[configuration guide](https://nathanlesage.github.io/conferia/configuration/).
+[configuration guide](https://nathanlesage.github.io/conferia/organizers-guide/configuration.html).
 
 ## Developing
 
