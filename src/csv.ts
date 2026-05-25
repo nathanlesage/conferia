@@ -361,7 +361,6 @@ function parseCSVLine (line: string, lineNo: number, sep: string = ','): string[
           isQuoted = false
         } else {
           // Malformed cell
-          console.log(line)
           throw new Error(`Could not parse CSV line: Malformed cell on line ${lineNo}, near column ${i}`)
         }
       } else {
