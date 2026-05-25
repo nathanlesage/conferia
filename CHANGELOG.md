@@ -1,6 +1,10 @@
 # Release 0.23.0
 
-* Updated all dependencies
+* Minify the widget when releasing a new version. This reduces the bundle size
+  by about 4x (ca. 500kb to ca. 130kb). This should speed up library loading.
+* Fixed a styling issue that would cause the widget not to fill the entire
+  screen in fullscreen mode.
+* Updated all dependencies.
 * Changed the target to ES2023 to get access to newer APIs. This means that
   Conferia now requires a browser that implements at least the 2023 standard of
   JavaScript (previously: 2015). All major browsers have supported this standard
