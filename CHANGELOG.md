@@ -1,3 +1,12 @@
+# Release 0.24.0
+
+* Improved error messages: Mistakes in the CSV will now log the (0-based) line
+  number where the error originated to make it easier to fix problems.
+* Sessions are now grouped not just by the session names, but also by their
+  start dates. This allows conference organizers to re-use the exact same
+  session name multiple times, which allows splitting up larger logical sessions
+  into multiple blocks (i.e., interspersed with coffee/lunch breaks).
+
 # Release 0.23.0
 
 * Minify the widget when releasing a new version. This reduces the bundle size
