@@ -137,12 +137,7 @@ export function parseCsv (
     }
   }
 
-  const rows = csvData
-    .split(/[\n\r]+/)
-    .filter(row => row.trim() !== '')
-    // Remove empty rows (this happens if users space out the events in their
-    // spreadsheet to group them logically.)
-    .filter(row => !/^[\s,]+$/.test(row))
+  const rows = csvData.split(/[\n\r]+/)
 
   if (rows.length < 2) {
     throw new Error('Invalid CSV: Less than 2 rows!')
@@ -195,9 +190,23 @@ export function parseCsv (
     throw new Error('The CSV did not contain a `chair` column.')
   }
 
+  const parsedRows = rows.map((row, idx) => {
+    // Remove empty rows (this happens if users space out the events in their
+    // spreadsheet to group them logically.) We remove those here and not above
+    // to ensure that any errors return the correct line number (see
+    // parseCSVLine).
+    if (row.trim() === '' || /^[\s,]+$/.test(row)) {
+      console.log(`Skipping empty row in line ${idx}`)
+      return undefined
+    }
+
+    return parseCSVLine(row, idx)
+  })
+    .filter(row => row !== undefined)
+
   const returnValue: CSVRecord[] = []
   const onlySessionPresentations: SessionPresentationRecord[] = []
-  for (const row of rows.map(row => parseCSVLine(row))) {
+  for (const row of parsedRows) {
     if (row.length !== EXPECTED_COLS) {
       throw new Error(`Wrong number of columns in row (${row.length}; expected ${EXPECTED_COLS}) in row: ${row.join(',')}`)
     }
@@ -275,10 +284,14 @@ export function parseCsv (
     }
   }
 
-  // One final step: Aggregate the various presentations according to sessionName.
-  const sessionNames = [...new Set(onlySessionPresentations.map(s => s.session))]
-  for (const name of sessionNames) {
-    const presentations = onlySessionPresentations.filter(r => r.session === name)
+  // One final step: Aggregate the various presentations according to
+  // sessionName and start date. This way, conference organizers can split up a
+  // single session into multiple events that are differentiated by date (i.e.,
+  // if there are sessions with 20 presentations, but divided into four slots of
+  // five presentations each, interspersed with coffee breaks.)
+  const sessionNamesAndTimes: Set<[string, DateTime<boolean>]> = new Set(onlySessionPresentations.map(s => ([s.session, s.dateStart])))
+  for (const [ name, startDate ] of sessionNamesAndTimes) {
+    const presentations = onlySessionPresentations.filter(r => r.session === name && r.dateStart.equals(startDate))
     const { dateStart, dateEnd, location, chair, notes } = presentations[0]
 
     // Sort the presentations according to their ordering
@@ -306,11 +319,12 @@ export function parseCsv (
 /**
  * Takes a CSV line and parses it into a series of cells.
  *
- * @param   {string}    line  The line to parse
+ * @param   {string}    line   The line to parse
+ * @param   {number}    lineNo The line number (mainly for logging)
  *
- * @return  {string[]}        The cells
+ * @return  {string[]}         The cells
  */
-function parseCSVLine (line: string, sep: string = ','): string[] {
+function parseCSVLine (line: string, lineNo: number, sep: string = ','): string[] {
   const cells: string[] = []
 
   let currentCell = ''
@@ -347,11 +361,12 @@ function parseCSVLine (line: string, sep: string = ','): string[] {
           isQuoted = false
         } else {
           // Malformed cell
-          throw new Error('Could not parse CSV line: Malformed cell: ' + line)
+          console.log(line)
+          throw new Error(`Could not parse CSV line: Malformed cell on line ${lineNo}, near column ${i}`)
         }
       } else {
         // Malformed cell
-        throw new Error('Could not parse CSV line: Malformed cell: ' + line)
+        throw new Error(`Could not parse CSV line: Malformed cell on line ${lineNo}, near column ${i}`)
       }
     } else {
       // Everything else
