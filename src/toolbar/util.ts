@@ -8,6 +8,8 @@ import minimizeIcon from '../icons/minimize-2.svg'
 import maximizeIcon from '../icons/maximize-2.svg'
 import chevronLeftIcon from '../icons/chevron-left.svg'
 import chevronRightIcon from '../icons/chevron-right.svg'
+import smartphoneIcon from '../icons/smartphone.svg'
+import downloadIcon from '../icons/download.svg'
 import { dom } from '../dom/util'
 import { ApplicationState } from '../state'
 
@@ -68,7 +70,7 @@ export function makeFilter () {
  */
 export function makeIcalButton () {
   const toIcalButton = dom('button', undefined, { title: 'Add to calendar' })
-  toIcalButton.innerHTML = calendarIcon
+  toIcalButton.innerHTML = downloadIcon
   return toIcalButton
 }
 
@@ -143,7 +145,7 @@ export function makeCompactToggle (compact: boolean, button?: HTMLButtonElement)
   }
 
   button.title = compact ? 'Show all days' : 'Show single day'
-  button.innerHTML = compact ? maximizeIcon : minimizeIcon
+  button.innerHTML = compact ? smartphoneIcon : calendarIcon
   button.classList.toggle('active', compact)
   return button
 }
