@@ -1,3 +1,8 @@
+# Release 0.25.0
+
+* Export the `Conferia` object as a default export to give organizers more
+  flexibility.
+
 # Release 0.24.0
 
 * Improved error messages: Mistakes in the CSV will now log the (0-based) line

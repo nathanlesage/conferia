@@ -1,2 +1,6 @@
 node_modules
 .DS_Store
+
+# This allows developers to place a program CSV file into the directory to test
+# the library.
+*.csv
