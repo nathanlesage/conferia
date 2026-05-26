@@ -58,6 +58,7 @@
 /* BEGIN: CONFERIA-SCOPED GENERICS */
 dialog.conferia-dialog, #conferia-wrapper {
   /* Define reasonable base styles for everything */
+  font-family: sans-serif;
   font-size: 16px;
   line-height: 120%;
   color: var(--font-color);

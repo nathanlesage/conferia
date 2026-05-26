@@ -1,3 +1,9 @@
+# Release 0.26.0
+
+* Explicitly type Window augmentation in export.
+* Default font from serif to sans-serif (can still be overridden by the site
+  CSS).
+
 # Release 0.25.0
 
 * Export the `Conferia` object as a default export to give organizers more
@@ -6,7 +12,6 @@
 * Fix module system and configuration. Now the package explicitly declares
   itself as an ECMA module (because it is intended entirely for use in the
   browser).
-* Explicitly type Window augmentation in export.
 
 # Release 0.24.0
 
