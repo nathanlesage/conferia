@@ -1,13 +1,14 @@
 {
   "name": "conferia",
-  "version": "0.24.0",
+  "version": "0.25.0",
   "description": "A small library to display a conference schedule",
   "main": "src/main.ts",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "NODE_ENV=production rollup -c",
-    "watch": "NODE_ENV=develop rollup -c --watch"
+    "watch": "NODE_ENV=develop rollup -c --watch",
+    "mark-release": "./scripts/mark-release.sh"
   },
   "author": "Hendrik Erz <hendrik@zettlr.com>",
   "license": "AGPL-3.0-only",
