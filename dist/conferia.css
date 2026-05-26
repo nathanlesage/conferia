@@ -1,12 +1,17 @@
 /* BEGIN: CONFERIA VARIABLES */
 :root {
   --schedule-board-background: #f0f0f0;
-  --button-background: #f0f0f0;
-  --button-background-hover: #e0e0e0;
   --schedule-board-grid: #dfdfdf;
+
   --element-background: white;
+
   --font-color: #333;
   --font-color-muted: #777;
+
+  --button-background: #f0f0f0;
+  --button-background-hover: #e0e0e0;
+  --button-color: var(--font-color);
+
   --element-shadow-color: rgba(0, 0, 0, .1);
   --input-background: white;
   --placeholder-color: #666;
@@ -40,6 +45,8 @@
 
     --accent-color: #9ec8ff;
     --accent-color-contrast: #333;
+
+    --button-color: #333;
 
     --keynote-background: #372626;
     --special-background: #20393e;
@@ -183,6 +190,7 @@ dialog.conferia-dialog, #conferia-wrapper {
     justify-content: center;
     align-items: center;
     background-color: var(--button-background);
+    color: var(--button-color);
     border: 1px solid var(--border-color);
     border-radius: var(--cf-border-radius);
     height: 30px;

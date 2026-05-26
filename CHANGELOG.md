@@ -2,6 +2,7 @@
 
 * Export the `Conferia` object as a default export to give organizers more
   flexibility.
+* Fix coloring of the day indicator in compact mode in the dark color scheme.
 
 # Release 0.24.0
 
