@@ -289,8 +289,16 @@ export function parseCsv (
   // single session into multiple events that are differentiated by date (i.e.,
   // if there are sessions with 20 presentations, but divided into four slots of
   // five presentations each, interspersed with coffee breaks.)
-  const sessionNamesAndTimes: Set<[string, DateTime<boolean>]> = new Set(onlySessionPresentations.map(s => ([s.session, s.dateStart])))
-  for (const [ name, startDate ] of sessionNamesAndTimes) {
+  // NOTE: Because Sets do not assert uniqueness with non-primitives, we have to
+  // use a Map, since that allows to define a unique key (string) while still
+  // retaining the original data type. It looks a bit weird, but it works well.
+  const sessionNamesAndTimes: Map<string, [string, DateTime<boolean>]> = new Map(
+    onlySessionPresentations.map(s => {
+      return [`${s.session}-${s.dateStart}`, [s.session, s.dateStart]]
+    })
+  )
+
+  for (const [_, [ name, startDate ]] of sessionNamesAndTimes.entries()) {
     const presentations = onlySessionPresentations.filter(r => r.session === name && r.dateStart.equals(startDate))
     const { dateStart, dateEnd, location, chair, notes } = presentations[0]
 
