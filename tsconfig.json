@@ -11,7 +11,10 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
-    "rootDir": "./src"
+    "types": ["node", "mocha"]
   },
-  "include": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.spec.ts"
+  ]
 }

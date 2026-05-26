@@ -3,6 +3,7 @@
 * Explicitly type Window augmentation in export.
 * Default font from serif to sans-serif (can still be overridden by the site
   CSS).
+* Add unit testing framework
 
 # Release 0.25.0
 
