@@ -4,6 +4,7 @@
 * Default font from serif to sans-serif (can still be overridden by the site
   CSS).
 * Add unit testing framework
+* Move some remaining `console.log`s to `debug`.
 
 # Release 0.25.0
 

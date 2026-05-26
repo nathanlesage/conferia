@@ -4,6 +4,7 @@ import { DateTime } from "luxon"
 // (esModuleInterop and allowSyntheticDefaultImports), one rollup plugin
 // (commonjs) and this concoction to make it work.
 import hash from 'hash-sum'
+import { debug } from "./util/logger"
 
 /**
  * This is the base record for all events that defines some basic data for them.
@@ -196,7 +197,7 @@ export function parseCsv (
     // to ensure that any errors return the correct line number (see
     // parseCSVLine).
     if (row.trim() === '' || /^[\s,]+$/.test(row)) {
-      console.log(`Skipping empty row in line ${idx}`)
+      debug(`Skipping empty row in line ${idx}`)
       return undefined
     }
 
@@ -280,7 +281,7 @@ export function parseCsv (
         break
       }
       default:
-        console.warn(`Unknown type detected in entry: ${type}. Skipping row.`)
+        debug(`Unknown type detected in entry: ${type}. Skipping row.`)
     }
   }
 
