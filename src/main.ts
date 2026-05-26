@@ -1,6 +1,6 @@
 import { Conferia } from './conferia'
 
-// @ts-expect-error Expose the main class on the window object
+// Attach the class to the window object
 window.Conferia = Conferia
 
 // Also export the class so that consumers can also `import` the library

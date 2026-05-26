@@ -3,3 +3,7 @@ declare module '*.svg' {
   const icon: string
   export = icon
 }
+
+interface Window {
+  Conferia: any
+}

@@ -6,6 +6,7 @@
 * Fix module system and configuration. Now the package explicitly declares
   itself as an ECMA module (because it is intended entirely for use in the
   browser).
+* Explicitly type Window augmentation in export.
 
 # Release 0.24.0
 
