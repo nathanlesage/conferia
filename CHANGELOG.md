@@ -3,6 +3,9 @@
 * Export the `Conferia` object as a default export to give organizers more
   flexibility.
 * Fix coloring of the day indicator in compact mode in the dark color scheme.
+* Fix module system and configuration. Now the package explicitly declares
+  itself as an ECMA module (because it is intended entirely for use in the
+  browser).
 
 # Release 0.24.0
 

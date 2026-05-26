@@ -18,7 +18,8 @@ export default defineConfig({
   output: {
     file: 'dist/conferia.js',
     format: 'iife',
-    sourcemap: true
+    sourcemap: true,
+    name: 'Conferia'
   },
   plugins: [
     typescript({
