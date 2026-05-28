@@ -8,7 +8,7 @@
     "test": "mocha --no-diffs",
     "build": "NODE_ENV=production rollup -c",
     "watch": "NODE_ENV=develop rollup -c --watch",
-    "mark-release": "./scripts/mark-release.sh"
+    "release": "./scripts/release.sh"
   },
   "author": "Hendrik Erz <hendrik@zettlr.com>",
   "license": "AGPL-3.0-only",
