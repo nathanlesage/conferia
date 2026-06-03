@@ -2,6 +2,30 @@ import { DateTime } from 'luxon'
 import { CSVRecord } from '../csv'
 
 /**
+ * Returns a short version of the provided date for display purposes.
+ *
+ * @param   {DateTime}  date  The date
+ *
+ * @return  {string}          The date as a string
+ */
+export function renderShortDate (date: DateTime<boolean>): string {
+  return date.toLocaleString({
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+  })
+}
+
+/**
+ * Returns a full version of the provided date for display purposes.
+ *
+ * @param   {DateTime}  date  The date
+ *
+ * @return  {string}          The date as a string
+ */
+export function renderFullDate (date: DateTime<boolean>): string {
+  return date.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })
+}
+
+/**
  * Normalizes the provided DateTime in such a way that it copies the hour,
  * minute, and second of it into a new DateTime that uses the default timezone.
  * This way, you can make *times* comparable (as opposed to DateTimes), ignoring

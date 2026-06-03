@@ -1,6 +1,7 @@
 # Release 0.27.0
 
 * Improve rollup config for better development UX.
+* Refactored a few additional datetime helpers.
 
 # Release 0.26.0
 

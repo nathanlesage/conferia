@@ -3,7 +3,7 @@ import { Agenda } from "../agenda"
 import { CSVRecord } from "../csv"
 import bookmarkIcon from '../icons/bookmark.svg'
 import { dom } from "./util"
-import { getTimeOffset, isTimeBefore } from "../util/time-helpers"
+import { getTimeOffset, isTimeBefore, renderFullDate } from "../util/time-helpers"
 
 // The width for special gridlines that we use to demarcate something (here: the
 // day dividers and the time indicator)
@@ -121,7 +121,7 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
   const card = dom('div', ['event', event.type], {
     tabindex: '0',
     role: 'button',
-    'aria-label': `${getAriaEventType(event)}: ${event.title}; ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })} in ${event.location === '' ? 'No location' : event.location}`
+    'aria-label': `${getAriaEventType(event)}: ${event.title}; ${renderFullDate(event.dateStart)} in ${event.location === '' ? 'No location' : event.location}`
   })
   card.style.position = 'absolute'
 

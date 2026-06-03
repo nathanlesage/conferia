@@ -1,5 +1,6 @@
 import { DateTime } from "luxon"
 import { dom } from "./util"
+import { renderShortDate } from "../util/time-helpers"
 
 /**
  * Generates the day gutter wrapper element
@@ -28,7 +29,7 @@ export function updateGutterTicks (dayGutter: HTMLElement, startDay: DateTime, t
     dayTick.style.width = `${colWidth * nSubCols}px`
 
     const content = dom('span', 'content')
-    content.textContent = thisDay.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    content.textContent = renderShortDate(thisDay)
     dayTick.appendChild(content)
 
     dayGutter.appendChild(dayTick)

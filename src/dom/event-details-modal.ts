@@ -2,6 +2,7 @@ import { CSVRecord } from "../csv"
 import { dom } from "./util"
 import bookmarkIcon from '../icons/bookmark.svg'
 import { Conferia } from "../conferia"
+import { renderFullDate } from "../util/time-helpers"
 
 /**
  * Creates and shows a dialog showing details for the provided event.
@@ -16,7 +17,7 @@ export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): vo
 
   const title = dom('h3', 'cf-event-title', {
     id: `dialog-title-${event.id}`,
-    'aria-label': `Details for event: ${event.title}, ${event.dateStart.toLocaleString({ dateStyle: 'full', timeStyle: 'short' })}, location: ${event.location ?? 'No location'}`
+    'aria-label': `Details for event: ${event.title}, ${renderFullDate(event.dateStart)}, location: ${event.location ?? 'No location'}`
   })
 
   switch (event.type) {
