@@ -2,7 +2,7 @@ import { CSVRecord, parseCsv, SessionPresentationRecord } from "./csv"
 import { updateGutterTicks as updateTimeGutter } from "./dom/time-gutter"
 import { updateGutterTicks as updateDayGutter } from "./dom/day-gutter"
 import { DOMStructure, generateDOMStructure, generateHeader } from "./dom/wrapper"
-import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset, isConferenceNow } from "./util/time-helpers"
+import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset, isConferenceNow, renderShortDate } from "./util/time-helpers"
 import { drawTimeIndicator, drawVerticalDayDividers, generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
 import { DateTime } from "luxon"
 import { showEventDetailsModal } from "./dom/event-details-modal"
@@ -410,9 +410,18 @@ export class Conferia {
       noeventscard.classList.add('event', 'meta')
       noeventscard.style.margin = `${this.opt.eventCardPadding}px`
       noeventscard.style.height = '75%'
+
+      // Adjust the wording depending on the configuration/what is currently
+      // visible.
       if (this.state.get('onlyPersonalAgendaItems')) {
+        // User only sees personal agenda items.
         noeventscard.innerHTML = '<strong>No events on your personal agenda.</strong>'
+      } else if (this.state.get('viewMode') === 'compact') {
+        // User only sees a single day.
+        const shownday = this.state.get('compactDay')
+        noeventscard.innerHTML = `<strong>No events to show on ${renderShortDate(shownday)}.</strong>`
       } else {
+        // User sees everything.
         noeventscard.innerHTML = '<strong>No events to show.</strong>'
       }
       this.dom.scheduleBoard.appendChild(noeventscard)

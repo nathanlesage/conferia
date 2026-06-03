@@ -1,5 +1,9 @@
 # Release 0.27.0
 
+* Improve no-results-found message to indicate why no events could not be found.
+  Now, the no-results message is contextualized based on settings, and indicate
+  if no results have been found *on the personal agenda*, or *on a given day* or
+  *in general*, depending on which view the user has selected.
 * Improve rollup config for better development UX.
 * Refactored a few additional datetime helpers.
 
