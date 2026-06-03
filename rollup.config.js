@@ -32,8 +32,11 @@ export default defineConfig({
       host: DEV_SERVER_HOST,
       port: DEV_SERVER_PORT,
       onListen (server) {
-        // Upon server start, load the main entry file
-        open(`http://${DEV_SERVER_HOST}:${DEV_SERVER_PORT}/index.htm`)
+        // Upon server start, load the main entry file. NOTE that we retrieve
+        // the actual host/port combination from the instantiated server instead
+        // of the static DEV_SERVER env vars, because the server dynamically
+        // allocates a different port if the wanted port is already taken.
+        open(`http://${server.host}:${server.port}/index.htm`)
       }
     }), // Dev server support
     svg(), // Import SVG files (icons) into the bundle

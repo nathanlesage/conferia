@@ -1,3 +1,7 @@
+# Release 0.27.0
+
+* Improve rollup config for better development UX.
+
 # Release 0.26.0
 
 * Explicitly type Window augmentation in export.
