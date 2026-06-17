@@ -1,3 +1,11 @@
+# Upcoming
+
+* Refactored Rollup config and dev-server to pull in a test-index from the new
+  resources folder. The program.csv to be loaded is also stored there.
+* Conferia now stores the user config to local storage. This allows users to
+  retain any customization (i.e., the default view mode or a search query)
+  across reloads of the browser window, saved per each individual device.
+
 # Release 0.27.0
 
 * Improve no-results-found message to indicate why no events could not be found.

@@ -213,23 +213,29 @@ export class Conferia {
     }
     this.columnScaleFactor = 1
 
-    // Switch view mode based on config
+    toggleDebug(this.opt.debug === true)
+    debug('Debug logging enabled') // Will only show if debug is actually enabled
+
+    // NOTE: Below, we purposefully do not persist the config during this
+    // initial update to be able to load and overwrite the config with user-
+    // defined config.
     if (this.opt.initialViewMode === 'compact') {
-      this.state.set('viewMode', 'compact')
+      this.state.set('viewMode', 'compact', false)
     } else if (this.opt.initialViewMode === 'full') {
-      this.state.set('viewMode', 'full')
+      this.state.set('viewMode', 'full', false)
     } else if (this.opt.initialViewMode === 'time-based') {
       // NOTE: This must happen after the initial load, see below.
     } else if (this.opt.initialViewMode === 'device-based') {
       if (UAParser(navigator.userAgent).device.type === 'mobile') {
-        this.state.set('viewMode', 'compact')
+        this.state.set('viewMode', 'compact', false)
       } else {
-        this.state.set('viewMode', 'full')
+        this.state.set('viewMode', 'full', false)
       }
     }
 
-    toggleDebug(this.opt.debug === true)
-    debug('Debug logging enabled') // Will only show if debug is actually enabled
+    // After we have initialized the state, load a potentially overridden user
+    // state from localStorage
+    this.state.loadFromLocalStorage()
 
     // Hook up to state changes
     this.state.on('change', (which) => {

@@ -1,7 +1,10 @@
 import { DateTime } from "luxon"
 import { CSVRecord } from "./csv"
+import { debug } from "./util/logger"
 
 let stateSingleton: ApplicationState|undefined
+
+const CONFIG_KEY = 'conferia-config'
 
 // Types the application state.
 interface State {
@@ -87,14 +90,19 @@ export class ApplicationState {
   /**
    * Sets the provided setting to the given value.
    *
-   * @param  {T}         which  The setting to change
-   * @param  {State[T]}  value  The new value for the setting
+   * @param  {T}         which    The setting to change
+   * @param  {State[T]}  value    The new value for the setting
+   * @param  {boolean}   persist  By default, overwrite the settings in the local storage.
    */
-  public set<T extends keyof State>(which: T, value: State[T]) {
+  public set<T extends keyof State>(which: T, value: State[T], persist: boolean = true) {
     this.state[which] = value
 
     for (const cb of this.callbacks) {
       cb(which, value)
+    }
+
+    if (persist) {
+      this.saveToLocalStorage()
     }
   }
 
@@ -107,6 +115,57 @@ export class ApplicationState {
    */
   public on (event: 'change', callback: AppStateCallback) {
     this.callbacks.push(callback)
+  }
+
+  /**
+   * Restores the state from local storage
+   */
+  public loadFromLocalStorage () {
+    debug('Loading from local storage...')
+    const item = window.localStorage.getItem(CONFIG_KEY)
+
+    if (item === null || item.trim() === '') {
+      debug('Nothing to load from local storage.')
+      return // Nothing to load
+    }
+
+    try {
+      const loadedData = JSON.parse(item)
+      for (const prop of Object.keys(this.state) as Array<keyof State>) {
+        debug(`Loading property ${prop}`)
+        console.log(prop, loadedData[prop])
+        // First special handling for special keys, then just copy over.
+        if (prop === 'compactDay') {
+          this.set(prop, DateTime.fromISO(loadedData[prop]))
+        } else if (prop in loadedData && typeof loadedData[prop] === typeof this.state[prop]) {
+          this.set(prop, loadedData[prop])
+        }
+      }
+    } catch (err) {
+      debug(`Could not load from local storage: ${err}`)
+      window.localStorage.removeItem(CONFIG_KEY)
+    }
+  }
+
+  /**
+   * Persists the config in local storage
+   */
+  public saveToLocalStorage () {
+    debug('Saving to local storage...')
+    // NOTE: BE CAREFUL ABOUT WHAT YOU SAVE! It must be able to be revived. Look
+    // at the loader above to understand that.
+    const partialState: Partial<State> = {
+      query: this.state.query,
+      onlyPersonalAgendaItems: this.state.onlyPersonalAgendaItems,
+      fullscreen: this.state.fullscreen,
+      viewMode: this.state.viewMode,
+      compactDay: this.state.compactDay,
+      // NOTE: records left out
+      autoScroll: this.state.autoScroll
+    }
+
+    window.localStorage.setItem(CONFIG_KEY, JSON.stringify(partialState))
+    debug('Saved to local storage.')
   }
 }
 
