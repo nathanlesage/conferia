@@ -360,6 +360,7 @@ dialog.conferia-dialog, #conferia-wrapper {
       overflow: auto;
       flex-grow: 1; /* Ensure that the content takes most space */
       font-size: 0.8rem;
+      line-height: 100%;
 
       ol.presentation-list li {
         &::marker {
@@ -370,6 +371,8 @@ dialog.conferia-dialog, #conferia-wrapper {
         &:not(:last-child) {
           margin-bottom: 5px;
         }
+
+        p { margin: 2px 0; }
       }
     }
 

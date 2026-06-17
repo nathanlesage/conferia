@@ -149,7 +149,15 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
     const ol = dom('ol', 'presentation-list')
     for (const presentation of event.presentations) {
       const li = dom('li')
-      li.textContent = presentation.title
+      const title = document.createElement('p')
+      title.textContent = presentation.title
+
+      const authors = document.createElement('p')
+      authors.classList.add('author')
+      authors.textContent = presentation.author
+
+      li.appendChild(title)
+      li.appendChild(authors)
       ol.appendChild(li)
     }
     content.appendChild(ol)

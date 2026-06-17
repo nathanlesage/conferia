@@ -7,6 +7,9 @@
   across reloads of the browser window, saved per each individual device.
 * The maximum height of the standalone Conferia app is now 80% of the available
   window height. This will show the footer bar on most devices.
+* The author-names have been added to the presentation list on session event
+  cards in the schedule board. To make the content somewhat more compact, the
+  line-height has been reduced.
 
 # Release 0.27.0
 
