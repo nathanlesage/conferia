@@ -86,6 +86,7 @@ dialog.conferia-dialog, #conferia-wrapper {
     border: 1px solid var(--border-color);
     border-radius: var(--cf-border-radius);
     display: flex;
+    gap: 4px; /* If there are more than 1 element in the button (i.e., icon + text), space them out */
     justify-content: center;
     align-items: center;
     min-width: 30px;
@@ -466,25 +467,20 @@ dialog.conferia-dialog {
 
 dialog.conferia-event-details {
   display: grid;
-  align-items: stretch;
+  align-items: center;
   grid-template-areas:
     "title title location"
     "cnt cnt cnt"
     "footer-left close-button bookmark-button";
   grid-template-columns: 1fr 3fr 1fr; /* TODO */
 
-  div.bookmark {
+  .bookmark {
     grid-area: bookmark-button;
     cursor: pointer;
     font-size: 0.8rem;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-
-    &.bookmarked svg {
-      color: var(--accent-color);
-      fill: var(--accent-color);
-    }
   }
 
   .dialog-content-wrapper {

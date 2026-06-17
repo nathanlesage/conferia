@@ -10,6 +10,8 @@
 * The author-names have been added to the presentation list on session event
   cards in the schedule board. To make the content somewhat more compact, the
   line-height has been reduced.
+* Explicate the function of the "Add to agenda" button in the event modal to
+  increase UX.
 
 # Release 0.27.0
 

@@ -47,20 +47,31 @@ export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): vo
   dialog.appendChild(idElem)
 
   // Bookmarking Capabilities
-  const bookmarkButton = dom('div', 'bookmark', { tabindex: '0', role: 'button', title: 'Bookmark this event' })
+  const bookmarkButton = dom('button', 'bookmark', { tabindex: '0', role: 'button', title: 'Bookmark this event' })
+  bookmarkButton.innerHTML = bookmarkIcon
   if (conferia.agenda.hasItem(event.id)) {
-    bookmarkButton.classList.add('bookmarked')
+    bookmarkButton.classList.add('bookmarked', 'active')
   }
 
-  bookmarkButton.innerHTML = bookmarkIcon
+  const label = dom('span')
+  if (conferia.agenda.hasItem(event.id)) {
+    label.textContent = 'Remove from agenda'
+  } else {
+    label.textContent = 'Add to personal agenda'
+  }
+
+  bookmarkButton.appendChild(label)
   dialog.appendChild(bookmarkButton)
+
   bookmarkButton.addEventListener('click', () => {
     if (conferia.agenda.hasItem(event.id)) {
       conferia.agenda.removeItem(event.id)
-      bookmarkButton.classList.remove('bookmarked')
+      bookmarkButton.classList.remove('bookmarked', 'active')
+      label.textContent = 'Add to personal agenda'
     } else {
       conferia.agenda.addItem(event.id)
-      bookmarkButton.classList.add('bookmarked')
+      bookmarkButton.classList.add('bookmarked', 'active')
+      label.textContent = 'Remove from agenda'
     }
     conferia.updateUI()
   })
