@@ -363,17 +363,21 @@ dialog.conferia-dialog, #conferia-wrapper {
       font-size: 0.8rem;
       line-height: 100%;
 
-      ol.presentation-list li {
-        &::marker {
-          color: var(--accent-color);
-          font-weight: bold;
-        }
+      ol.presentation-list {
+        /* Remove the left padding to reduce the wasted space on the event cards */
+        padding-left: 20px;
+        li {
+          &::marker {
+            color: var(--accent-color);
+            font-weight: bold;
+          }
 
-        &:not(:last-child) {
-          margin-bottom: 5px;
-        }
+          &:not(:last-child) {
+            margin-bottom: 5px;
+          }
 
-        p { margin: 2px 0; }
+          p { margin: 2px 0; }
+        }
       }
     }
 
