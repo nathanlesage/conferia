@@ -1,4 +1,4 @@
-# Upcoming
+# Release 0.28.0
 
 * Refactored Rollup config and dev-server to pull in a test-index from the new
   resources folder. The program.csv to be loaded is also stored there.
