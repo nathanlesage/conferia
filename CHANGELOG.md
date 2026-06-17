@@ -1,3 +1,7 @@
+# Release 0.29.0
+
+* Fix bug that prevented proper releases.
+
 # Release 0.28.0
 
 * Refactored Rollup config and dev-server to pull in a test-index from the new
