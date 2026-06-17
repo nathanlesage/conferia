@@ -133,7 +133,10 @@ dialog.conferia-dialog, #conferia-wrapper {
 /* END: CONFERIA-SCOPED GENERICS */
 
 #conferia-wrapper {
-  max-height: 100vh;
+  /* A max height of 80% of the available height means that the footer of the 
+  Conferia app is always visible when the file is on its own page. Empirically
+  determined by cycling through the device list in the Firefox devtools. */
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
   background-color: var(--schedule-board-background);

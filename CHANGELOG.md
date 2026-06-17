@@ -5,6 +5,8 @@
 * Conferia now stores the user config to local storage. This allows users to
   retain any customization (i.e., the default view mode or a search query)
   across reloads of the browser window, saved per each individual device.
+* The maximum height of the standalone Conferia app is now 80% of the available
+  window height. This will show the footer bar on most devices.
 
 # Release 0.27.0
 
