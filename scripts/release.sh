@@ -32,7 +32,7 @@ then
     npm run build
     
     echo "Committing changes..."
-    git add ./package.json ./dist/conferia.css ./dist/conferia.js ./dist.conferia.js.map
+    git add ./package.json ./dist/conferia.css ./dist/conferia.js ./dist/conferia.js.map
     git commit -m "chore: Bump version to v$WANTED_VERSION"
     git push
 
