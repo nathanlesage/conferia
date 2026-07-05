@@ -127,6 +127,8 @@ Copenhagen. Thank you!
 
 * [IC2S2 2025, Norrköping, Sweden](https://ic2s2-2025.org/)
 * [BeNeLux Geography 2026, Leuven, Belgium](https://www.benelux-geo.eu/)
+* [AiML 2026, Amsterdam, Netherlands](https://events.illc.uva.nl/aiml2026/Program/Conference/)
+* [EUSN 2026, Norrköping, Sweden](https://liu.se/en/event/eusn-2026)
 
 ## License
 
