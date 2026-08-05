@@ -5,6 +5,7 @@ import svgLoader from 'vite-svg-loader'
 import { markdownHintPlugin } from '@vuepress/plugin-markdown-hint'
 
 export default defineUserConfig({
+  base: "/conferia/",
   bundler: viteBundler({
     viteOptions: {
       // The SVGLoader "raw" import is necessary since this is how we configured
