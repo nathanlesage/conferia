@@ -21,7 +21,7 @@ watch(conferiaDiv, div => {
 
   const conf = new Conferia({
     parent: div,
-    src: 'test_data.csv',
+    src: '/conferia/test_data.csv',
     eventCardPadding: 10,
     timeZone: 'Europe/Stockholm'
   });
