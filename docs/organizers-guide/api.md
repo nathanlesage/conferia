@@ -1,12 +1,10 @@
----
-layout: page
-title: API
----
+# API
 
 While simply setting up Conferia is likely sufficient for many conferences, the
 library comes with a powerful API that allows you to extend and customize its
 functionality further.
 
+> [!warning]
 > Using the API requires some basic knowledge of (asynchronous) JavaScript.
 > Also, the API has no guard rails against improper behavior. Make sure you
 > understand what you do! It is very easy to break things.
@@ -41,9 +39,10 @@ conf.awaitBoot().then(() => {
 })
 ```
 
-> Note that this will only work directly after the initialization of the
-> library. If you have configured Conferia to periodically reload the data, you
-> will have to retrieve the updated records yourself from time to time.
+> [!note]
+> This will only work directly after the initialization of the library. If you
+> have configured Conferia to periodically reload the data, you will have to
+> retrieve the updated records yourself from time to time.
 
 ## API Reference
 
@@ -56,24 +55,25 @@ Conferia offers three methods to retrieve a subset of CSV records from the
 instance that you can access. Each one returns a list of CSVRecords. To see the
 reference for the CSVRecord objects, see its type reference below.
 
-`Conferia.getRecords() => CSVRecord[]`
+#### `Conferia.getRecords() => CSVRecord[]`
 
-: This method returns all records from the instance. These will be already parsed
+This method returns all records from the instance. These will be already parsed
 and are the same that Conferia will display on the board. You can use this to,
 e.g., offer the entire agenda also as a list. To see what this could look like,
 take a look at the
 [IC2S2 2025 program page](https://ic2s2-2025.org/program/#interactive-schedule).
 
-`Conferia.getVisibleRecords() => CSVRecord[]`
+#### `Conferia.getVisibleRecords() => CSVRecord[]`
 
-: This method returns all *currently visible* records from the instance. That is,
+This method returns all *currently visible* records from the instance. That is,
 this method gives you the same subset of the records that are currently visible
-on the schedule board.
+on the schedule board. This could be just the current day, or user search
+results.
 
-`Conferia.getUserAgendaRecords() => CSVRecord[]`
+#### `Conferia.getUserAgendaRecords() => CSVRecord[]`
 
-: Similar to the methods above, this returns all records that are also part of the
-user agenda.
+Similar to the methods above, this returns all records that are part of the user
+agenda.
 
 ### Instance Properties
 
@@ -103,9 +103,10 @@ conf.state.on('change', (which, value) => {
 })
 ```
 
-> **Important**: We expose this for the convenience of extending Conferia, but
-> we take no responsibility if you set the library into an erroneous state.
-> There is no state recovery built in. Use this at your own risk.
+> [!caution]
+> We expose this for the convenience of extending Conferia, but we take no
+> responsibility if you set the library into an erroneous state. There is no
+> state recovery built in. Use this at your own risk.
 
 #### `Conferia.agenda`
 
@@ -117,81 +118,85 @@ the `id` properties of a CSV record.
 
 You have the following methods at your disposal:
 
-`conf.agenda.addItem(record.id)`
+##### `conf.agenda.addItem(record.id)`
 
-: Add an item to the user's agenda. Will show the intro dialog if the user has
-never before added an item.
+Adds an item to the user's agenda. Will show the intro dialog to the user if the
+user has never before added an item, which means that you should not do this
+without user interaction.
 
-`conf.agenda.removeItem(record.id)`
+##### `conf.agenda.removeItem(record.id)`
 
-: Removes an item from the user's agenda
+Removes an item from the user's agenda.
 
-`conf.agenda.clearPersonalAgenda()`
+##### `conf.agenda.clearPersonalAgenda()`
 
-: Clears the entire agenda. Will trigger a user confirmation dialog.
+Clears the entire agenda. Will trigger a user confirmation dialog, which means
+you should not do this without user interaction.
 
-`conf.agenda.hasItem(record.id)`
+##### `conf.agenda.hasItem(record.id)`
 
-: Checks whether the provided record is on the user's agenda.
+Checks whether the provided record is on the user's agenda.
 
-`conf.agenda.getItems()`
+##### `conf.agenda.getItems()`
 
-: Returns all items on the user's agenda.
+Returns all items on the user's agenda.
 
-### Type Reference: CSV Record
+## Type Reference: `CSVRecord`
 
-Since you will primarily interact with CSV records, we document their shape here.
+Since you will primarily interact with CSV records, we document their shape
+here. If in doubt, please check the source code to see the up-to-date shape.
 
-`id`
+#### `id`
 
-: An auto-generated ID for this record.
+An auto-generated ID for this record.
 
-`type`
+#### `type`
 
-: Describes the type of this record. Can be `single`, `keynote`, `meta`,
+Describes the type of this record. Can be `single`, `keynote`, `meta`,
 `special`, `session`, or `session_presentation`.
 
-`dateStart`
+#### `dateStart`
 
-: The start of the event, as a luxon `DateTime`.
+The start of the event, as a luxon `DateTime`.
 
-`dateEnd`
+#### `dateEnd`
 
-: The end of the event, as a luxon `DateTime`.
+The end of the event, as a luxon `DateTime`.
 
-`title`
+#### `title`
 
-: The title of the event.
+The title of the event.
 
-`location`
+#### `location`
 
-: Optional (can be undefined), the location string for this event.
+Optional (can be undefined), the location string for this event.
 
-`chair`
+#### `chair`
 
-: Optional (can be undefined), the chair for this event.
+Optional (can be undefined), the chair for this event.
 
-`notes`
+#### `notes`
 
-: Optional (can be undefined), any notes for this event.
+Optional (can be undefined), any notes for this event.
 
-`presentations`
+#### `presentations`
 
-: Only for session records. Contains a list of all presentations in this session.
+Only for session records. Contains a list of all presentations in this session.
 Presentations have all the general properties of CSV records (title, date, etc.)
 plus `abstract`, `author`, `session` (the session title), and `sessionOrder`
 (the sorting of the presentations).
 
-`abstract`
+#### `abstract`
 
-: Only available for records of type `session_presentation`, `single`,
+Only available for records of type `session_presentation`, `single`,
 `keynote`, and `special`.
 
-`author`
+#### `author`
 
-: Only available for records of type `session_presentation`, `single`,
+Only available for records of type `session_presentation`, `single`,
 `keynote`, and `special`.
 
-> Note that, while `session_presentation` records contain the same type of
-> information as other records, they will never be part of lists of CSV records
-> returned from the object. Instead, they are always part of `session` records.
+> [!note]
+> While `session_presentation` records contain the same type of information as
+> other records, they will never be part of lists of CSV records returned from
+> the object. Instead, they are always part of `session` records.

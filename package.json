@@ -8,7 +8,9 @@
     "test": "mocha --no-diffs",
     "build": "NODE_ENV=production rollup -c",
     "watch": "NODE_ENV=develop rollup -c --watch",
-    "release": "./scripts/release.sh"
+    "release": "./scripts/release.sh",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "author": "Hendrik Erz <hendrik@zettlr.com>",
   "license": "AGPL-3.0-only",
@@ -23,18 +25,28 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.9.1",
     "@types/ua-parser-js": "^0.7.39",
+    "@vuepress/bundler-vite": "^2.0.0-rc.31",
+    "@vuepress/plugin-markdown-hint": "^2.0.0-rc.132",
+    "@vuepress/theme-default": "^2.0.0-rc.132",
     "mocha": "^11.3.0",
     "open": "11.0.x",
     "rollup": "4.60.x",
     "rollup-plugin-dev": "^2.0.3",
     "rollup-plugin-svg": "^2.0.0",
+    "sass-embedded": "^1.100.0",
     "tslib": "^2.8.1",
     "tsx": "^4.22.3",
-    "typescript": "6.0.x"
+    "typescript": "6.0.x",
+    "vite-svg-loader": "^5.1.1",
+    "vuepress": "^2.0.0-rc.31"
   },
   "dependencies": {
     "hash-sum": "^2.0.0",
     "luxon": "^3.6.0",
     "ua-parser-js": "^2.0.9"
+  },
+  "allowScripts": {
+    "esbuild@0.28.0": true,
+    "fsevents@2.3.3": true
   }
 }

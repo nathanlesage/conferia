@@ -1,13 +1,27 @@
 ---
-layout: home
+home: true
+tagline: "Turn an Excel spreadsheet of your conference's schedule into an interactive agenda"
+actions:
+  - text: User's guide
+    link: /users-guide/index.md
+  - text: Organizer's Guide
+    link: /organizers-guide/index.md
+    type: secondary
+features:
+  - title: "Comprehensive"
+    details: "With a compact design, Conferia offers a maximum of information about sessions, keynotes, and social events without causing overload"
+  - title: "Minimalist"
+    details: "A fully self-contained library that works almost everywhere and can be set up in a few minutes without coding knowledge"
+  - title: "Responsive and Interactive"
+    details: "Works on both mobile and desktop devices, and offers personal agenda features and a powerful search"
+heroImage: /assets/images/conferia_showcase.png
+heroAlt: Conferia Showcase
 ---
 
-> Conferia.js is a drop-in solution that connects the needs of conference
-> organizers and participants. Simply take a spreadsheet with your conference
-> agenda, and let Conferia turn it into an interactive agenda for your
-> participants.
-
-![Conferia Showcase](assets/images/conferia_showcase.png)
+Conferia.js is a drop-in solution that connects the needs of conference
+organizers and participants. Simply take a spreadsheet with your conference
+agenda, and let Conferia turn it into an interactive agenda for your
+participants.
 
 Conferia aims to make it easy to create an interactive agenda with little
 overhead. This is especially crucial since organizing a conference usually
@@ -21,13 +35,14 @@ as a full solution for participants to find and filter events, create their own
 personal schedule, and even add the events to their own calendar to never miss
 an exciting presentation.
 
-> You can see an [interactive demo](demo) to experience Conferia.js.
+> [!tip]
+> You can see an [interactive demo](/demo/index.md) to experience Conferia.js.
 
-This documentation includes three documents:
+This documentation includes three parts:
 
-* [An interactive demo with test data to try the tool.](demo)
-* [A comprehensive setup guide for conference organizers.](organizers-guide)
-* [A user's guide for participants and users of the app.](users-guide)
+* [A user's guide for participants and users of the app.](/users-guide/index.md)
+* [A comprehensive setup guide for conference organizers.](/organizers-guide/index.md)
+* [An interactive demo with test data to try the tool.](/demo/index.md)
 
 If you spot an issue, please
 [create a bug report](https://github.com/nathanlesage/conferia/issues) on GitHub

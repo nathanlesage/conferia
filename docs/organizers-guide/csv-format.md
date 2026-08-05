@@ -1,18 +1,18 @@
----
-layout: page
-title: CSV Format
----
+# CSV Format
 
 The agenda data file needs to be a CSV file following a specific schema. The CSV
 file contains one individual event per line. Not all the information is required
 for all types of events.
 
-> Tip: You can [download the demo test data](demo/test_data.csv) which allows
+> [!tip]
+> Tip: You can [download the demo test data](../demo/test_data.csv) which allows
 > you to quickly set up the correct file structure.
 
 The CSV file needs to include these columns:
 
-* `date_start`: The start date, in ISO 8601-format (e.g., `2025-01-01T12:00:00`)
+* `date_start`: The start date, in
+  [ISO 8601-format](https://en.wikipedia.org/wiki/ISO_8601) (e.g.
+  `2025-01-01T12:00:00`)
 * `date_end`: The end date, in ISO 8601-format (e.g., `2025-01-01T12:30:00`)
 * `type`: The type of the event. Must be one of:
   * `session_presentation`: A regular presentation or lightning talk that is

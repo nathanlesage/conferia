@@ -1,14 +1,20 @@
----
-layout: page
-title: Configuration
----
+# Configuration
 
-This page describes the available configuration options available to customize
-your Conferia experience. It contains a dump of the configuration interface.
-These are the options you pass in to `new Conferia({ /* Options */ })`.
+While Conferia.js ships with sensible defaults, it gives you a lot of freedom to
+adjust the library's look and feel to how you prefer to use it. On this page, we
+describe all options you can set to customize your experience.
 
-For more details and help for the more complex options, please refer to the
-[organizer's guide](organizers-guide.md).
+> [!tip]
+> All options are provided in the Conferia constructor. So all options can be
+> used like so:
+>
+> ```js
+> const conferia = new Conferia({ option: "value" })
+> ```
+
+There are two special options, the `dateParser` and the `rowParser`, which allow
+you to transform the CSV data in bulk. Please see the end of this document for
+more information on how you can use those options.
 
 ```typescript
 interface ConferiaOptions {
@@ -143,5 +149,94 @@ interface ConferiaOptions {
    * If set to true, makes the library print out some debug info.
    */
   debug?: boolean
+}
+```
+
+## `dateParser`
+
+The `dateParser` option accepts a JavaScript function that you can use to
+transform all dates in the CSV spreadsheet so that they conform to the ISO 8601
+format.
+
+This comes in handy in two situations. First, some spreadsheet softaware has a
+quirk where it simply refuses to export ISO 8601 dates. Instead of manually
+fixing every single date in the CSV export everytime you need to update your
+schedule, we recommend that you use this function to automate this process. And
+second, sometimes it might be easier for you to enter dates in a completely odd
+format, and then use this function to turn whatever format you decided on into
+the format needed by Converia.js.
+
+The function receives two arguments for each date the library finds in your CSV.
+First the date string that comes directly from your CSV file. And second, a
+great little helper tool, called `luxon`, that might make it easier for you to
+transform your dates.
+
+To give you an example, Google Spreadsheets refuses to produce valid ISO 8601
+dates. To fix this issue, you can use a function like the following:
+
+```js
+dateParser (dateString, luxon) {
+  // The program comes from Google Sheets and as such is lacking the T.
+  return dateString.split(' ').join('T')
+},
+```
+
+Here, we didn't need to deal with any dates at all, because what is lacking in
+the Google Sheets export is merely the `T` letter that is required by ISO 8601.
+
+## `rowParser`
+
+The row parser is another utility function that you can pass to customize the
+sessions.
+
+The primary use-case for this is if you need to add additional information to
+your schedule that the library does not account for. You can add as many
+additional columns as you want to your CSV file, which Conferia will simply
+ignore. But if you want to use this information to enrich your records, you can
+use the `rowParser` for this.
+
+The function receives three arguments for each line in the CSV file: First the
+raw data that the library has extracted from the CSV file -- one string per
+column. Second, it receives the header columns, which you can use to identify
+a specific column in the row. Lastly, it receives the already parsed CSV record
+that Conferia.js will use going forward.
+
+You can modify the CSV record as you see it fit using the raw data, but you will
+have to return it afterwards.
+
+To give you an example, you may wish to add the submission IDs from your
+submission system to the session titles to make it easier for presenters and
+participants to find the correct presentation in the program. This is something
+where you'd use the row parser for.
+
+The following example uses the OpenReview submission system. Prior to using this
+function, the conference organizers have added an additional column,
+`openreview_id`, to the spreadsheet which then got exported into the CSV file.
+Since Conferia does not know of this column, it will ignore it and parse the
+records using only the minimum fields. The row parser then adds the submission
+ID to any session presentation record.
+
+```js
+rowParser (row, header, record) {
+  // Attach the OpenReview IDs to the presentation titles
+  if (record.type !== 'session_presentation') {
+    return record
+  }
+  const openReviewIdx = header.indexOf('openreview_id')
+  if (openReviewIdx < 0) {
+    console.warn('`openreview_id` Column not found in CSV')
+    return record
+  }
+
+  // Posters additionally get their Poster ID assigned so that it is
+  // clear that the session order number equals the pinboard and what
+  // the participants shall fill in to the Poster Award poll.
+  const isPoster = record.session.startsWith('Poster')
+  const posterSuffix = isPoster ? `; Poster ID: ${record.sessionOrder}` : ''
+
+  return {
+    ...record,
+    title: record.title + ` (#${row[openReviewIdx]}${posterSuffix})`
+  }
 }
 ```

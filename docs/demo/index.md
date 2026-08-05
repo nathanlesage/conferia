@@ -1,6 +1,5 @@
 ---
-permalink: /demo/
-layout: default
+sidebar: false
 ---
 
 # Demo
@@ -12,19 +11,3 @@ real existing people or research projects are mere coincidence.
 You can [download the demo data (CSV file)](test_data.csv).
 
 <div id="conferia"></div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const conf = new Conferia({
-      parent: document.getElementById('conferia'),
-      src: 'test_data.csv',
-      eventCardPadding: 10,
-      timeZone: 'Europe/Stockholm'
-    })
-
-    conf.awaitBoot().then(() => {
-      console.log('Conferia booted successfully. Access the instantiated Conferia.js object with `conf`.')
-      window.conf = conf
-    })
-  })
-</script>
