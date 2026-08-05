@@ -35,7 +35,7 @@ jobs:
       # Next, upload the resulting files
       - name: Upload Pages Artifact
         id: deployment
-        uses: actions/upload-pages-artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: docs/.vuepress/dist
 
