@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - name: Install deps
-        run: npm install --no-save
+        run: npm install --no-save --force # DEBUG: This is an incompatibility between VuePress and the default theme
       # run build script
       - name: Build documentation
         run: npm run docs:build
