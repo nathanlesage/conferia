@@ -1,3 +1,7 @@
+# Release 0.30.0
+
+* Fixed full-screen height.
+
 # Release 0.29.0
 
 * Fix bug that prevented proper releases.
