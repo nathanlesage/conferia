@@ -16,7 +16,7 @@ echo "NOTE: This script bumps the current version ($CURRENT_VERSION) to version 
 echo "It performs the following steps:"
 echo ""
 echo "1. Bump the package.json to $WANTED_VERSION"
-echo "2. Commit the changes"
+echo "2. Rebuild the package and commit the changes"
 echo "3. Tag the new commit with that version"
 echo "4. Push to origin"
 echo ""
