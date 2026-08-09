@@ -1,2 +1,4 @@
 .vuepress/.cache
 .vuepress/.temp
+# Do not ignore the test data
+!.vuepress/public/test_data.csv
