@@ -18,15 +18,16 @@ import { UAParser } from "ua-parser-js"
 
 export interface ConferiaOptions {
   /**
-   * Where in the DOM should the schedule live?
+   * Where in the DOM should the schedule live? This is required.
    */
   parent: HTMLElement
 
   /**
-   * The link to the data file. Can be a relative path (`/schedule.csv`) or an
-   * absolute URL (`https://www.example.com/schedule.csv`). The library uses
-   * `fetch` to download the data from there. If hosted on a different domain,
-   * may cause CORS errors.
+   * The link to the data file. This is required. Can be a (relative) path
+   * (`/schedule.csv` or `schedule.csv`) or an absolute URL
+   * (`https://www.example.com/schedule.csv`). The library uses `fetch` to
+   * download the data from there. If hosted on a different domain, may cause
+   * CORS errors.
    */
   src: string
 
@@ -34,13 +35,13 @@ export interface ConferiaOptions {
    * An optional title to be rendered above the schedule (useful if you have the
    * schedule live on its dedicated page).
    */
-  title?: string
+  title: string
 
   /**
    * An optional intro text to be rendered above the title (useful if you have
    * the schedule live on its dedicated page).
    */
-  intro?: string
+  intro: string
 
   /**
    * If you expect frequent updates to the schedule as the conference
@@ -53,7 +54,7 @@ export interface ConferiaOptions {
    * this: With 300 participants, a CSV file of about 1 MB, and a reload
    * schedule of 5 minutes, your server will transfer 3.6 GB (!) every hour.
    */
-  autoReload?: boolean|number
+  autoReload: boolean|number
 
   /**
    * Specifies the IANA timezone for the entire event. This is optional, in
@@ -62,12 +63,12 @@ export interface ConferiaOptions {
    * either within the datetimes in the data file, or by setting this property.
    * Refer to the manual for more information.
    */
-  timeZone?: string
+  timeZone: string
 
   /**
    * Specifies the padding on the calendar board (default: 10px).
    */
-  eventCardPadding?: number
+  eventCardPadding: number
 
   /**
    * Specifies a specific grid line interval. By default, the grid lines will
@@ -79,7 +80,7 @@ export interface ConferiaOptions {
    * * `1800`: 30 minutes
    * * `3600`: 1 hour
    */
-  timeGridSeconds?: number
+  timeGridSeconds: number
 
   /**
    * The minimum height of a card on the schedule. Provide a number of pixels.
@@ -89,7 +90,19 @@ export interface ConferiaOptions {
    * 5 minute event will be this amount of pixels high, while the 3 hour event
    * will be 36 times this amount of pixels high (3 hours divided by 5 minutes).
    */
-  minimumCardHeight?: number
+  minimumCardHeight: number
+
+  /**
+   * By default, Conferia keeps the numbers that you provide in the
+   * `session_order` column as the actual values of the corresponding list items
+   * (meaning that, if you set four presentations in a schedule with the numbers
+   * 1, 3, 5, 7, these will be the list item numbers displayed to the users).
+   * Set this option to `false` (the default is `true`) to ensure that the lists
+   * of session presentations always start at 1 and increase strictly monotonous
+   * (i.e., Conferia will use `session_order` to sort the sessions, but ignore
+   * the actual values and number the presentations 1, 2, 3, 4, …).
+   */
+  sessionOrderAsListNumbers: boolean
 
   /**
    * This setting allows you to specify which view mode the application should
@@ -108,7 +121,7 @@ export interface ConferiaOptions {
    * * `device-based`: Show the `full` schedule on desktop, and the `compact`
    *   schedule on mobile devices (the default).
    */
-  initialViewMode?: 'full'|'compact'|'time-based'|'device-based'
+  initialViewMode: 'full'|'compact'|'time-based'|'device-based'
 
   /**
    * An optional function that you can use to correct the dates in your CSV
@@ -124,7 +137,7 @@ export interface ConferiaOptions {
    * @return  {string}                Must return an ISO 8601-compatible
    *                                  datetime string.
    */
-  dateParser?: (dateString: string, luxon: typeof DateTime) => string
+  dateParser: (dateString: string, luxon: typeof DateTime) => string
 
   /**
    * An optional function that you can use to fine-tune the data in the loading
@@ -142,12 +155,12 @@ export interface ConferiaOptions {
    *
    * @return  {CSVRecord|SessionPresentationRecord}          The parsed and modified record
    */
-  rowParser?: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
+  rowParser: <T = CSVRecord|SessionPresentationRecord>(row: string[], header: string[], record: T) => T
 
   /**
    * If set to true, makes the library print out some debug info.
    */
-  debug?: boolean
+  debug: boolean
 }
 
 /**
@@ -191,9 +204,10 @@ export class Conferia {
   /**
    * Instantiate a new Conferia object.
    *
-   * @param   {ConferiaOptions}  opt  The start options
+   * @param   {ConferiaOptions}  opt  The configuration. `src` and `parent` are
+   *                                  required, the rest is optional.
    */
-  public constructor (opt: ConferiaOptions) {
+  public constructor (opt: Partial<ConferiaOptions> & Pick<ConferiaOptions, 'src'|'parent'>) {
     this.state = appState()
     this.opt = {
       parent: opt.parent,
@@ -205,6 +219,7 @@ export class Conferia {
       eventCardPadding: opt.eventCardPadding ?? 10,
       initialViewMode: opt.initialViewMode ?? 'device-based',
       timeGridSeconds: opt.timeGridSeconds ?? -1,
+      sessionOrderAsListNumbers: opt.sessionOrderAsListNumbers ?? true,
       minimumCardHeight: opt.minimumCardHeight ?? 75,
       // Default for the callbacks are identity functions
       dateParser: opt.dateParser ?? ((dateString) => dateString),
@@ -224,7 +239,9 @@ export class Conferia {
     } else if (this.opt.initialViewMode === 'full') {
       this.state.set('viewMode', 'full', false)
     } else if (this.opt.initialViewMode === 'time-based') {
-      // NOTE: This must happen after the initial load, see below.
+      // NOTE: Setting the view mode to "time-based" must happen after the
+      // initial load because it depends on whether the conference currently
+      // happens, which we only know after the CSV has been loaded. See below.
     } else if (this.opt.initialViewMode === 'device-based') {
       if (UAParser(navigator.userAgent).device.type === 'mobile') {
         this.state.set('viewMode', 'compact', false)
@@ -233,8 +250,8 @@ export class Conferia {
       }
     }
 
-    // After we have initialized the state, load a potentially overridden user
-    // state from localStorage
+    // After we have initialized the state, let user-defined changes override
+    // the config, if applicable.
     this.state.loadFromLocalStorage()
 
     // Hook up to state changes
@@ -492,8 +509,8 @@ export class Conferia {
 
     // Draw the events on the scheduleboard
     for (const event of records) {
-      const card = generateEventCard(event, this.agenda)
-      card.addEventListener('click', () => showEventDetailsModal(event, this))
+      const card = generateEventCard(event, this.agenda, this.opt)
+      card.addEventListener('click', () => showEventDetailsModal(event, this, this.opt))
 
       // Place the event on the schedule board
       const timeOffset = getTimeOffset(event.dateStart, earliestTime)

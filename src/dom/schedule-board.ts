@@ -4,6 +4,7 @@ import { CSVRecord } from "../csv"
 import bookmarkIcon from '../icons/bookmark.svg'
 import { dom } from "./util"
 import { getTimeOffset, isTimeBefore, renderFullDate } from "../util/time-helpers"
+import { ConferiaOptions } from "../conferia"
 
 // The width for special gridlines that we use to demarcate something (here: the
 // day dividers and the time indicator)
@@ -114,10 +115,11 @@ export function drawTimeIndicator (scheduleBoard: HTMLElement, earliestTime: Dat
  *
  * @param   {CSVRecord}       event   The event to turn into a card
  * @param   {Agenda}          agenda  The personal agenda controller
+ * @param   {ConferiaOptions} options The Conferia options
  *
  * @return  {HTMLDivElement}          The event card element
  */
-export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivElement {
+export function generateEventCard (event: CSVRecord, agenda: Agenda, options: ConferiaOptions): HTMLDivElement {
   const card = dom('div', ['event', event.type], {
     tabindex: '0',
     role: 'button',
@@ -149,6 +151,9 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda): HTMLDivEle
     const ol = dom('ol', 'presentation-list')
     for (const presentation of event.presentations) {
       const li = dom('li')
+      if (options.sessionOrderAsListNumbers) {
+        li.value = presentation.sessionOrder
+      }
       const title = document.createElement('p')
       title.textContent = presentation.title
 

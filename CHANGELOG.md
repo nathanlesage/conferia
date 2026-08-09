@@ -1,3 +1,15 @@
+# Release 0.31.0
+
+* **Feature**: Add new option `sessionOrderAsListNumbers`. If `true` (the
+  default), the numbering you provide in the `session_order` column of the CSV
+  file will be used as the shown list numbers. So for a session with four
+  presentations, numbered 2, 3, 6, and 8, those will be the numbers Conferia
+  shows in the schedule board and the event details dialog. Set this to `false`
+  to use the session order numbers for sorting the presentation, but use
+  strictly increasing list numbers for display (i.e., 2, 3, 6, and 8 will turn
+  into 1, 2, 3, 4 for display purposes). This can be used to indicate if
+  sessions might start late or have a hole in them.
+
 # Release 0.30.0
 
 * Fixed full-screen height.

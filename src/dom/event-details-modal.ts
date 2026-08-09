@@ -1,15 +1,17 @@
 import { CSVRecord } from "../csv"
 import { dom } from "./util"
 import bookmarkIcon from '../icons/bookmark.svg'
-import { Conferia } from "../conferia"
+import { Conferia, ConferiaOptions } from "../conferia"
 import { renderFullDate } from "../util/time-helpers"
 
 /**
  * Creates and shows a dialog showing details for the provided event.
  *
- * @param   {CSVRecord}  event  The event to detail
+ * @param  {CSVRecord}        event     The event to detail
+ * @param  {Conferia}         conferia  The conferia instance
+ * @param  {ConferiaOptions}  opt       The conferia options
  */
-export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): void {
+export function showEventDetailsModal (event: CSVRecord, conferia: Conferia, opt: ConferiaOptions): void {
   const dialog = dom('dialog', 'conferia-dialog conferia-event-details', {
     'aria-labelledby': `dialog-title-${event.id}`,
     'aria-details': `dialog-content-${event.id}`
@@ -20,16 +22,14 @@ export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): vo
     'aria-label': `Details for event: ${event.title}, ${renderFullDate(event.dateStart)}, location: ${event.location ?? 'No location'}`
   })
 
-  switch (event.type) {
-    case 'keynote':
-      title.textContent = 'Keynote: ' + event.title
-      break
-    case 'session':
-      title.textContent = 'Session: ' + event.title
-      break
-    default:
-      title.textContent = event.title
+  if (event.type === 'keynote') {
+    title.textContent = `Keynote: ${event.title}`
+  } else if (event.type === 'session') {
+    title.textContent = `Session: ${event.title}`
+  } else {
+    title.textContent = event.title
   }
+
   dialog.appendChild(title)
 
   if (event.location !== undefined) {
@@ -38,7 +38,7 @@ export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): vo
     dialog.appendChild(loc)
   }
 
-  const content = generateEventDOMStructure(event)
+  const content = generateEventDOMStructure(event, opt)
   content.setAttribute('id', `dialog-content-${event.id}`)
   dialog.appendChild(content)
 
@@ -110,7 +110,7 @@ export function showEventDetailsModal (event: CSVRecord, conferia: Conferia): vo
  *
  * @return  {HTMLElement}            The content DOM
  */
-function generateEventDOMStructure (event: CSVRecord): HTMLElement {
+function generateEventDOMStructure (event: CSVRecord, config: ConferiaOptions): HTMLElement {
   const wrapper = generateDialogWrapper()
 
   const time = dom('p', 'time')
@@ -163,6 +163,9 @@ function generateEventDOMStructure (event: CSVRecord): HTMLElement {
       details.appendChild(abstract)
 
       const li = dom('li')
+      if (config.sessionOrderAsListNumbers) {
+        li.value = pres.sessionOrder
+      }
       li.appendChild(details)
       li.appendChild(dom('hr'))
       ol.appendChild(li)
