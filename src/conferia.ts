@@ -265,6 +265,7 @@ export class Conferia {
           // fall-through
         case 'onlyPersonalAgendaItems':
         case 'viewMode':
+        case 'autoScroll':
         case 'query':
           this.updateUI()
           break
@@ -295,6 +296,10 @@ export class Conferia {
     })
 
     this.dom = generateDOMStructure(this.toolbar.dom)
+
+    // Apply any restored user-state
+    // Make the wrapper fullscreen again if that is part of the config
+    this.dom.wrapper.classList.toggle('fullscreen', this.state.get('fullscreen'))
 
     // If optional header information is present, mount some info before
     // mounting the actual widget.
@@ -337,13 +342,23 @@ export class Conferia {
 
     // Upon user interaction either with their finger (touchmove) or a mouse
     // (wheel), disable autoscrolling.
-    const stopAutoscroll = () => {
-      this.dom.scheduleWrapper.removeEventListener('touchmove', stopAutoscroll)
-      this.dom.scheduleWrapper.removeEventListener('wheel', stopAutoscroll)
-      this.state.set('autoScroll', false)
-    }
-    this.dom.scheduleWrapper.addEventListener('touchmove', stopAutoscroll)
-    this.dom.scheduleWrapper.addEventListener('wheel', stopAutoscroll)
+    this.dom.scheduleWrapper.addEventListener('touchmove', () => {
+      this.pauseAutoScroll()
+    }, { passive: true })
+    this.dom.scheduleWrapper.addEventListener('wheel', () => {
+      this.pauseAutoScroll()
+    }, { passive: true })
+
+    // Listen to live action clicks
+    this.dom.liveActions.addEventListener('click', () => {
+      this.state.set('autoScroll', !this.state.get('autoScroll'))
+      debug(`Toggling auto-scrolling to: ${this.state.get('autoScroll')}`)
+      if (this.state.get('autoScroll')) {
+        this.resumeAutoScroll()
+      } else {
+        this.pauseAutoScroll()
+      }
+    })
 
     // Finally, set up a listener that will start re-drawing the entire UI once
     // per minute to have the time indicator move correctly, when the conference
@@ -505,9 +520,8 @@ export class Conferia {
     // Draw a grid in the scheduleBoard
     updateScheduleBoard(this.dom.scheduleBoard, COLUMN_WIDTH, timeGridInterval * pps)
 
-    this.dom.scheduleBoard.innerHTML = ''
-
     // Draw the events on the scheduleboard
+    this.dom.scheduleBoard.innerHTML = ''
     for (const event of records) {
       const card = generateEventCard(event, this.agenda, this.opt)
       card.addEventListener('click', () => showEventDetailsModal(event, this, this.opt))
@@ -558,11 +572,36 @@ export class Conferia {
     drawVerticalDayDividers(this.dom.scheduleBoard, COLUMN_WIDTH, rpd)
 
     if (isConferenceNow(this.state.get('records'))) {
+      const autoScroll = this.state.get('autoScroll')
+      // Update the action elements in the footer
+      this.dom.liveActions.style.display = ''
+      this.dom.liveActions.classList.toggle('is-live', autoScroll)
+      this.dom.liveActionsStatusMessage.textContent = autoScroll ? 'live' : ''
       // Finally, if applicable, add a time indicator at the current time.
       const indicatorElement = drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps)
-      if (this.state.get('autoScroll') && indicatorElement !== undefined) {
+      if (autoScroll && indicatorElement !== undefined) {
         this.scrollTimeIndicatorIntoView(indicatorElement)
       }
+    } else {
+      this.dom.liveActions.style.display = 'none'
+    }
+  }
+
+  /**
+   * Resumes the auto-scrolling of the schedule
+   */
+  public resumeAutoScroll () {
+    if (!this.state.get('autoScroll')) {
+      this.state.set('autoScroll', true)
+    }
+  }
+
+  /**
+   * Pauses the auto-scrolling of the schedule
+   */
+  public pauseAutoScroll () {
+    if (this.state.get('autoScroll')) {
+      this.state.set('autoScroll', false)
     }
   }
 

@@ -25,6 +25,8 @@
   --special-background: #effcff;
   --meta-background: #f9f9f9;
 
+  --live-indicator-red: #ff0505;
+
   /* Non-color variables */
   --cf-border-radius: 8px;
   --cf-gutter-size: 40px; /* Size of the day and time gutters */
@@ -51,6 +53,8 @@
     --keynote-background: #372626;
     --special-background: #20393e;
     --meta-background: #515050;
+
+    --live-indicator-red: #f85d5d;
   }
 }
 /* END: CONFERIA VARIABLES */
@@ -153,10 +157,18 @@ dialog.conferia-dialog, #conferia-wrapper {
   }
 }
 
+/* Animation to be used on the "live" icon in the footer */
+@keyframes pulse-shadow {
+  0% { filter: drop-shadow(0px 0px 0px rgb(from var(--live-indicator-red) r g b / 0%)); }
+  50% { filter: drop-shadow(0px 0px 4px var(--live-indicator-red)); }
+  100% { filter: drop-shadow(0px 0px 0px rgb(from var(--live-indicator-red) r g b / 0%)); }
+}
+
 #conferia-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 5px 10px;
   border: 1px solid var(--border-color);
   border-top: none;
@@ -165,6 +177,25 @@ dialog.conferia-dialog, #conferia-wrapper {
 
   span#cf-version {
     display: block;
+    opacity: 0.5;
+  }
+
+  div.footer-spacer {
+    flex-grow: 1;
+  }
+
+  div#cf-footer-live {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    &.is-live svg {
+      stroke: var(--live-indicator-red);
+      animation-name: pulse-shadow;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+    }
   }
 }
 
@@ -309,6 +340,7 @@ dialog.conferia-dialog, #conferia-wrapper {
     width: 100%;
     left: 0px;
     pointer-events: none;
+    z-index: 1;
   }
 
   .event {

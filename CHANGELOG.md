@@ -1,3 +1,19 @@
+# Release 0.32.0
+
+* **Feature**: The auto-scrolling is now visually indicated in the footer, with
+  a new element that becomes visible when the conference is currently happening.
+  As long as there is a time-indicator shown, the footer will now display a
+  "live" indicator if auto-scrolling is true, that is if the schedule will
+  automatically keep the current time in the center of the screel. Clicking the
+  element toggles this state on and off, which is useful if you scroll around,
+  which will automatically turn auto-scroll off. This improves the usability of
+  Conferia for non-interactive, automated displays.
+* The live time indicator now stays on top of all events, including meta events
+  (such as coffee and lunch breaks).
+* Respect and re-apply the fullscreen setting upon subsequent reloads of the
+  widget.
+* Add the class `.cf-footer-info` to the info-string in the Conferia footer.
+
 # Release 0.31.0
 
 * **Feature**: Add new option `sessionOrderAsListNumbers`. If `true` (the

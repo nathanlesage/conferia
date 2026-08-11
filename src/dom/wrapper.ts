@@ -1,6 +1,7 @@
 import { generateDayGutter } from "./day-gutter"
 import { generateScheduleBoard, generateScheduleWrapper } from "./schedule-board"
 import { generateTimeGutter } from "./time-gutter"
+import radioIcon from '../icons/radio.svg'
 import pkg from "../../package.json"
 import { dom } from "./util"
 
@@ -10,6 +11,8 @@ export interface DOMStructure {
   timeGutter: HTMLDivElement
   dayGutter: HTMLDivElement
   scheduleBoard: HTMLDivElement
+  liveActions: HTMLDivElement
+  liveActionsStatusMessage: HTMLSpanElement
 }
 
 /**
@@ -60,11 +63,13 @@ export function generateDOMStructure (toolbar: HTMLDivElement): DOMStructure {
   wrapper.appendChild(toolbar)
   wrapper.appendChild(scheduleWrapper)
 
-  const footer = generateFooter()
+  const { footer, liveActions, liveActionsStatusMessage } = generateFooterDOM()
   wrapper.appendChild(footer)
 
   return {
-    wrapper, scheduleWrapper, timeGutter, dayGutter, scheduleBoard
+    wrapper,
+    scheduleWrapper, timeGutter, dayGutter, scheduleBoard,
+    liveActions, liveActionsStatusMessage
   }
 }
 
@@ -73,16 +78,28 @@ export function generateDOMStructure (toolbar: HTMLDivElement): DOMStructure {
  *
  * @return  {HTMLDivElement}  The footer DIV
  */
-function generateFooter (): HTMLDivElement {
-  const div = dom('div', undefined, { id: 'conferia-footer' })
+function generateFooterDOM (): { footer: HTMLDivElement, liveActions: HTMLDivElement, liveActionsStatusMessage: HTMLSpanElement } {
+  const footer = dom('div', undefined, { id: 'conferia-footer' })
 
-  const copy = dom('span')
+  // Info-string
+  const copy = dom('span', undefined, { id: 'cf-footer-info' })
   copy.innerHTML = `Powered by <a href="https://nathanlesage.github.io/conferia/" target="_blank">Conferia.js</a> | &copy; 2026 | <a href="https://nathanlesage.github.io/conferia/users-guide" target="_blank">User‘s Guide</a>`
-  div.appendChild(copy)
+  footer.appendChild(copy)
 
+  footer.appendChild(dom('div', 'footer-spacer'))
+
+  // Space for dynamic elements
+  const liveActions = dom('div', undefined, { id: 'cf-footer-live' })
+  liveActions.innerHTML = `${radioIcon}`
+  liveActions.title = 'Click to toggle between auto-scrolling as the event progresses and manually scrolling'
+  const liveActionsStatusMessage = dom('span', 'cf-live-action-status')
+  liveActions.appendChild(liveActionsStatusMessage)
+  footer.appendChild(liveActions)
+
+  // Version
   const ver = dom('span', undefined, { id: 'cf-version' })
   ver.textContent = 'v' + pkg.version
-  div.appendChild(ver)
+  footer.appendChild(ver)
 
-  return div
+  return { footer, liveActions, liveActionsStatusMessage }
 }
