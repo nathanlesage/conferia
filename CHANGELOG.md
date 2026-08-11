@@ -13,6 +13,7 @@
 * Respect and re-apply the fullscreen setting upon subsequent reloads of the
   widget.
 * Add the class `.cf-footer-info` to the info-string in the Conferia footer.
+* Conferia no longer shows a border in full-screen to de-clutter the interface.
 
 # Release 0.31.0
 

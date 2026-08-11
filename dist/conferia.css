@@ -154,6 +154,20 @@ dialog.conferia-dialog, #conferia-wrapper {
     height: 100vh;
     width: 100vw;
     z-index: 1000;
+
+    /* Remove border (and radius) in fullscreen */
+    #conferia-toolbar {
+      border-radius: 0;
+      border: none;
+    }
+    #conferia-schedule-wrapper {
+      border-left: none;
+      border-right: none;
+    }
+    #conferia-footer {
+      border-radius: 0;
+      border: none;
+    }
   }
 }
 
