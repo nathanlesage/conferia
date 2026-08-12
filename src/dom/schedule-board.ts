@@ -137,7 +137,7 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda, options: Co
   header.appendChild(title)
 
   if (event.location !== undefined) {
-    const loc = dom('p', 'location')
+    const loc = dom('div', 'location')
     loc.textContent = event.location
     header.appendChild(loc)
   }

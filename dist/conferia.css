@@ -398,7 +398,7 @@ dialog.conferia-dialog, #conferia-wrapper {
         grid-area: title;
       }
   
-      p.location {
+      div.location {
         margin: 0;
         text-align: right;
       }

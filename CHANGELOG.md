@@ -1,3 +1,8 @@
+# Release 0.33.0
+
+* Changed location element from `p` to `div`.
+* Added utility functions for sparse DOM updates.
+
 # Release 0.32.0
 
 * **Feature**: The auto-scrolling is now visually indicated in the footer, with
