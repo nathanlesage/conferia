@@ -169,11 +169,11 @@ export interface ConferiaOptions {
 export class Conferia {
   public readonly state: ApplicationState
   /**
-   * The options passed to the constructor. Here, we turn every optional option
+   * The config passed to the constructor. Here, we turn every optional option
    * into a required one so that we can apply defaults at one point in the
    * constructor.
    */
-  private readonly opt: Required<ConferiaOptions>
+  private readonly config: Required<ConferiaOptions>
 
   /**
    * The loading promise. Used to ensure components only access the state when
@@ -207,42 +207,42 @@ export class Conferia {
    * @param   {ConferiaOptions}  opt  The configuration. `src` and `parent` are
    *                                  required, the rest is optional.
    */
-  public constructor (opt: Partial<ConferiaOptions> & Pick<ConferiaOptions, 'src'|'parent'>) {
+  public constructor (cfg: Partial<ConferiaOptions> & Pick<ConferiaOptions, 'src'|'parent'>) {
     this.state = appState()
-    this.opt = {
-      parent: opt.parent,
-      src: opt.src,
-      title: opt.title ?? '',
-      intro: opt.intro ?? '',
-      autoReload: opt.autoReload ?? false,
-      timeZone: opt.timeZone ?? '',
-      eventCardPadding: opt.eventCardPadding ?? 10,
-      initialViewMode: opt.initialViewMode ?? 'device-based',
-      timeGridSeconds: opt.timeGridSeconds ?? -1,
-      sessionOrderAsListNumbers: opt.sessionOrderAsListNumbers ?? true,
-      minimumCardHeight: opt.minimumCardHeight ?? 75,
+    this.config = {
+      parent: cfg.parent,
+      src: cfg.src,
+      title: cfg.title ?? '',
+      intro: cfg.intro ?? '',
+      autoReload: cfg.autoReload ?? false,
+      timeZone: cfg.timeZone ?? '',
+      eventCardPadding: cfg.eventCardPadding ?? 10,
+      initialViewMode: cfg.initialViewMode ?? 'device-based',
+      timeGridSeconds: cfg.timeGridSeconds ?? -1,
+      sessionOrderAsListNumbers: cfg.sessionOrderAsListNumbers ?? true,
+      minimumCardHeight: cfg.minimumCardHeight ?? 75,
       // Default for the callbacks are identity functions
-      dateParser: opt.dateParser ?? ((dateString) => dateString),
-      rowParser: opt.rowParser ?? ((row, header, record) => record),
-      debug: opt.debug ?? false
+      dateParser: cfg.dateParser ?? ((dateString) => dateString),
+      rowParser: cfg.rowParser ?? ((row, header, record) => record),
+      debug: cfg.debug ?? false
     }
     this.columnScaleFactor = 1
 
-    toggleDebug(this.opt.debug === true)
+    toggleDebug(this.config.debug === true)
     debug('Debug logging enabled') // Will only show if debug is actually enabled
 
     // NOTE: Below, we purposefully do not persist the config during this
     // initial update to be able to load and overwrite the config with user-
     // defined config.
-    if (this.opt.initialViewMode === 'compact') {
+    if (this.config.initialViewMode === 'compact') {
       this.state.set('viewMode', 'compact', false)
-    } else if (this.opt.initialViewMode === 'full') {
+    } else if (this.config.initialViewMode === 'full') {
       this.state.set('viewMode', 'full', false)
-    } else if (this.opt.initialViewMode === 'time-based') {
+    } else if (this.config.initialViewMode === 'time-based') {
       // NOTE: Setting the view mode to "time-based" must happen after the
       // initial load because it depends on whether the conference currently
       // happens, which we only know after the CSV has been loaded. See below.
-    } else if (this.opt.initialViewMode === 'device-based') {
+    } else if (this.config.initialViewMode === 'device-based') {
       if (UAParser(navigator.userAgent).device.type === 'mobile') {
         this.state.set('viewMode', 'compact', false)
       } else {
@@ -303,20 +303,20 @@ export class Conferia {
 
     // If optional header information is present, mount some info before
     // mounting the actual widget.
-    if (this.opt.title.trim() !== '' || this.opt.intro.trim() !== '') {
-      const elems = generateHeader(this.opt.title, this.opt.intro)
-      this.opt.parent.append(...elems)
+    if (this.config.title.trim() !== '' || this.config.intro.trim() !== '') {
+      const elems = generateHeader(this.config.title, this.config.intro)
+      this.config.parent.append(...elems)
     }
 
     // Now, mount the actual Conferia widget
-    this.opt.parent.appendChild(this.dom.wrapper)
+    this.config.parent.appendChild(this.dom.wrapper)
 
     // Begin loading
     this.loadPromise = this.loadCSV()
 
     // Perform initial update
     this.loadPromise.then(() => {
-      if (this.opt.initialViewMode === 'time-based') {
+      if (this.config.initialViewMode === 'time-based') {
         // NOTE: This must happen after the initial load
         if (isConferenceNow(this.state.get('records'))) {
           this.state.set('viewMode', 'compact')
@@ -331,8 +331,8 @@ export class Conferia {
     })
 
     // Activate auto-reload if applicable -- default is 5min/300s
-    if (this.opt.autoReload !== undefined && this.opt.autoReload !== false) {
-      const reloadSeconds = this.opt.autoReload === true ? 300 : this.opt.autoReload
+    if (this.config.autoReload !== false) {
+      const reloadSeconds = this.config.autoReload === true ? 300 : this.config.autoReload
 
       debug(`Activating autoreload every ${Math.round(reloadSeconds / 60 * 100) / 100} minutes`)
       setInterval(() => {
@@ -446,7 +446,7 @@ export class Conferia {
 
       const noeventscard = document.createElement('div')
       noeventscard.classList.add('event', 'meta')
-      noeventscard.style.margin = `${this.opt.eventCardPadding}px`
+      noeventscard.style.margin = `${this.config.eventCardPadding}px`
       noeventscard.style.height = '75%'
 
       // Adjust the wording depending on the configuration/what is currently
@@ -492,7 +492,7 @@ export class Conferia {
 
     // Calculate the "pixels per second," a measure to ensure the events have a
     // proper "minimum height."
-    const MIN_HEIGHT = this.opt.minimumCardHeight
+    const MIN_HEIGHT = this.config.minimumCardHeight
     const pps = MIN_HEIGHT / shortestInterval
 
     debug(`Displaying on ${pps} pixels/second.`)
@@ -509,7 +509,7 @@ export class Conferia {
 
     debug('Room conflicts per day: ', rpd)
 
-    const timeGridInterval = this.opt.timeGridSeconds > -1 ? this.opt.timeGridSeconds : shortestInterval
+    const timeGridInterval = this.config.timeGridSeconds > -1 ? this.config.timeGridSeconds : shortestInterval
 
     debug(`Using time grid interval of ${timeGridInterval} seconds.`)
 
@@ -523,8 +523,8 @@ export class Conferia {
     // Draw the events on the scheduleboard
     this.dom.scheduleBoard.innerHTML = ''
     for (const event of records) {
-      const card = generateEventCard(event, this.agenda, this.opt)
-      card.addEventListener('click', () => showEventDetailsModal(event, this, this.opt))
+      const card = generateEventCard(event, this.agenda, this.config)
+      card.addEventListener('click', () => showEventDetailsModal(event, this, this.config))
 
       // Place the event on the schedule board
       const timeOffset = getTimeOffset(event.dateStart, earliestTime)
@@ -544,21 +544,21 @@ export class Conferia {
       const eventDuration = getTimeOffset(event.dateEnd, event.dateStart)
 
       // Ensure each event is *at least* shortestInterval high.
-      const height = Math.max(pps * shortestInterval, eventDuration * pps) - this.opt.eventCardPadding * 2
+      const height = Math.max(pps * shortestInterval, eventDuration * pps) - this.config.eventCardPadding * 2
 
-      card.style.top = `${timeOffset * pps + this.opt.eventCardPadding}px`
+      card.style.top = `${timeOffset * pps + this.config.eventCardPadding}px`
       card.style.height = `${height}px`
 
       // left & width are more complex
-      card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + this.opt.eventCardPadding}px`
+      card.style.left = `${COLUMN_WIDTH * (prevColumnsOffset + withinDayOffset) + this.config.eventCardPadding}px`
       if (event.location && hasConflict) {
-        card.style.width = `${COLUMN_WIDTH - this.opt.eventCardPadding * 2}px`
+        card.style.width = `${COLUMN_WIDTH - this.config.eventCardPadding * 2}px`
       } else {
         // No conflict with other events -> make it span th entire day column
         // This line here is necessary since, if there are no conflicts, the
         // rpd array will be empty.
         const colspan = Math.max(rpd[dayOffset].length, 1)
-        card.style.width = `${COLUMN_WIDTH * colspan - this.opt.eventCardPadding * 2}px`
+        card.style.width = `${COLUMN_WIDTH * colspan - this.config.eventCardPadding * 2}px`
       }
 
       this.dom.scheduleBoard.appendChild(card)
@@ -650,11 +650,11 @@ export class Conferia {
    */
   private async loadCSV (): Promise<void> {
     try {
-      debug(`Fetching schedule from ${this.opt.src}`)
-      const response = await fetch(this.opt.src)
+      debug(`Fetching schedule from ${this.config.src}`)
+      const response = await fetch(this.config.src)
       const data = await response.text()
-      const tz = this.opt.timeZone !== '' ? this.opt.timeZone : undefined
-      const csv = parseCsv(data, tz, this.opt.dateParser, this.opt.rowParser)
+      const tz = this.config.timeZone !== '' ? this.config.timeZone : undefined
+      const csv = parseCsv(data, tz, this.config.dateParser, this.config.rowParser)
   
       debug(`Parsed ${csv.length} records from file.`)
       debug({ csv })
