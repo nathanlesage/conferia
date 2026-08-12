@@ -386,7 +386,7 @@ export class Conferia {
    * @return  {CSVRecord[]} The filtered records
    */
   public getVisibleRecords (): CSVRecord[] {
-    return this.filterRecords()
+    return this.state.filterRecords(this.agenda)
   }
 
   /**
@@ -399,42 +399,13 @@ export class Conferia {
   }
 
   /**
-   * Filters all available records based on various conditions.
-   *
-   * @return  {CSVRecord[]}  The filtered set of events.
-   */
-  private filterRecords (): CSVRecord[] {
-    const q = this.state.get('query').trim().toLowerCase()
-
-    let records = [...this.state.get('records')]
-
-    if (this.state.get('onlyPersonalAgendaItems')) {
-      records = records.filter(r => this.agenda.hasItem(r.id))
-    }
-
-    if (this.state.get('viewMode') === 'compact') {
-      // In compact mode, we should only show a single day.
-      const focusDay = this.state.get('compactDay')
-      const dayStart = focusDay.set({ hour: 0, minute: 0, second: 0 })
-      const dayEnd = focusDay.set({ hour: 23, minute: 59, second: 59 })
-      records = records.filter(r => r.dateStart >= dayStart && r.dateEnd <= dayEnd)
-    }
-
-    if (q === '') {
-      return records
-    }
-
-    return records.filter(record => matchEvent(record, q))
-  }
-
-  /**
    * This is the central function of this class. It completely (re)builds the
    * entire UI, based on any filters, etc.
    */
   public updateUI () {
     debug('Updating UI.')
     // Before doing anything, retrieve the records we are supposed to show.
-    const records = this.filterRecords()
+    const records = this.state.filterRecords(this.agenda)
 
     // If there are no records to show, indicate this.
     if (records.length === 0) {

@@ -1,6 +1,8 @@
 import { DateTime } from "luxon"
 import { CSVRecord } from "./csv"
 import { debug } from "./util/logger"
+import { matchEvent } from "./util/fuzzy-match"
+import { Agenda } from "./agenda"
 
 let stateSingleton: ApplicationState|undefined
 
@@ -166,6 +168,41 @@ export class ApplicationState {
 
     window.localStorage.setItem(CONFIG_KEY, JSON.stringify(partialState))
     debug('Saved to local storage.')
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  ////// UTILITY FUNCTIONS
+  //////////////////////////////////////////////////////////////////////////////
+  // These have been ported from the main class since they mostly depend on the
+  // state and thus declutter the main class.
+
+  /**
+   * Filters all available records based on various conditions.
+   *
+   * @return  {CSVRecord[]}  The filtered set of events.
+   */
+  public filterRecords (agenda: Agenda): CSVRecord[] {
+    const q = this.get('query').trim().toLowerCase()
+
+    let records = [...this.get('records')]
+
+    if (this.get('onlyPersonalAgendaItems')) {
+      records = records.filter(r => agenda.hasItem(r.id))
+    }
+
+    if (this.get('viewMode') === 'compact') {
+      // In compact mode, we should only show a single day.
+      const focusDay = this.get('compactDay')
+      const dayStart = focusDay.set({ hour: 0, minute: 0, second: 0 })
+      const dayEnd = focusDay.set({ hour: 23, minute: 59, second: 59 })
+      records = records.filter(r => r.dateStart >= dayStart && r.dateEnd <= dayEnd)
+    }
+
+    if (q === '') {
+      return records
+    }
+
+    return records.filter(record => matchEvent(record, q))
   }
 }
 
