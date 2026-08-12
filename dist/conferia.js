@@ -9883,7 +9883,8 @@ agenda.`, [
               viewMode: 'full',
               compactDay: DateTime.now(),
               records: [],
-              autoScroll: true
+              autoScroll: true,
+              lastUpdate: DateTime.now()
           };
       }
       /**
@@ -9905,6 +9906,10 @@ agenda.`, [
        */
       set(which, value, persist = true) {
           this.state[which] = value;
+          // If the records are updated, update the last update time.
+          if (which === 'records') {
+              this.set('lastUpdate', DateTime.now());
+          }
           for (const cb of this.callbacks) {
               cb(which, value);
           }
@@ -12043,7 +12048,7 @@ agenda.`, [
               // Update the action elements in the footer
               this.dom.liveActions.style.display = '';
               this.dom.liveActions.classList.toggle('is-live', autoScroll);
-              this.dom.liveActionsStatusMessage.textContent = autoScroll ? 'live' : '';
+              this.dom.liveActionsStatusMessage.textContent = autoScroll ? this.state.get('lastUpdate').toRelative() : '';
               // Finally, if applicable, add a time indicator at the current time.
               const indicatorElement = drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps);
               if (autoScroll && indicatorElement !== undefined) {

@@ -45,6 +45,10 @@ interface State {
    * conference.
    */
   autoScroll: boolean
+  /**
+   * Holds the last time the schedule has been fetched online
+   */
+  lastUpdate: DateTime
 }
 
 // Do some type trickery to enforce callbacks that are properly typed to only
@@ -74,7 +78,8 @@ export class ApplicationState {
       viewMode: 'full',
       compactDay: DateTime.now(),
       records: [],
-      autoScroll: true
+      autoScroll: true,
+      lastUpdate: DateTime.now()
     }
   }
 
@@ -98,6 +103,11 @@ export class ApplicationState {
    */
   public set<T extends keyof State>(which: T, value: State[T], persist: boolean = true) {
     this.state[which] = value
+
+    // If the records are updated, update the last update time.
+    if (which === 'records') {
+      this.set('lastUpdate', DateTime.now())
+    }
 
     for (const cb of this.callbacks) {
       cb(which, value)

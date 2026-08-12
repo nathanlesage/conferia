@@ -2,6 +2,8 @@
 
 * Changed location element from `p` to `div`.
 * Added utility functions for sparse DOM updates.
+* The live scroller now shows the last time when the schedule has been updated
+  from online.
 
 # Release 0.32.0
 
