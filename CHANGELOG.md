@@ -1,3 +1,8 @@
+# Release 0.35.0
+
+* Fix a bug where a quoted string in the last column of the CSV would prevent
+  successful parsing of the CSV file due to a missing check for line endings.
+
 # Release 0.34.0
 
 * Always show the last-update date, not just when auto scroll is enabled.

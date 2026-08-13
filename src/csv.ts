@@ -357,16 +357,17 @@ function parseCSVLine (line: string, lineNo: number, sep: string = ','): string[
         // Current Cell is empty -> Marks beginning of a quoted cell
         isQuoted = true
       } else if (isQuoted) {
-        // Double quote within a quoted cell either marks the end or an escaped
-        // double quote. Is determined by the next character. If it's a quote,
-        // we shall add a quote to the cell contents, otherwise the cell is
-        // done.
+        // A double quote within a quoted cell either marks the cell end or an
+        // escaped double quote. This is determined by the next character. If
+        // it's a quote, we shall add a quote to the cell contents, otherwise
+        // the cell is done.
         const nextChar = line[i + 1]
         if (nextChar === '"') {
           currentCell += char // It's an escaped quote.
           i++ // Jump over the next quote
-        } else if (nextChar === sep) {
-          // Not an escaped quote -> end of cell
+        } else if (nextChar === sep || i + 1 === line.length) {
+          // Not an escaped quote, but either a separator or the end of the line
+          // -> end of cell
           isQuoted = false
         } else {
           // Malformed cell
