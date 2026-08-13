@@ -9642,7 +9642,7 @@ agenda.`, [
                   continue;
               }
               if (eventHasConflict(event, todaysEvents)) {
-                  console.log('Conflict detect for room', event.location);
+                  debug(`Conflict detected for room ${event.location}.`);
                   roomsWithConflictsToday.add(event.location);
               }
           }

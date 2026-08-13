@@ -4,6 +4,7 @@
 import { DateTime } from "luxon"
 import { CSVRecord } from "../csv"
 import { getEarliestDay, getLatestDay } from "./time-helpers"
+import { debug } from "./logger"
 
 /**
  * This function takes in a set of records and, for each day in the dataset,
@@ -45,7 +46,7 @@ export function roomsWithConflictsPerDay (records: CSVRecord[]): string[][] {
       }
 
       if (eventHasConflict(event, todaysEvents)) {
-        console.log('Conflict detect for room', event.location)
+        debug(`Conflict detected for room ${event.location}.`)
         roomsWithConflictsToday.add(event.location!)
       }
     }
