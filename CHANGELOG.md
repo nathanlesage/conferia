@@ -1,3 +1,18 @@
+# Release 0.34.0
+
+* Always show the last-update date, not just when auto scroll is enabled.
+* If a `meta` or `special` event has notes, these will be rendered directly on
+  the schedule board, since they can be expected to include important
+  information (such as location information), and those events don't have any
+  other contents anyhow.
+* You can now provide location information for `meta` events such as coffee
+  breaks and lunch breaks without creating "conflicts" this way. This now allows
+  you to specify locations for coffee or lunch breaks, but conflicts will only
+  be calculated between meta events, and all other events. Furthermore, this
+  means that you can even specify two meta events at the same time in different
+  locations and have the library correctly detect this and place the events side
+  by side, but on top of all the other events.
+
 # Release 0.33.0
 
 * Changed location element from `p` to `div`.

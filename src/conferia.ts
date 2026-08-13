@@ -547,7 +547,8 @@ export class Conferia {
       // Update the action elements in the footer
       this.dom.liveActions.style.display = ''
       this.dom.liveActions.classList.toggle('is-live', autoScroll)
-      this.dom.liveActionsStatusMessage.textContent = autoScroll ? this.state.get('lastUpdate').toRelative() : ''
+      // Always show the last update status, even if we're not auto-scrolling.
+      this.dom.liveActionsStatusMessage.textContent = this.state.get('lastUpdate').toRelative()
       // Finally, if applicable, add a time indicator at the current time.
       const indicatorElement = drawTimeIndicator(this.dom.scheduleBoard, earliestTime, latestTime, pps)
       if (autoScroll && indicatorElement !== undefined) {

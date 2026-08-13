@@ -45,6 +45,7 @@ export function roomsWithConflictsPerDay (records: CSVRecord[]): string[][] {
       }
 
       if (eventHasConflict(event, todaysEvents)) {
+        console.log('Conflict detect for room', event.location)
         roomsWithConflictsToday.add(event.location!)
       }
     }
@@ -72,7 +73,19 @@ export function eventHasConflict (record: CSVRecord, records: CSVRecord[]): bool
   const thisStart = record.dateStart
   const thisEnd = record.dateEnd
 
-  return records.some(rec => {
+  return records
+    // Meta events are supposed to overlap other events. This way, once can,
+    // e.g., define full-day workshops and place a coffee break on top of it
+    // without having to specify two events for a single workshop and break them
+    // up this way. But this means that we essentially have to treat meta events
+    // and all others as two separate categories, where meta events can only
+    // have conflicts with other meta events, and non-meta events can only have
+    // conflicts with non-meta events.
+    // The upshot of this is that you can now actually also define two separate
+    // meta events at the same time but in different locations, if that suits
+    // you.
+    .filter(rec => record.type === 'meta' && rec.type === 'meta' || record.type !== 'meta' && rec.type !== 'meta')
+    .some(rec => {
     if (record === rec) {
       return false // No self-overlap
     }

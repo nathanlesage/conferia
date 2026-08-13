@@ -170,6 +170,14 @@ export function generateEventCard (event: CSVRecord, agenda: Agenda, options: Co
     const author = dom('p', 'author')
     author.textContent = event.author
     content.appendChild(author)
+  } else if ([ 'meta', 'special' ].includes(event.type) && event.notes !== undefined && event.notes.trim() !== '') {
+    // If meta or special events have notes, we can show them directly on the
+    // schedule board, because they can contain, e.g., location information, and
+    // thus probably should be shown prominently. Also, because there's nothing
+    // else shown there, we have the space for it.
+    const notes = dom('p', 'notes')
+    notes.textContent = event.notes
+    content.appendChild(notes)
   }
 
   // Card footer
