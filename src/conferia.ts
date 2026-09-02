@@ -2,7 +2,7 @@ import { CSVRecord, parseCsv, SessionPresentationRecord } from "./csv"
 import { updateGutterTicks as updateTimeGutter } from "./dom/time-gutter"
 import { updateGutterTicks as updateDayGutter } from "./dom/day-gutter"
 import { DOMStructure, generateDOMStructure, generateHeader } from "./dom/wrapper"
-import { getDayOffset, getEarliestDay, getEarliestTime, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset, isConferenceNow, renderShortDate } from "./util/time-helpers"
+import { clampCompactDay, getDayOffset, getEarliestDay, getEarliestTime, getInitialCompactDay, getLatestDay, getLatestTime, getShortestInterval, getTimeOffset, isConferenceNow, renderShortDate } from "./util/time-helpers"
 import { drawTimeIndicator, drawVerticalDayDividers, generateEventCard, updateScheduleBoard } from "./dom/schedule-board"
 import { DateTime } from "luxon"
 import { showEventDetailsModal } from "./dom/event-details-modal"
@@ -180,6 +180,9 @@ export class Conferia {
    * it's safe to do so.
    */
   private loadPromise: Promise<void>
+
+  /** Whether the schedule has already completed its initial successful load. */
+  private hasLoadedSchedule = false
 
   /**
    * A column scale factor. This can be set to control the width of the columns.
@@ -632,7 +635,16 @@ export class Conferia {
       debug({ csv })
   
       this.state.set('records', csv)
-      this.ensureCompactDayBounds()
+      if (!this.hasLoadedSchedule) {
+        const initialDay = getInitialCompactDay(csv)
+        if (initialDay !== undefined) {
+          this.state.set('compactDay', initialDay)
+          this.hasLoadedSchedule = true
+        }
+      } else {
+        // Keep the participant's selected day on automatic schedule reloads.
+        this.ensureCompactDayBounds()
+      }
     } catch (err: any) {
       console.error(`Conferia could not load data: ${err.message}`)
       console.error(err)
@@ -648,21 +660,17 @@ export class Conferia {
     // Whenever the records have been (re)loaded, ensure that the "compact
     // mode" day is always within the conference dates.
     const records = this.state.get('records')
-    const earliestDay = getEarliestDay(records)
-    const latestDay = getLatestDay(records)
     const currentDate = this.state.get('compactDay')
+    const nextDate = clampCompactDay(records, currentDate)
 
-    if (earliestDay === undefined || latestDay === undefined) {
+    if (nextDate === undefined) {
       debug('Either earliest day or latest day were undefined. This should not happen.')
       return
     }
 
-    if (currentDate < earliestDay) {
-      debug('Current date is before the earliest conference day. Setting compactDay accordingly.')
-      this.state.set('compactDay', earliestDay)
-    } else if (currentDate > latestDay) {
-      debug('Current date is after the latest conference day. Setting compactDay accordingly.')
-      this.state.set('compactDay', latestDay)
+    if (!currentDate.equals(nextDate)) {
+      debug('Current date is outside of the conference. Setting compactDay accordingly.')
+      this.state.set('compactDay', nextDate)
     }
   }
 

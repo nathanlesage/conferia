@@ -83,6 +83,61 @@ export function isConferenceNow (allRecords: CSVRecord[]): boolean {
 }
 
 /**
+ * Returns the day the compact schedule should initially display. During the
+ * conference this is today; outside the conference period it is the first day.
+ * The event timezone takes precedence over the browser timezone.
+ *
+ * @param   {CSVRecord[]}  allRecords  All schedule events
+ * @param   {DateTime}     now         The current time (overridable for tests)
+ *
+ * @return  {DateTime|undefined}       The initial day, or undefined without events
+ */
+export function getInitialCompactDay (
+  allRecords: CSVRecord[],
+  now: DateTime = DateTime.now()
+): DateTime|undefined {
+  const earliestDay = getEarliestDay(allRecords)?.startOf('day')
+  const latestDay = getLatestDay(allRecords)?.endOf('day')
+
+  if (earliestDay === undefined || latestDay === undefined) {
+    return undefined
+  }
+
+  const today = now.setZone(earliestDay.zone).startOf('day')
+  return today >= earliestDay && today <= latestDay ? today : earliestDay
+}
+
+/**
+ * Keeps a selected compact day within the available schedule without changing
+ * valid participant selections during subsequent data reloads.
+ *
+ * @param   {CSVRecord[]}  allRecords  All schedule events
+ * @param   {DateTime}     selected    The currently selected compact day
+ *
+ * @return  {DateTime|undefined}       The selected or nearest available day
+ */
+export function clampCompactDay (
+  allRecords: CSVRecord[],
+  selected: DateTime
+): DateTime|undefined {
+  const earliestDay = getEarliestDay(allRecords)?.startOf('day')
+  const latestDay = getLatestDay(allRecords)?.startOf('day')
+
+  if (earliestDay === undefined || latestDay === undefined) {
+    return undefined
+  }
+
+  const selectedDay = selected.setZone(earliestDay.zone).startOf('day')
+  if (selectedDay < earliestDay) {
+    return earliestDay
+  } else if (selectedDay > latestDay) {
+    return latestDay
+  }
+
+  return selected
+}
+
+/**
  * Given an array of dates, returns the date that has the earliest time of day.
  *
  * @param   {DateTime[]}  dates  A list of dates
