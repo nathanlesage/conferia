@@ -10,6 +10,12 @@ first day. You can scroll horizontally to see the following days. On the
 vertical axis, the schedule displays a time-grid giving you an overview of when
 what happens. Scroll vertically to see all times.
 
+In the compact, single-day view, Conferia initially shows the current conference
+day while the conference is running. Before and after the conference, it starts
+on the first program day. Dates use the conference timezone configured by the
+organizer. If you navigate to another day, automatic schedule updates preserve
+your selection.
+
 If the conference features parallel sessions, each day is divided further into
 sub-columns with all events grouped by their room. Events without a room or with
 no conflicting, parallel event, will span the full column width.
